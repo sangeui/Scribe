@@ -20,10 +20,7 @@ jobs:
       - name: Show Swift version
         run: swift --version
 
-      - name: Build
-        run: swift build -v
-
-      - name: Test gate (--selftest)
+      - name: Build and test gate (--selftest)
         run: ./scripts/test-gate.sh
 
   secret-scan:

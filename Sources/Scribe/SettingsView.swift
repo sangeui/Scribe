@@ -158,7 +158,7 @@ struct FloatingSettings: View {
     var body: some View {
         Form {
             Section {
-                Toggle("데스크톱에 상시 표시", isOn: Binding(get: { store.floatingVisible }, set: store.setFloatingVisible))
+                Toggle("데스크톱에 상시 표시", isOn: $store.isFloatingVisible)
                     .hint("상시 창", ["다른 창 위에 늘 떠 있고 드래그로 옮길 수 있습니다.", "창을 오른쪽 클릭하면 모양을 바꾸거나 숨길 수 있습니다."], symbol: "macwindow")
                 HStack(alignment: .top, spacing: 12) {
                     ForEach(FloatingStyle.allCases, id: \.self) { candidate in

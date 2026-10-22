@@ -599,6 +599,11 @@ final class UsageStore {
     }
 
     /// 데스크톱 상시 표시 창.
+    var isFloatingVisible: Bool {
+        get { floatingVisible }
+        set { setFloatingVisible(newValue) }
+    }
+
     func setFloatingVisible(_ visible: Bool) {
         floatingVisible = visible
         floating.setVisible(visible)
