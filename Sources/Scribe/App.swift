@@ -1602,7 +1602,7 @@ enum Dump {
 
         // 7. 문호 초상화 & 돌발 상황 & 장신구 컬렉션 카드
         let portraitsView = VStack(alignment: .leading, spacing: 12) {
-            Text("8인의 대문호").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            Text("대문호 초상화").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             HStack(spacing: 8) {
                 ForEach(Portraits.all, id: \.0) { author, _ in
                     PortraitFrame(author: author, scale: 3)
@@ -1616,7 +1616,7 @@ enum Dump {
                 PortraitFrame(author: "Poe", scale: 3, event: AuthorEvents.byAuthor["Poe"])
                 PortraitFrame(author: "Stevenson", scale: 3, event: AuthorEvents.byAuthor["Stevenson"])
             }
-            Text("수집 가능한 장신구 10종").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            Text("수집 가능한 장신구").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             FlowLayout(spacing: 8) {
                 ForEach(Decor.all) { accessory in
                     PixelFrame(rows: Decor.apply(Portraits.rows("Wilde"), accessory: accessory), scale: 42 / CGFloat(Portraits.size), palette: Portraits.palette)

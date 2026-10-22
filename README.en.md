@@ -19,7 +19,7 @@
 
 </div>
 
-**Scribe** turns the AI coding tokens you're already burning — **Antigravity**, **Gemini CLI**, and **Claude Code** — into a cozy **classic literature writer's study** in your macOS menu bar and desktop. As you spend tokens, eight literary masters from Shakespeare to Goethe type out 43 complete public-domain classics from Project Gutenberg character by character, deliver finished manuscripts to a neighborhood bookstore, and gather at a nightly literary salon. Underneath the simulation sits a fast, local usage tracker — today's tokens, API cost estimate, cache efficiency, hourly breakdown, and 14-day history read straight from your local logs.
+**Scribe** turns the AI coding tokens you're already burning — **Antigravity**, **Gemini CLI**, and **Claude Code** — into a cozy **classic literature writer's study** in your macOS menu bar and desktop. As you spend tokens, literary masters from Shakespeare to Goethe type out complete public-domain classics from Project Gutenberg character by character, deliver finished manuscripts to a neighborhood bookstore, and gather at a nightly literary salon. Underneath the simulation sits a fast, local usage tracker — today's tokens, API cost estimate, cache efficiency, hourly breakdown, and daily history read straight from your local logs.
 
 > Token usage is read directly from local **Antigravity · Gemini CLI · Claude Code** logs (`totalTokens` = input + output + cache, local date) — no external CLI, API key, or login required. Your prompts and conversation contents never leave your Mac.
 
@@ -28,7 +28,7 @@
 ## Why Scribe
 
 - **A token tracker you actually look forward to opening.** Instead of watching abstract numbers vanish, your daily coding sessions type out real passages of *Hamlet*, *A Christmas Carol*, *The Fall of the House of Usher*, and *Faust*.
-- **Today's spend and cache efficiency at a glance.** Check your daily tokens, hourly activity, and 14-day trend right from the menu bar or floating desktop pill — no browser dashboard needed.
+- **Today's spend and cache efficiency at a glance.** Check your daily tokens, hourly activity, and recent daily trend right from the menu bar or floating desktop pill — no browser dashboard needed.
 - **A living literary world.** Hand a cup of coffee to a dozing author, stock your finished books in the neighborhood bookstore window, read critic reviews, and meet weekly publisher deadlines.
 
 <div align="center">
@@ -39,12 +39,12 @@
 
 ## How it works
 
-1. 💻 **Code as usual.** Every token you burn in Antigravity, Gemini CLI, or Claude Code fuels your author's pen. Existing tokens at first launch become your baseline (`0` characters), and every **1M new tokens writes 1,000 characters** of classic text.
-2. 🪶 **Real classics, typed letter by letter.** All **43 classics (14.12M characters)** from Project Gutenberg are bundled offline. Open the **Shelf** anytime to read every page your tokens have written so far.
-3. ☕ **Care for your author.** While writing, your author might doze off, run out of ink, wander out for a stroll, or hit writer's block. Every **25M tokens** grants a recovery item (Coffee, Tea, Ink Bottle, Bell, Muse Quill, etc.) to bring them right back to the desk.
+1. 💻 **Code as usual.** Every token you burn in Antigravity, Gemini CLI, or Claude Code fuels your author's pen. Existing tokens at first launch become your baseline, and new tokens from that point on write classic literature.
+2. 🪶 **Real classics, typed letter by letter.** Public-domain classics from Project Gutenberg are bundled offline. Open the **Shelf** anytime to read every page your tokens have written so far.
+3. ☕ **Care for your author.** While writing, your author might doze off, run out of ink, wander out for a stroll, or hit writer's block. Tokens you spend grant recovery items (Coffee, Tea, Ink Bottle, Bell, Muse Quill, etc.) to bring them right back to the desk.
 4. 🏛 **Finish & deliver to the Bookstore.** Completing a book triggers a completion card, and your author walks down the village path carrying the manuscript to the **Bookstore**.
-5. 📈 **Run the Bookstore & hit weekly deadlines.** Place finished books in the display window or main table. Critic reviews (★1–5), newspaper features, school orders, and ad campaigns push your books from **First Print Sold Out (1K) → Reprint (10K) → Bestseller (100K) → Million Seller (1M)**.
-6. 🥂 **The Literary Salon & New Game+.** Authors who have finished at least one book gather in the **Salon** at night to chat across centuries. Finish all 43 books to unlock Round 2 (two authors writing simultaneously) and Round 3 (three authors at once).
+5. 📈 **Run the Bookstore & hit weekly deadlines.** Place finished books in the display window or main table. Critic reviews, newspaper features, school orders, and ad campaigns push your books from **First Print Sold Out → Reprint → Bestseller → Million Seller**.
+6. 🥂 **The Literary Salon & New Game+.** Authors who have finished a book gather in the **Salon** at night to chat across centuries. Finish the entire library to unlock subsequent rounds where multiple authors write simultaneously.
 
 ---
 
@@ -60,13 +60,13 @@ Bring your writer out of the menu bar and onto the desktop in <b>Pill</b> or <b>
 </tr>
 <tr>
 <td width="52%" valign="middle">
-<h3>📚 8 Literary Masters & 43 Classics</h3>
+<h3>📚 Literary Masters & Classic Library</h3>
 Collect works by <b>William Shakespeare · Charles Dickens · Edgar Allan Poe · Lewis Carroll · Robert Louis Stevenson · Oscar Wilde · Jane Austen · Johann Wolfgang von Goethe</b>. Click any book on the Shelf to read the actual manuscript pages you've written.
 </td>
-<td width="48%" align="center"><img src="assets/screenshot-shelf.png" width="340" alt="Shelf panel — 8 authors and 43 classic books"></td>
+<td width="48%" align="center"><img src="assets/screenshot-shelf.png" width="340" alt="Shelf panel — literary masters and classic books"></td>
 </tr>
 <tr>
-<td width="48%" align="center"><img src="assets/screenshot-bookstore.png" width="340" alt="Neighborhood bookstore — display window, tables, critic reviews, and 14-day sales"></td>
+<td width="48%" align="center"><img src="assets/screenshot-bookstore.png" width="340" alt="Neighborhood bookstore — display window, tables, critic reviews, and sales trend"></td>
 <td width="52%" valign="middle">
 <h3>🏪 A neighborhood bookstore for your manuscripts</h3>
 Stock finished books in the <b>Display Window</b> and <b>Tables</b>. Order reprints when sold out, run ad campaigns, or let the shopkeeper curate. Every Monday brings a weekly settlement statement with sales, returns, and shopkeeper notes.
@@ -74,13 +74,13 @@ Stock finished books in the <b>Display Window</b> and <b>Tables</b>. Order repri
 </tr>
 <tr>
 <td width="52%" valign="middle">
-<h3>☕ 6 Studio Furniture Pieces & 12 Recovery Items</h3>
-Use items earned every 25M tokens to cure drowsiness, empty inkwells, strolls, writer's block, and blown-out candles — or keep a Safe and Manuscript Copy to automatically block natural disasters. Trade spare items for permanent studio furniture like a <b>Desk Lamp, Stove, Bookshelf, Heavy Curtains, Armchair, and Studio Cat</b>.
+<h3>☕ Studio Furniture & Recovery Items</h3>
+Use items earned as you spend tokens to cure drowsiness, empty inkwells, strolls, writer's block, and blown-out candles — or keep a Safe and Manuscript Copy to automatically block natural disasters. Trade spare items for permanent studio furniture like a <b>Desk Lamp, Stove, Bookshelf, Heavy Curtains, Armchair, and Studio Cat</b>.
 </td>
-<td width="48%" align="center"><img src="assets/screenshot-bag.png" width="340" alt="Bag & Studio panel — 6 furniture pieces and 12 items"></td>
+<td width="48%" align="center"><img src="assets/screenshot-bag.png" width="340" alt="Bag & Studio panel — studio furniture and recovery items"></td>
 </tr>
 <tr>
-<td width="48%" align="center"><img src="assets/village.png" width="340" alt="16-bit pixel village in day and night"></td>
+<td width="48%" align="center"><img src="assets/village.png" width="340" alt="Pixel village in day and night"></td>
 <td width="52%" valign="middle">
 <h3>🏘️ Walk the pixel village</h3>
 Press the map button or use arrow keys to step into the village. Walk between the Workshop, Storage, Bookstore, and Salon, recommend books to passing readers, and pick up lost items along the path.
@@ -94,24 +94,24 @@ Authors who have completed a manuscript relax in the <b>Salon</b>. Step inside t
 <td width="48%" align="center"><img src="assets/salon.png" width="340" alt="Literary Salon in day and night"></td>
 </tr>
 <tr>
-<td width="48%" align="center"><img src="assets/screenshot-usage.png" width="340" alt="Token usage dashboard — today's tokens, cache efficiency, hourly & 14-day charts"></td>
+<td width="48%" align="center"><img src="assets/screenshot-usage.png" width="340" alt="Token usage dashboard — today's tokens, cache efficiency, hourly & daily charts"></td>
 <td width="52%" valign="middle">
 <h3>📊 Per-Agent Token Usage Dashboard</h3>
-Inspect today's token total, API cost equivalent, cache hit rate, Inspiration Gauge, 24-hour activity chart, 14-day history, and per-model breakdown for <b>Antigravity · Gemini</b> and <b>Claude Code</b>.
+Inspect today's token total, API cost equivalent, cache hit rate, Inspiration Gauge, hourly activity chart, daily history, and per-model breakdown for <b>Antigravity · Gemini</b> and <b>Claude Code</b>.
 </td>
 </tr>
 <tr>
 <td width="52%" valign="middle">
-<h3>🏅 74 Achievements & Author Stats</h3>
-Earn Bronze, Silver, and Gold daily medals, milestone badges across six categories, and <b>13 hidden secret achievements</b>. Every badge awards stat points across <b>Penmanship · Grit · Charm · Sense · Luck</b>.
+<h3>🏅 Achievements & Author Stats</h3>
+Earn Bronze, Silver, and Gold daily medals, milestone badges across categories, and <b>hidden secret achievements</b>. Every badge awards stat points across <b>Penmanship · Grit · Charm · Sense · Luck</b>.
 </td>
-<td width="48%" align="center"><img src="assets/screenshot-badges.png" width="340" alt="Achievements panel — 74 badges and 13 secrets"></td>
+<td width="48%" align="center"><img src="assets/screenshot-badges.png" width="340" alt="Achievements panel — badges and secret achievements"></td>
 </tr>
 <tr>
-<td width="48%" align="center"><img src="assets/screenshot-portraits.png" width="340" alt="Author portraits, event expressions, and 10 unlockable accessories"></td>
+<td width="48%" align="center"><img src="assets/screenshot-portraits.png" width="340" alt="Author portraits, event expressions, and unlockable accessories"></td>
 <td width="52%" valign="middle">
-<h3>🎨 24 Portrait Expressions & 10 Accessories</h3>
-Each author features custom pixel expressions for every event, plus 10 unlockable accessories — including a <b>Monocle, Sunglasses, Pipe, Laurel Wreath, Crown, Rose, and Bowtie</b>.
+<h3>🎨 Portrait Expressions & Accessories</h3>
+Each author features custom pixel expressions for every event, plus unlockable accessories — including a <b>Monocle, Sunglasses, Pipe, Laurel Wreath, Crown, Rose, and Bowtie</b>.
 </td>
 </tr>
 </table>
@@ -128,9 +128,9 @@ Each author features custom pixel expressions for every event, plus 10 unlockabl
 
 | Tool | Tracked | Highlights |
 |---|---|---|
-| **Antigravity** | today · recent 5h · hourly · 14 days | Cache hit rate · Inspiration gauge · per-model breakdown & cost estimate |
-| **Gemini CLI** | today · recent 5h · hourly · 14 days | Per-session input / output / cached / thoughts token aggregation |
-| **Claude Code** | today · recent 5h · hourly · 14 days | Per-model tokens & cost + official 5h / 7d session limit % |
+| **Antigravity** | today · recent window · hourly · daily trend | Cache hit rate · Inspiration gauge · per-model breakdown & cost estimate |
+| **Gemini CLI** | today · recent window · hourly · daily trend | Per-session input / output / cached / thoughts token aggregation |
+| **Claude Code** | today · recent window · hourly · daily trend | Per-model tokens & cost + official session / weekly limit % |
 | **Combined Mode** | All providers summed | Combined writing progress + per-agent share bar |
 
 Switch your active data source anytime under **Settings (`⌘,`) → Writing / Record → Data Source**. Switching sources preserves all characters you've already written.
@@ -168,7 +168,7 @@ The cask automatically clears the macOS Gatekeeper quarantine attribute on insta
 
 ```bash
 swift build                      # debug build
-./scripts/test-gate.sh           # run 65 regression checks
+./scripts/test-gate.sh           # run regression checks
 ./scripts/create-signing-cert.sh # (optional) create local self-signed certificate
 ./scripts/build-app.sh           # Universal release → build/Scribe.app & build/Scribe.zip
 ```
@@ -183,7 +183,7 @@ swift build                      # debug build
 | `~/.gemini/tmp/**/chats/*.json` | Gemini CLI daily/hourly/model tokens | Read-only parse of message `tokens` (`input`, `output`, `cached`, `thoughts`, `tool`) |
 | `~/.claude/projects/**/*.jsonl` | Claude Code daily/hourly/model tokens | Read-only parse of assistant `usage` blocks; deduplicated by message id |
 | `~/Library/Application Support/Scribe/writing.json` | Local save state (progress, shelf, shop, bag, badges) | On-device JSON; resettable in Settings |
-| Keychain (`Claude Code-credentials`) / `~/.claude/.credentials.json` → `api.anthropic.com` | Claude Code official 5h/7d limit % | Queried only when `Claude Code` or `Combined` source is selected |
+| Keychain (`Claude Code-credentials`) / `~/.claude/.credentials.json` → `api.anthropic.com` | Claude Code official session/weekly limit % | Queried only when `Claude Code` or `Combined` source is selected |
 
 ---
 
@@ -196,4 +196,4 @@ swift build                      # debug build
 
 ## License
 
-**MIT** — see [LICENSE](LICENSE). All 43 bundled literary works are public-domain texts from [Project Gutenberg](https://www.gutenberg.org/).
+**MIT** — see [LICENSE](LICENSE). All bundled literary works are public-domain texts from [Project Gutenberg](https://www.gutenberg.org/).
