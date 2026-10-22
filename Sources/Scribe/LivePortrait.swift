@@ -225,17 +225,26 @@ struct PillBackground<S: Shape>: ViewModifier {
         self.tint = tint
     }
 
+    @ViewBuilder
     func body(content: Content) -> some View {
+        #if compiler(>=6.2)
         if #available(macOS 26, *), glass {
             // 유리의 tint 는 옅어서 티가 안 난다. 색을 유리 위에 직접 칠한다.
             content.glassEffect(.regular, in: shape)
                 .overlay(shape.fill(tint ?? .clear).allowsHitTesting(false))
         } else {
-            content
-                .background(.regularMaterial, in: shape)
-                .overlay(shape.fill(tint ?? .clear).allowsHitTesting(false))
-                .overlay(shape.stroke(.primary.opacity(0.08)))
+            fallback(content)
         }
+        #else
+        fallback(content)
+        #endif
+    }
+
+    private func fallback(_ content: Content) -> some View {
+        content
+            .background(.regularMaterial, in: shape)
+            .overlay(shape.fill(tint ?? .clear).allowsHitTesting(false))
+            .overlay(shape.stroke(.primary.opacity(0.08)))
     }
 }
 

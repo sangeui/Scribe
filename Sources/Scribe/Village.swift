@@ -670,10 +670,7 @@ enum VillageMap {
 
     /// 문 바로 앞 타일이면 그 건물.
     static func door(col: Int, row: Int) -> VillageBuilding? {
-        guard let building = VillageBuilding.allCases.first(where: { $0.doorCol == col && $0.frontRow == row }) else { return nil }
-        _ = building
-        return VillageBuilding.allCases.first { $0.doorCol == col && $0.frontRow == row }
-        return VillageBuilding.allCases.first { $0.doorCol == col }
+        VillageBuilding.allCases.first { $0.doorCol == col && $0.frontRow == row }
     }
 
     /// 날씨가 바꾸는 색. 더위엔 바닥이 누렇게 바래고, 눈 오는 날엔 바닥·지붕·나뭇잎이 하얗게 덮인다.
@@ -1556,165 +1553,19 @@ struct VillageView: View {
 
     var body: some View {
         let scene = VillageMap.Scene(progress: progress, date: date, fuel: fuel)
-        let dark = scene.dark
         let scale = VillageMap.scale
         let tile = CGFloat(VillageMap.tile) * scale
-        let tile_ = tile
-        let rows = VillageMap.rows(scene)
         VStack(alignment: .leading, spacing: 8) {
-            ZStack(alignment: .topLeading) {
-                PixelFrame(rows: rows, scale: scale, palette: VillageMap.palette(dark: dark, weather: scene.weather))
-                // 흔들리는 꽃, 굴뚝 연기, 지나가는 새. 0.5초마다 프레임이 바뀐다.
-                TimelineView(.periodic(from: .now, by: animated ? 0.5 : 3600)) { context in
-                    let tick = Int(context.date.timeIntervalSinceReferenceDate * 2)
-                    let frame = animated ? tick % 2 : 0
-                    ZStack(alignment: .topLeading) {
-                        ForEach([2, 7, 11], id: \.self) { col in
-                            PixelFrame(rows: VillageTiles.flowerHeads, scale: scale, palette: VillageMap.palette(dark: dark, weather: scene.weather))
-                                .offset(x: CGFloat(col) * tile + (frame == 0 ? 0 : scale), y: 6 * tile)
-                        }
-                        if scene.workshopSmoke {
-                            PixelFrame(rows: frame == 0 ? VillageTiles.smokeA : VillageTiles.smokeB, scale: scale, palette: ["e": Color.white.opacity(dark ? 0.35 : 0.75)])
-                                .offset(x: (CGFloat(VillageBuilding.workshop.left) * 16 + 44) * scale, y: tile - 13 * scale)
-                        }
-                        if let tile = pickupTile {
-                            PixelFrame(rows: frame == 0 ? VillageTiles.sparkleA : VillageTiles.sparkleB, scale: scale, palette: ["k": Color(red: 0.98, green: 0.86, blue: 0.3)])
-                                .offset(x: CGFloat(tile.col) * tile_ + 4 * scale, y: CGFloat(tile.row) * tile_ + 4 * scale)
-                        }
-                        if animated, tick % 40 < 10 {
-                            let flight = CGFloat(tick % 40) / 10
-                            PixelFrame(rows: frame == 0 ? VillageTiles.birdA : VillageTiles.birdB, scale: scale, palette: ["x": Color(red: 0.2, green: 0.2, blue: 0.23)])
-                                .offset(x: -16 + (CGFloat(VillageMap.width) * scale + 32) * flight, y: 0.25 * tile + sin(flight * 6) * 3)
-                        }
-                    }
-                }
-                // 서점 앞 손님. 사건·광고로 손님이 몰리면 늘고, 품절이면 한 사람이 돌아선다. 제자리 둘레를 어슬렁거린다.
-                let raining = scene.weather == .rain || scene.weather == .storm
-                let umbrellas: [Color] = [Color(red: 0.8, green: 0.33, blue: 0.26), Color(red: 0.4, green: 0.44, blue: 0.76), Color(red: 0.92, green: 0.85, blue: 0.4), Color(red: 0.42, green: 0.72, blue: 0.24)]
-                ForEach(state.npcs) { npc in
-                    sprite(Player.customerRows(npc.id, facing: npc.facing, step: npc.step), palette: Player.customers[npc.id % Player.customers.count].palette, x: npc.x, y: npc.y, dark: dark,
-                           umbrella: raining ? umbrellas[(npc.id + 1) % umbrellas.count] : nil)
-                }
-                // 열린 문
-                if let building = state.entering {
-                    let doorX = building == .storage ? 26 : 36
-                    PixelFrame(rows: VillageTiles.doorOpen, scale: scale, palette: VillageMap.palette(dark: dark, weather: scene.weather))
-                        .offset(x: (CGFloat(building.left) * 16 + CGFloat(doorX)) * scale, y: CGFloat(building.top * 16 + 29) * scale)
-                }
-                // 작업실 위 말풍선: 돌발 상황이나 방금 난 재해.
-                if let bubble = bubble {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 4).fill(Color.white)
-                        RoundedRectangle(cornerRadius: 4).stroke(Color.black.opacity(0.85), lineWidth: 2)
-                        PixelIconView(rows: bubble.icon, color: bubble.color, scale: 2)
-                    }
-                    .frame(width: 26, height: 26)
-                    .overlay(alignment: .bottom) {
-                        Triangle().fill(Color.white).frame(width: 8, height: 5).offset(y: 5)
-                            .overlay(Triangle().stroke(Color.black.opacity(0.85), lineWidth: 1.5).frame(width: 8, height: 5).offset(y: 5))
-                    }
-                    .position(x: (CGFloat(VillageBuilding.workshop.left) + 1.4) * tile, y: 1.25 * tile)
-                    .transition(.scale.combined(with: .opacity))
-                }
-                // 건물 이름: 게임의 글상자처럼 흰 바탕에 검은 테두리.
-                ForEach(VillageBuilding.allCases, id: \.self) { building in
-                    let on = VillageMap.door(col: state.col, row: state.row) == building
-                    Text(building.title)
-                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .padding(.horizontal, 5).padding(.vertical, 1)
-                        .foregroundStyle(on ? Color.white : Color.black)
-                        .background(on ? Color.black.opacity(0.85) : Color.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 3))
-                        .overlay(RoundedRectangle(cornerRadius: 3).stroke(Color.black.opacity(0.85), lineWidth: 1.5))
-                        .position(x: (CGFloat(building.left) + 2) * tile, y: (CGFloat(building.top) - 0.5) * tile)
-                }
-                // 사용자
-                sprite(Player.rows(facing: state.facing, step: state.step), palette: Player.palette, x: state.x, y: state.y, dark: dark,
-                       umbrella: raining ? umbrellas[0] : nil)
-                // 머리 위 행동 표시. 앞에 선 것에 맞춰 "말 걸기", "들어가기"처럼 지금 Return 으로 할 수 있는 일을 보여 준다.
-                if state.dialogue == nil, !state.isEntering, let prompt = actionPrompt {
-                    ActionPrompt(symbol: prompt.symbol, label: prompt.label, animated: animated)
-                        .position(x: min(max(CGFloat(state.x) * tile + tile / 2, 44), CGFloat(VillageMap.width) * scale - 44).rounded(),
-                                  y: (CGFloat(state.y) * tile - tile * 0.42).rounded())
-                        .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .bottom)))
-                }
-                // 들어가는 동안 화면이 어두워진다.
-                Color.black.opacity(state.isEntering ? 1 : 0)
-                    .frame(width: CGFloat(VillageMap.width) * scale, height: CGFloat(VillageMap.height) * scale)
-                    .animation(.easeIn(duration: 0.35), value: state.isEntering)
-                    .allowsHitTesting(false)
-                if let dialogue = state.dialogue {
-                    DialogueBox(dialogue: dialogue)
-                        .frame(width: CGFloat(VillageMap.width) * scale - 12)
-                        .offset(x: 6, y: CGFloat(VillageMap.height) * scale - 58)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-            }
-            .frame(width: CGFloat(VillageMap.width) * scale, height: CGFloat(VillageMap.height) * scale)
-            // 그 시각의 색이 옅게 덮인다(상시 창과 같은 색). 새벽·노을이 맵에도 든다.
-            .overlay(DayPart.tint(at: date).opacity(0.55).allowsHitTesting(false))
-            .overlay(WeatherOverlay(weather: progress.weather, animated: animated))
-            .overlay(weatherLayer(scene.weather))
-            .onAppear {
-                state.setCustomers(customerCount.count, leaving: customerCount.leaving)
-                state.pickupTile = pickupTile
-                state.woodpile = fuel != nil
-                if animated { state.resume() }
-            }
-            .onChange(of: fuel == nil) { _, missing in state.woodpile = !missing }
-            .onChange(of: customerCount.count) { _, count in state.setCustomers(count, leaving: customerCount.leaving) }
-            .onChange(of: progress.pickupAvailable) { _, _ in state.pickupTile = pickupTile }
-            .onChange(of: state.pendingInteraction) { _, target in
-                guard let target else { return }
-                state.pendingInteraction = nil
-                state.talkTurn += 1
-                let turn = state.talkTurn
-                switch target {
-                case .npc(let id): state.dialogue = VillageTalk.customer(id, progress: progress, now: date, turn: turn, leaving: customerCount.leaving)
-                case .window: state.dialogue = VillageTalk.author(progress: progress, now: date, mood: mood, turn: turn)
-                case .shopWindow: state.dialogue = VillageTalk.shopkeeper(progress: progress, now: date, turn: turn)
-                case .mailbox: state.dialogue = VillageTalk.mailbox(progress: progress, now: date)
-                case .signpost: state.dialogue = VillageTalk.signpost(progress: progress, now: date)
-                case .crates: state.dialogue = VillageTalk.crates(progress: progress)
-                case .woodpile: state.dialogue = fuel.map { VillageTalk.woodpile($0, now: date) }
-                case .pickup:
-                    let name = onPickup()
-                    state.dialogue = Dialogue(name: "풀밭", pages: [name.map { "\($0)(을|를) 주웠습니다".resolvedParticles } ?? "아무것도 없습니다"])
-                }
-            }
-            .onChange(of: state.pendingAction) { _, action in
-                guard let action else { return }
-                state.pendingAction = nil
-                if action == .recommend {
-                    state.dialogue = Dialogue(name: "손님", pages: [onRecommend() ?? "오늘은 그만 권하는 게 좋겠습니다"])
-                }
-            }
-            .animation(.easeOut(duration: 0.18), value: state.dialogue)
-            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 4, style: .continuous).stroke(Color(red: 57 / 255, green: 57 / 255, blue: 57 / 255), lineWidth: 2))
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(help.line).font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                    if let more = help.more {
-                        Text(more).font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                Spacer(minLength: 8)
-                Text(help.close).font(.caption2).foregroundStyle(.tertiary).fixedSize()
-            }
+            framedMap(scene: scene)
+                .onAppear { handleAppear() }
+                .onChange(of: fuel == nil) { _, missing in state.woodpile = !missing }
+                .onChange(of: customerCount.count) { _, count in state.setCustomers(count, leaving: customerCount.leaving) }
+                .onChange(of: progress.pickupAvailable) { _, _ in state.pickupTile = pickupTile }
+                .onChange(of: state.pendingInteraction) { _, target in handleInteraction(target) }
+                .onChange(of: state.pendingAction) { _, action in handleAction(action) }
+            helpFooter
         }
-        .onTapGesture { location in
-            guard location.y < CGFloat(VillageMap.height) * scale, location.x >= 0 else { return }
-            if state.dialogue != nil { state.press(.enter); return }
-            let col = Int(location.x / tile), row = Int(location.y / tile)
-            // 벽의 창문·우체통·상자·진열창이면 그 앞까지 가서 본다. 나머지 건물 자리는 바로 들어간다.
-            if !(row == 3 && state.thing(at: col, row) != nil),
-               let building = VillageBuilding.allCases.first(where: { ($0.left...($0.left + 3)).contains(col) && (max(0, $0.top - 1)...($0.top + 2)).contains(row) }) {
-                state.stand(at: building)
-                onEnter(building)
-                return
-            }
-            state.walk(toward: col, row)
-        }
+        .onTapGesture { handleTap(at: $0, scale: scale, tile: tile) }
         .onContinuousHover { phase in
             switch phase {
             case .active(let p) where p.y < CGFloat(VillageMap.height) * scale && clickable(col: Int(p.x / tile), row: Int(p.y / tile)):
@@ -1723,6 +1574,188 @@ struct VillageView: View {
                 NSCursor.arrow.set()
             }
         }
+    }
+
+    private func framedMap(scene: VillageMap.Scene) -> some View {
+        let scale = VillageMap.scale
+        let frameShape = RoundedRectangle(cornerRadius: 4, style: .continuous)
+        let borderColor = Color(red: 57 / 255, green: 57 / 255, blue: 57 / 255)
+        return mapCanvas(scene: scene)
+            .frame(width: CGFloat(VillageMap.width) * scale, height: CGFloat(VillageMap.height) * scale)
+            .overlay(DayPart.tint(at: date).opacity(0.55).allowsHitTesting(false))
+            .overlay(WeatherOverlay(weather: progress.weather, animated: animated))
+            .overlay(weatherLayer(scene.weather))
+            .animation(.easeOut(duration: 0.18), value: state.dialogue)
+            .clipShape(frameShape)
+            .overlay(frameShape.stroke(borderColor, lineWidth: 2))
+    }
+
+    private func handleAppear() {
+        state.setCustomers(customerCount.count, leaving: customerCount.leaving)
+        state.pickupTile = pickupTile
+        state.woodpile = fuel != nil
+        if animated { state.resume() }
+    }
+
+    @ViewBuilder
+    private func mapCanvas(scene: VillageMap.Scene) -> some View {
+        let dark = scene.dark
+        let scale = VillageMap.scale
+        let tile = CGFloat(VillageMap.tile) * scale
+        let rows = VillageMap.rows(scene)
+        let raining = scene.weather == .rain || scene.weather == .storm
+        let umbrellas: [Color] = [
+            Color(red: 0.8, green: 0.33, blue: 0.26),
+            Color(red: 0.4, green: 0.44, blue: 0.76),
+            Color(red: 0.92, green: 0.85, blue: 0.4),
+            Color(red: 0.42, green: 0.72, blue: 0.24),
+        ]
+        ZStack(alignment: .topLeading) {
+            PixelFrame(rows: rows, scale: scale, palette: VillageMap.palette(dark: dark, weather: scene.weather))
+            ambientSprites(scene: scene, scale: scale, tile: tile)
+            ForEach(state.npcs) { npc in
+                sprite(Player.customerRows(npc.id, facing: npc.facing, step: npc.step),
+                       palette: Player.customers[npc.id % Player.customers.count].palette,
+                       x: npc.x, y: npc.y, dark: dark,
+                       umbrella: raining ? umbrellas[(npc.id + 1) % umbrellas.count] : nil)
+            }
+            if let building = state.entering {
+                let doorX = building == .storage ? 26 : 36
+                PixelFrame(rows: VillageTiles.doorOpen, scale: scale, palette: VillageMap.palette(dark: dark, weather: scene.weather))
+                    .offset(x: (CGFloat(building.left) * 16 + CGFloat(doorX)) * scale, y: CGFloat(building.top * 16 + 29) * scale)
+            }
+            if let bubble = bubble {
+                workshopBubble(bubble, tile: tile)
+            }
+            buildingLabels(tile: tile)
+            sprite(Player.rows(facing: state.facing, step: state.step), palette: Player.palette, x: state.x, y: state.y, dark: dark,
+                   umbrella: raining ? umbrellas[0] : nil)
+            if state.dialogue == nil, !state.isEntering, let prompt = actionPrompt {
+                ActionPrompt(symbol: prompt.symbol, label: prompt.label, animated: animated)
+                    .position(x: min(max(CGFloat(state.x) * tile + tile / 2, 44), CGFloat(VillageMap.width) * scale - 44).rounded(),
+                              y: (CGFloat(state.y) * tile - tile * 0.42).rounded())
+                    .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .bottom)))
+            }
+            Color.black.opacity(state.isEntering ? 1 : 0)
+                .frame(width: CGFloat(VillageMap.width) * scale, height: CGFloat(VillageMap.height) * scale)
+                .animation(.easeIn(duration: 0.35), value: state.isEntering)
+                .allowsHitTesting(false)
+            if let dialogue = state.dialogue {
+                DialogueBox(dialogue: dialogue)
+                    .frame(width: CGFloat(VillageMap.width) * scale - 12)
+                    .offset(x: 6, y: CGFloat(VillageMap.height) * scale - 58)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+    }
+
+    private func ambientSprites(scene: VillageMap.Scene, scale: CGFloat, tile: CGFloat) -> some View {
+        let dark = scene.dark
+        return TimelineView(.periodic(from: .now, by: animated ? 0.5 : 3600)) { context in
+            let tick = Int(context.date.timeIntervalSinceReferenceDate * 2)
+            let frame = animated ? tick % 2 : 0
+            ZStack(alignment: .topLeading) {
+                ForEach([2, 7, 11], id: \.self) { col in
+                    PixelFrame(rows: VillageTiles.flowerHeads, scale: scale, palette: VillageMap.palette(dark: dark, weather: scene.weather))
+                        .offset(x: CGFloat(col) * tile + (frame == 0 ? 0 : scale), y: 6 * tile)
+                }
+                if scene.workshopSmoke {
+                    PixelFrame(rows: frame == 0 ? VillageTiles.smokeA : VillageTiles.smokeB, scale: scale, palette: ["e": Color.white.opacity(dark ? 0.35 : 0.75)])
+                        .offset(x: (CGFloat(VillageBuilding.workshop.left) * 16 + 44) * scale, y: tile - 13 * scale)
+                }
+                if let pickup = pickupTile {
+                    PixelFrame(rows: frame == 0 ? VillageTiles.sparkleA : VillageTiles.sparkleB, scale: scale, palette: ["k": Color(red: 0.98, green: 0.86, blue: 0.3)])
+                        .offset(x: CGFloat(pickup.col) * tile + 4 * scale, y: CGFloat(pickup.row) * tile + 4 * scale)
+                }
+                if animated, tick % 40 < 10 {
+                    let flight = CGFloat(tick % 40) / 10
+                    PixelFrame(rows: frame == 0 ? VillageTiles.birdA : VillageTiles.birdB, scale: scale, palette: ["x": Color(red: 0.2, green: 0.2, blue: 0.23)])
+                        .offset(x: -16 + (CGFloat(VillageMap.width) * scale + 32) * flight, y: 0.25 * tile + sin(flight * 6) * 3)
+                }
+            }
+        }
+    }
+
+    private func workshopBubble(_ bubble: (icon: [String], color: Color), tile: CGFloat) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 4).fill(Color.white)
+            RoundedRectangle(cornerRadius: 4).stroke(Color.black.opacity(0.85), lineWidth: 2)
+            PixelIconView(rows: bubble.icon, color: bubble.color, scale: 2)
+        }
+        .frame(width: 26, height: 26)
+        .overlay(alignment: .bottom) {
+            Triangle().fill(Color.white).frame(width: 8, height: 5).offset(y: 5)
+                .overlay(Triangle().stroke(Color.black.opacity(0.85), lineWidth: 1.5).frame(width: 8, height: 5).offset(y: 5))
+        }
+        .position(x: (CGFloat(VillageBuilding.workshop.left) + 1.4) * tile, y: 1.25 * tile)
+        .transition(.scale.combined(with: .opacity))
+    }
+
+    private func buildingLabels(tile: CGFloat) -> some View {
+        ForEach(VillageBuilding.allCases, id: \.self) { building in
+            let on = VillageMap.door(col: state.col, row: state.row) == building
+            Text(building.title)
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .padding(.horizontal, 5).padding(.vertical, 1)
+                .foregroundStyle(on ? Color.white : Color.black)
+                .background(on ? Color.black.opacity(0.85) : Color.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 3))
+                .overlay(RoundedRectangle(cornerRadius: 3).stroke(Color.black.opacity(0.85), lineWidth: 1.5))
+                .position(x: (CGFloat(building.left) + 2) * tile, y: (CGFloat(building.top) - 0.5) * tile)
+        }
+    }
+
+    private var helpFooter: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(help.line).font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                if let more = help.more {
+                    Text(more).font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Spacer(minLength: 8)
+            Text(help.close).font(.caption2).foregroundStyle(.tertiary).fixedSize()
+        }
+    }
+
+    private func handleInteraction(_ target: VillageState.Target?) {
+        guard let target else { return }
+        state.pendingInteraction = nil
+        state.talkTurn += 1
+        let turn = state.talkTurn
+        switch target {
+        case .npc(let id): state.dialogue = VillageTalk.customer(id, progress: progress, now: date, turn: turn, leaving: customerCount.leaving)
+        case .window: state.dialogue = VillageTalk.author(progress: progress, now: date, mood: mood, turn: turn)
+        case .shopWindow: state.dialogue = VillageTalk.shopkeeper(progress: progress, now: date, turn: turn)
+        case .mailbox: state.dialogue = VillageTalk.mailbox(progress: progress, now: date)
+        case .signpost: state.dialogue = VillageTalk.signpost(progress: progress, now: date)
+        case .crates: state.dialogue = VillageTalk.crates(progress: progress)
+        case .woodpile: state.dialogue = fuel.map { VillageTalk.woodpile($0, now: date) }
+        case .pickup:
+            let name = onPickup()
+            state.dialogue = Dialogue(name: "풀밭", pages: [name.map { "\($0)(을|를) 주웠습니다".resolvedParticles } ?? "아무것도 없습니다"])
+        }
+    }
+
+    private func handleAction(_ action: Dialogue.Action?) {
+        guard let action else { return }
+        state.pendingAction = nil
+        if action == .recommend {
+            state.dialogue = Dialogue(name: "손님", pages: [onRecommend() ?? "오늘은 그만 권하는 게 좋겠습니다"])
+        }
+    }
+
+    private func handleTap(at location: CGPoint, scale: CGFloat, tile: CGFloat) {
+        guard location.y < CGFloat(VillageMap.height) * scale, location.x >= 0 else { return }
+        if state.dialogue != nil { state.press(.enter); return }
+        let col = Int(location.x / tile), row = Int(location.y / tile)
+        // 벽의 창문·우체통·상자·진열창이면 그 앞까지 가서 본다. 나머지 건물 자리는 바로 들어간다.
+        if !(row == 3 && state.thing(at: col, row) != nil),
+           let building = VillageBuilding.allCases.first(where: { ($0.left...($0.left + 3)).contains(col) && (max(0, $0.top - 1)...($0.top + 2)).contains(row) }) {
+            state.stand(at: building)
+            onEnter(building)
+            return
+        }
+        state.walk(toward: col, row)
     }
 
     /// 날씨 겹. 안개는 흰 띠가 천천히 흐르고 위쪽이 뿌옇고, 흐림은 가라앉은 위로 구름 그림자가 지나가고, 폭풍은 어둡다가 번개가 치고, 더위는 아지랑이처럼 누런 빛이 돈다.
