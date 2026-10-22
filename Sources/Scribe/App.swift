@@ -57,6 +57,10 @@ enum Launcher {
             MainActor.assumeIsolated { Dump.renderWriting(to: args[i + 1]) }
             return
         }
+        if let i = args.firstIndex(of: "--tour"), i + 1 < args.count {
+            MainActor.assumeIsolated { Dump.renderTour(to: args[i + 1]) }
+            return
+        }
         migrateDefaults()
         MainActor.assumeIsolated { ScribeApp.main() }
     }
@@ -1453,6 +1457,217 @@ enum Dump {
         let view = MarqueeText(text: "와일드가 찾아와 함께 씁니다. 3시간 동안 돌발 상황이 없습니다", size: 14, color: .primary, animated: true)
             .frame(width: 200).padding(12).background(Color(nsColor: .windowBackgroundColor))
         write(view, to: path)
+    }
+
+    /// `Scribe --tour <dir>`: README 용 개별 고해상도 UI 카드 스크린샷들을 지정된 폴더에 생성한다.
+    static func renderTour(to dir: String) {
+        let now = Date()
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: now)
+
+        var state = WritingState()
+        let yesterday = cal.date(byAdding: .day, value: -1, to: today)!
+        state.days[DayKey.string(from: yesterday)] = WritingRecord(tokens: 210_000_000, characters: Double(Library.starts[2]))
+        state.days[DayKey.string(from: today)] = WritingRecord(tokens: 28_400_000, characters: 12_380)
+        state.items = ["coffee": 2, "tea": 1, "ink": 2, "bell": 1, "muse": 1, "safe": 1]
+        state.studio = ["lamp", "shelf", "cat"]
+        state.deadline = Deadline(weekStart: WritingStore.weekStart(of: now), kind: .characters, target: 50_000)
+        state.inspiration = Int(Double(Balance.inspirationGaugeTokens) * 0.68)
+
+        var sheet = AuthorSheet()
+        sheet.stats = ["pen": 3, "grit": 1, "charm": 2, "luck": 1]
+        sheet.stamina = 76
+        sheet.tokensTowardStat = 12_400_000
+        state.sheets["Poe"] = sheet
+
+        let book0 = Library.books[0]
+        let book1 = Library.books[1]
+        let reviewText = Critics.text(for: 5, days: 3, events: 0, lost: 0, title: book0.displayTitle, author: book0.displayAuthorShort, voice: .lofty, rolls: [0.1, 0.2, 0.3])
+        var review = Review(book: book0.file, round: 0, critic: Critics.all[2].name, stars: 5, text: reviewText, date: now.addingTimeInterval(-600))
+        review.published = true
+        review.affected = true
+        state.reviews = [review]
+        state.sales = [book0.file: 12_400, book1.file: 1_850]
+        state.featuredBook = book0.file
+        state.featuredAt = now.addingTimeInterval(-3600)
+        state.ads[book0.file] = now.addingTimeInterval(4 * 3600)
+        state.order = ReaderOrder(book: Library.books[3].file, offeredAt: now, expiresAt: now.addingTimeInterval(6 * 86_400),
+                                  text: ReaderOrders.text(ReaderOrders.lines, book: Library.books[3], roll: 0.1))
+        state.shopBoosts = [ShopBoost(book: book0.file, value: 1.5, endsAt: now.addingTimeInterval(9 * 3600), source: "신문 소개")]
+        state.shop.migrated = true
+        state.shop.stock = [book0.file: 340, book1.file: 120]
+        state.shop.pinned[book0.file] = now.addingTimeInterval(-3600)
+        state.shop.trust = 68
+        state.shopLog = [
+            ShopRecord(event: "press", book: book0.file, text: "아침 신문 문화면에 햄릿이 소개됐습니다", date: now.addingTimeInterval(-3 * 3600)),
+            ShopRecord(event: "school", book: book1.file, text: "학교에서 크리스마스 캐럴을 교재로 쓰겠다며 120부를 주문했습니다", date: now.addingTimeInterval(-86_400), copies: 120),
+        ]
+        for back in 0..<14 {
+            let day = cal.date(byAdding: .day, value: -back, to: today)!
+            state.salesByDay[DayKey.string(from: day)] = Double([180, 340, 210, 410, 520, 300, 180, 260, 610, 380, 150, 220, 470, 330][back])
+        }
+        state.eventLog = [
+            EventRecord(event: "nap", book: book0.file, startedAt: now.addingTimeInterval(-3 * 3600),
+                        endedAt: now.addingTimeInterval(-3 * 3600 + 4 * 60), endedBy: "coffee", pausedTokens: 600_000),
+            EventRecord(event: "away", book: book0.file, startedAt: now.addingTimeInterval(-50 * 60),
+                        endedAt: now.addingTimeInterval(-12 * 60), endedBy: "bell", pausedTokens: 1_200_000),
+        ]
+
+        let progress = WritingProgress(state: state)
+
+        // 샘플 토큰 스냅샷 (14일)
+        let dailyTokens = [14_200_000, 18_500_000, 9_800_000, 22_100_000, 31_400_000, 16_700_000, 8_400_000,
+                           19_300_000, 25_600_000, 34_200_000, 21_900_000, 15_800_000, 29_100_000, 28_400_000]
+        var days: [DayUsage] = []
+        for i in 0..<14 {
+            let d = cal.date(byAdding: .day, value: -(13 - i), to: today)!
+            let t = dailyTokens[i]
+            days.append(DayUsage(day: d, tokens: t, read: Int(Double(t) * 0.92), cost: Double(t) / 1_000_000 * 0.65))
+        }
+        var hours = Array(repeating: 0, count: 24)
+        let sampleHours: [(Int, Int)] = [(9, 1_800_000), (10, 3_400_000), (11, 2_900_000), (13, 2_100_000),
+                                         (14, 4_600_000), (15, 3_800_000), (16, 5_200_000), (17, 2_700_000), (20, 1_900_000)]
+        for (h, v) in sampleHours { hours[h] = v }
+
+        let models = [
+            ModelUsage(model: "gemini-2.5-pro", tokens: 19_800_000, input: 2_100_000, output: 950_000, cacheWrite: 0, cacheRead: 16_750_000, cost: 12.40),
+            ModelUsage(model: "gemini-2.5-flash", tokens: 8_600_000, input: 1_200_000, output: 600_000, cacheWrite: 0, cacheRead: 6_800_000, cost: 6.06),
+        ]
+        let snapshot = UsageSnapshot(
+            source: .antigravity,
+            days: days,
+            todayByModel: models,
+            todayByHour: hours,
+            recentFiveHourTokens: 16_300_000,
+            todayByProvider: [.antigravity: 28_400_000, .claude: 14_200_000],
+            todayCostByProvider: [.antigravity: 18.46, .claude: 9.80],
+            filesByProvider: [.antigravity: 18, .claude: 12],
+            scannedFiles: 18,
+            generatedAt: now
+        )
+
+        let store = UsageStore(persist: false)
+        store.showSample(snapshot: snapshot, writing: progress, source: .antigravity)
+
+        // 1. 홈 팝오버 + 데스크톱 알약
+        let homeView = VStack(spacing: 12) {
+            FloatingPill(progress: progress, animated: false)
+            PopoverView(store: store, scrollable: false)
+                .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+        }
+        .padding(16)
+        write(homeView, to: "\(dir)/screenshot-home.png")
+
+        // 2. 서재 패널
+        let shelfView = ShelfPanel(store: store, scrollable: false)
+            .frame(width: SidePanel.Kind.shelf.size.width)
+            .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+            .padding(12)
+        write(shelfView, to: "\(dir)/screenshot-shelf.png")
+
+        // 3. 동네 서점 카드
+        let bookstoreView = BookstoreContent(progress: progress, scrollable: false)
+            .frame(width: 420)
+            .padding(16)
+            .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+            .padding(12)
+        write(bookstoreView, to: "\(dir)/screenshot-bookstore.png")
+
+        // 4. 작업실 & 가방 패널
+        let bagView = BagContent(progress: progress, scrollable: false)
+            .frame(width: SidePanel.Kind.bag.size.width)
+            .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+            .padding(12)
+        write(bagView, to: "\(dir)/screenshot-bag.png")
+
+        // 5. 토큰 사용량 대시보드
+        let usageView = UsageDashboard(store: store, scrollable: false)
+            .frame(width: SidePanel.Kind.usage.size.width)
+            .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+            .padding(12)
+        write(usageView, to: "\(dir)/screenshot-usage.png")
+
+        // 6. 성과 패널
+        let badgesView = BadgePanel(store: store, scrollable: false)
+            .frame(width: SidePanel.Kind.badges.size.width)
+            .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+            .padding(12)
+        write(badgesView, to: "\(dir)/screenshot-badges.png")
+
+        // 7. 문호 초상화 & 돌발 상황 & 장신구 컬렉션 카드
+        let portraitsView = VStack(alignment: .leading, spacing: 12) {
+            Text("8인의 대문호").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                ForEach(Portraits.all, id: \.0) { author, _ in
+                    PortraitFrame(author: author, scale: 3)
+                }
+            }
+            Text("돌발 상황 표정").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                ForEach(Array((AuthorEvents.common + [AuthorEvents.dark]).prefix(6)), id: \.id) { event in
+                    PortraitFrame(author: "Shakespeare", scale: 3, event: event)
+                }
+                PortraitFrame(author: "Poe", scale: 3, event: AuthorEvents.byAuthor["Poe"])
+                PortraitFrame(author: "Stevenson", scale: 3, event: AuthorEvents.byAuthor["Stevenson"])
+            }
+            Text("수집 가능한 장신구 10종").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            FlowLayout(spacing: 8) {
+                ForEach(Decor.all) { accessory in
+                    PixelFrame(rows: Decor.apply(Portraits.rows("Wilde"), accessory: accessory), scale: 42 / CGFloat(Portraits.size), palette: Portraits.palette)
+                        .frame(width: 42, height: 42)
+                        .background(Portraits.backdrop("Wilde"))
+                        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                }
+            }
+        }
+        .padding(16)
+        .frame(width: 472, alignment: .leading)
+        .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+        .padding(12)
+        write(portraitsView, to: "\(dir)/screenshot-portraits.png")
+
+        // 8. 바탕화면 상시 창 (라이트 / 다크 알약 & 미니)
+        var napState = state
+        napState.event = ActiveEvent(id: AuthorEvents.nap.id, startedAt: now, endsAt: now.addingTimeInterval(23 * 60))
+        let napProgress = WritingProgress(state: napState)
+        let floatingCard = VStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 12) {
+                FloatingPill(progress: progress, animated: false)
+                FloatingPill(progress: napProgress, animated: false)
+                HStack(spacing: 12) {
+                    FloatingMini(progress: progress, animated: false)
+                    FloatingMini(progress: napProgress, animated: false)
+                    FloatingMini(progress: progress, featured: "Goethe", animated: false)
+                }
+            }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(LinearGradient(colors: [Color(red: 0.78, green: 0.84, blue: 0.93), Color(red: 0.93, green: 0.86, blue: 0.82)], startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .environment(\.colorScheme, .light)
+
+            VStack(alignment: .leading, spacing: 12) {
+                FloatingPill(progress: progress, featured: "Goethe", animated: false)
+                HStack(spacing: 12) {
+                    FloatingMini(progress: progress, animated: false)
+                    FloatingMini(progress: napProgress, animated: false)
+                    FloatingMini(progress: progress, featured: "Goethe", animated: false)
+                }
+            }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(LinearGradient(colors: [Color(red: 0.12, green: 0.14, blue: 0.22), Color(red: 0.26, green: 0.16, blue: 0.24)], startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .environment(\.colorScheme, .dark)
+        }
+        .frame(width: 420)
+        .padding(12)
+        write(floatingCard, to: "\(dir)/screenshot-floating.png")
     }
 
     private static func write(_ view: some View, to path: String) {

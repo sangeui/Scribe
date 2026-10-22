@@ -47,7 +47,11 @@ struct PopoverView: View {
         }
         .padding(16)
         .hintHost()
-        .background(KeyCatcher(onKey: handle, gameKeys: showsVillage || showsSalon))
+        .background {
+            if !RenderMode.offscreen {
+                KeyCatcher(onKey: handle, gameKeys: showsVillage || showsSalon)
+            }
+        }
         .animation(.easeOut(duration: 0.2), value: showsVillage)
         .animation(.easeOut(duration: 0.2), value: showsSalon)
     }
@@ -215,11 +219,15 @@ struct PopoverView: View {
             } label: {
                 Symbol(name: "arrow.clockwise", size: 13)
             }
+            .buttonStyle(.plain)
             .disabled(store.isRefreshing)
             .hint("새로고침", ["로그를 다시 훑고 Keychain 의 한도를 다시 읽습니다. 평소에는 15초마다 저절로 합니다."], symbol: "arrow.clockwise")
             Button("종료") { NSApplication.shared.terminate(nil) }
+                .buttonStyle(.plain)
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(.plain)
     }
 
     private func sectionTitle(_ text: String) -> some View {

@@ -168,6 +168,13 @@ final class UsageStore {
         scheduleEventEnd()
     }
 
+    /// `--tour` 등 오프스크린 프리뷰에서 샘플 스냅샷과 집필 상태를 직접 주입한다.
+    func showSample(snapshot: UsageSnapshot, writing: WritingProgress, source: AgentSource = .antigravity) {
+        self.agentSource = source
+        self.snapshot = snapshot
+        self.writing = writing
+    }
+
     /// 책이 다른 작가의 것으로 넘어갔으면 교대 장면과 두 줄을 둔다. 켜자마자 처음 읽는 것은 교대가 아니다.
     private func noteHandoff(from before: Book?, to after: Book?) {
         guard let before, let after, before.authorShort != after.authorShort else { return }

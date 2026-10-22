@@ -1,213 +1,212 @@
 <div align="center">
 
-<img src="assets/icon.png" width="128" height="128" alt="Scribe 아이콘" />
+<img src="assets/icon.png" width="128" height="128" alt="Scribe 아이콘">
 
 # Scribe
 
-**당신이 태운 AI 코딩 토큰으로 셰익스피어부터 괴테까지 43편의 고전을 한 글자씩 집필하는 macOS 메뉴바 앱**
+**당신의 AI 코딩 토큰을 고전 문학 집필로 — 메뉴바에서.**
 
-[![Latest Release](https://img.shields.io/github/v/release/sangeui/Scribe?label=Release&color=blue)](https://github.com/sangeui/Scribe/releases/latest)
-[![Download Zip](https://img.shields.io/badge/Download-Scribe.zip-success?logo=apple)](https://github.com/sangeui/Scribe/releases/latest/download/Scribe.zip)
-[![Platform](https://img.shields.io/badge/macOS-14.0%2B%20(Universal)-000000?logo=apple)](https://github.com/sangeui/Scribe/releases/latest)
-[![Swift](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)](https://swift.org)
-[![Agents](https://img.shields.io/badge/Agents-Antigravity%20%C2%B7%20Gemini%20%C2%B7%20Claude%20Code-7C3AED)](#지원하는-ai-에이전트-및-데이터-소스-설정)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/sangeui/Scribe?color=444d56&label=release)](https://github.com/sangeui/Scribe/releases/latest)
+[![Download](https://img.shields.io/badge/Download-Scribe.zip-2ea44f?logo=apple)](https://github.com/sangeui/Scribe/releases/latest/download/Scribe.zip)
+[![macOS](https://img.shields.io/badge/macOS-14%2B%20(Universal)-0969da)](https://www.apple.com/macos/)
+[![Swift](https://img.shields.io/badge/Swift-6-f05138)](https://swift.org)
+[![Homebrew](https://img.shields.io/badge/Homebrew-cask-8957e5)](#homebrew)
+[![License](https://img.shields.io/badge/license-MIT-3fb950)](LICENSE)
 
-[**다운로드 및 설치**](#-다운로드-및-설치) · [**지원 에이전트 설정**](#-지원하는-ai-에이전트-및-데이터-소스-설정) · [**화면 미리보기**](#-화면-미리보기) · [**주요 시스템**](#-주요-시스템) · [**직접 빌드하기**](#-소스에서-직접-빌드하기)
+**한국어** · [English](README.en.md)
 
+[왜 Scribe인가요](#왜-scribe인가요) · [어떻게 작동하나요](#어떻게-작동하나요) · [둘러보기](#둘러보기) · [지원 도구](#지원-도구) · [설치](#설치) · [데이터 소스 & 프라이버시](#데이터-소스)
+
+</div>
+
+**Scribe**는 당신이 이미 태우고 있는 AI 코딩 토큰(**Antigravity** · **Gemini CLI** · **Claude Code**)을 macOS 메뉴바와 바탕화면 속 작은 **고전 문학 작가의 작업실**로 바꿔줍니다. 토큰을 쓰면 셰익스피어부터 괴테까지 8인의 대문호가 프로젝트 구텐베르크(Project Gutenberg)의 실제 고전 43편을 한 글자씩 집필하고, 탈고한 책을 동네 서점에 납품해 베스트셀러로 키우며, 밤에는 작가 살롱에 모여 담소를 나눕니다. 그 아래에는 정밀한 로컬 사용량 트래커가 함께 돌아갑니다 — 오늘의 토큰·비용 환산·캐시 효율·최근 14일 추이를 로컬 로그에서 직접 읽습니다.
+
+> 토큰 사용량은 로컬 **Antigravity · Gemini CLI · Claude Code** 데이터에서 직접 읽습니다(`totalTokens` = input + output + cache, 로컬 날짜 기준) — 외부 CLI나 API 키, 별도 로그인이 전혀 필요 없으며 프롬프트와 대화 내용은 Mac 밖으로 전송되지 않습니다.
+
+---
+
+## 왜 Scribe인가요
+
+- **열어보는 게 기다려지는 토큰 사용량 트래커.** 코딩하며 태운 토큰이 그냥 숫자로 사라지지 않고 *햄릿*, *크리스마스 캐럴*, *어셔가의 몰락*, *파우스트*의 실제 원문 타이핑으로 쌓입니다.
+- **오늘의 토큰 소비와 캐시 효율을 한눈에.** 대시보드나 브라우저 탭을 열지 않아도 메뉴바와 바탕화면 상시 창에서 오늘 사용량, 시간대별 추이, 14일 기록을 바로 확인합니다.
+- **작가를 돌보고 서점을 운영하는 잔잔한 시뮬레이션.** 졸고 있는 작가에게 커피를 건네고, 탈고한 책을 서점 진열창에 올려 비평가 서평과 주간 정산서를 받아보세요.
+
+<div align="center">
+<img src="assets/screenshot-home.png" width="400" alt="팝오버 홈 — 상시 창 알약, 원문 집필 카드, 마감, 오늘의 토큰 요약">
 </div>
 
 ---
 
-**Scribe**는 **Antigravity · Gemini CLI**와 **Claude Code**가 로컬에 남기는 토큰 사용 기록을 읽어, macOS 메뉴바와 바탕화면 한구석에서 작은 픽셀 작가가 고전 문학 원문을 실시간으로 한 글자씩 써 내려가게 만드는 집필 시뮬레이터입니다.
+## 어떻게 작동하나요
 
-별도의 API 키 입력이나 로그인, 외부 서버 전송 없이 **100% 로컬 파일만 읽어서 작동**합니다.
-
-<p align="center">
-  <img src="assets/styles.png" width="860" alt="Scribe 작업실 창고 및 데스크톱 상시 창 미리보기" />
-</p>
+1. 💻 **평소처럼 코딩하세요.** Antigravity, Gemini CLI, Claude Code에서 태우는 토큰이 곧 작가의 집필 연료가 됩니다. 앱을 처음 켠 시점의 기존 토큰은 기준선(0자)으로 삼고, 그 뒤 **새로 쓴 100만 토큰마다 원문 1,000자**가 써집니다.
+2. 🪶 **실제 고전 원문이 한 글자씩 타이핑됩니다.** 구텐베르크 프로젝트의 퍼블릭 도메인 고전 **43편(총 1,412만 자)** 원문이 실시간으로 원고지에 채워집니다. 서재에서 언제든 지금까지 쓴 원문을 펼쳐 읽을 수 있습니다.
+3. ☕ **돌발 상황을 돌봐 주세요.** 토큰을 쓰는 동안 작가가 책상에서 꾸벅 졸거나, 산책을 나가거나, 잉크가 바닥나거나, 첫 문장이 막혀 멈추기도 합니다. **2,500만 토큰마다 1개씩** 얻는 커피·홍차·잉크병·호출 종·영감의 깃펜으로 작가를 다독여 즉시 복귀시키세요.
+4. 🏛 **탈고와 서점 납품.** 한 편을 끝까지 쓰면 탈고 카드와 함께 작가가 원고 뭉치를 들고 마을 길을 걸어 **동네 서점**에 납품합니다.
+5. 📈 **동네 서점과 주간 마감.** 서점 진열창과 매대에 책을 배치하면 독자 서평(★1~5), 신문 문화면 소개, 학교 단체 주문, 입소문이 일어나며 **초판 완판(1천 부) → 재판(1만 부) → 베스트셀러(10만 부) → 밀리언셀러(100만 부)**로 성장합니다.
+6. 🥂 **작가 살롱과 회차(New Game+).** 책을 탈고한 문호들은 밤마다 살롱에 모여 문학 담소를 나눕니다. 43편을 모두 탈고하면 2회차가 열려 두 작가가 동시에, 3회차에는 세 작가가 동시에 집필합니다.
 
 ---
 
-## 📥 다운로드 및 설치
+## 둘러보기
 
-> **요구 사항**: macOS 14.0 (Sonoma) 이상 · Apple Silicon (`arm64`) 및 Intel (`x86_64`) Universal 바이너리 지원
+<table>
+<tr>
+<td width="48%" align="center"><img src="assets/screenshot-floating.png" width="360" alt="바탕화면 상시 창(알약·미니)과 라이트·다크 스타일"></td>
+<td width="52%" valign="middle">
+<h3>🖥️ 바탕화면 한구석에 두는 작업실</h3>
+작가를 메뉴바 밖 바탕화면으로 꺼내 <b>알약(Pill)</b> 또는 <b>미니(Mini)</b> 스타일로 띄워 둘 수 있습니다. 현재 타이핑 중인 문장이 실시간으로 흐르고, 투명도를 조절하거나 원하는 위치로 드래그해 고정할 수 있습니다.
+</td>
+</tr>
+<tr>
+<td width="52%" valign="middle">
+<h3>📚 8인의 대문호와 43편의 서재</h3>
+<b>윌리엄 셰익스피어 · 찰스 디킨스 · 에드거 앨런 포 · 루이스 캐럴 · 로버트 루이스 스티븐슨 · 오스카 와일드 · 제인 오스틴 · 요한 볼프강 폰 괴테</b>까지 8명의 작가와 43편의 작품이 수록되어 있습니다. 책을 클릭하면 지금까지 집필한 실제 원문을 책장 넘기듯 읽을 수 있습니다.
+</td>
+<td width="48%" align="center"><img src="assets/screenshot-shelf.png" width="340" alt="서재 패널 — 8인의 대문호와 43편의 고전 진척도"></td>
+</tr>
+<tr>
+<td width="48%" align="center"><img src="assets/screenshot-bookstore.png" width="340" alt="동네 서점 — 진열창, 매대, 서평, 14일 판매 추이"></td>
+<td width="52%" valign="middle">
+<h3>🏪 내 원고가 팔리는 동네 서점</h3>
+탈고한 책은 동네 서점의 <b>진열창</b>과 <b>매대</b>에 올려 판매합니다. 품절되면 재판을 찍고, 광고를 집행하거나 서점 주인에게 진열을 맡길 수 있습니다. 매주 월요일에는 판매 부수·반품·놓친 손님과 주인의 한마디가 적힌 <b>주간 정산서</b>가 도착합니다.
+</td>
+</tr>
+<tr>
+<td width="52%" valign="middle">
+<h3>☕ 작업실 가구 6종과 회복 아이템 12종</h3>
+2,500만 토큰마다 얻는 아이템으로 졸음·잉크 고갈·외출·슬럼프·정전을 해결하고, 금고와 사본으로 자연재해(쥐·홍수·화재·도둑)로부터 원고를 지킵니다. 남는 아이템을 모으면 작업실에 <b>탁상등 · 난로 · 책장 · 두꺼운 커튼 · 안락의자 · 고양이</b>를 들여 영구 효과를 얻습니다.
+</td>
+<td width="48%" align="center"><img src="assets/screenshot-bag.png" width="340" alt="가방 및 작업실 패널 — 가구 6종과 회복 아이템 12종"></td>
+</tr>
+<tr>
+<td width="48%" align="center"><img src="assets/village.png" width="340" alt="마을 낮과 밤, 독자와의 대화"></td>
+<td width="52%" valign="middle">
+<h3>🏘️ 방향키로 걸어 다니는 마을과 독자들</h3>
+팝오버에서 지도 버튼을 누르거나 방향키를 누르면 16비트 픽셀 마을이 열립니다. 작업실·창고·서점·살롱 사이를 걸어 다니며 길에서 마주친 독자에게 책을 추천하고, 땅에 떨어진 아이템을 주울 수 있습니다.
+</td>
+</tr>
+<tr>
+<td width="52%" valign="middle">
+<h3>🥂 문호들이 모이는 작가 살롱</h3>
+한 권 이상 탈고한 작가들은 마을의 <b>살롱</b>에 머뭅니다. 살롱에 들어가 동료 문호들과 시대를 넘나드는 대화를 나누거나, 마음에 드는 작가를 작업실의 손님 작가로 초대해 함께 집필할 수 있습니다.
+</td>
+<td width="48%" align="center"><img src="assets/salon.png" width="340" alt="작가 살롱 낮과 밤"></td>
+</tr>
+<tr>
+<td width="48%" align="center"><img src="assets/screenshot-usage.png" width="340" alt="토큰 사용량 대시보드 — 오늘 토큰, 캐시 효율, 시간대별·14일 차트"></td>
+<td width="52%" valign="middle">
+<h3>📊 에이전트별 토큰 사용량 대시보드</h3>
+<b>Antigravity · Gemini</b>와 <b>Claude Code</b>의 오늘 토큰, API 단가 환산 비용, 캐시 적중률, 영감 게이지, 오늘 시간대별(0~23시) 막대 차트, 최근 14일 추이, 모델별 세부 내역을 한 화면에서 확인합니다.
+</td>
+</tr>
+<tr>
+<td width="52%" valign="middle">
+<h3>🏅 74종의 성과 배지와 작가 능력치</h3>
+일일 토큰 목표(동·은·금 메달), 탈고, 누적 판매 부수, 서점 운영, 돌발 상황 대처, 자연재해 극복, 그리고 조건이 숨겨진 <b>비밀 성과 13종</b>까지 총 74종의 배지가 준비되어 있습니다. 성과를 달성할 때마다 <b>필력 · 끈기 · 매력 · 감각 · 운</b> 능력치가 올라갑니다.
+</td>
+<td width="48%" align="center"><img src="assets/screenshot-badges.png" width="340" alt="성과 패널 — 74종 업적 배지와 비밀 성과"></td>
+</tr>
+<tr>
+<td width="48%" align="center"><img src="assets/screenshot-portraits.png" width="340" alt="8인의 대문호 초상화, 돌발 상황 표정, 장신구 10종"></td>
+<td width="52%" valign="middle">
+<h3>🎨 24종의 표정과 10종의 수집 장신구</h3>
+작가마다 고유한 돌발 상황 표정(졸음, 찻잔, 열쇠 찾기, 거울 보기 등)이 그려지며, 특정 성과를 달성하면 <b>외알 안경 · 선글라스 · 파이프 · 월계관 · 왕관 · 장미 · 나비넥타이</b> 등 10종의 장신구를 해금해 초상화에 씌울 수 있습니다.
+</td>
+</tr>
+</table>
 
-### 방법 1. Homebrew로 설치 (권장)
+<div align="center">
+<h3>🌅 일출과 일몰을 따라 물드는 시간의 빛</h3>
+<p>바탕화면 상시 창은 현재 달(月)의 일출·일몰 시각에 맞춰 새벽·아침·한낮·노을·밤하늘의 색조로 서서히 물들며, 비·안개·눈·폭풍 등 오늘의 날씨 효과가 함께 반영됩니다.</p>
+<img src="assets/hours.png" width="720" alt="시간대별 상시 창 색조 변화">
+</div>
 
-터미널에서 아래 명령어 한 줄을 실행하면 설치와 macOS Gatekeeper 격리 해제가 한 번에 완료됩니다.
+---
+
+## 이 밖에도
+
+- **데이터 소스 직접 선택** — **설정(`⌘,`) → 집필 / 기록 탭 상단 `데이터 소스`**에서 **Antigravity · Gemini**, **Claude Code**, **통합(모두 합산)** 중 원하는 공급원을 직접 고를 수 있습니다. 소스를 전환해도 지금까지 쓴 원고 글자 수는 그대로 보존됩니다.
+- **출판사 주간 마감** — 매주 출판사에서 목표 글자 수나 토큰 마감을 제안합니다. 일요일까지 완수하면 보너스 아이템과 서점 판매량 부스트를 받습니다.
+- **집필 중 딜레마와 내기** — 편집자의 제목 변경 요청, 연재 제안, 길고양이 입양 같은 선택지(`Dilemma`)와 손님 작가의 제한 시간 집필 내기(`Bet`)가 찾아옵니다.
+- **영감 게이지와 점화** — 입력·캐시 읽기 토큰이 쌓이면 영감 게이지가 차오르고, **영감 켜기**를 누르면 30분 동안 글자 수 속도가 1.5배로 뜁니다.
+- **방해 금지 시간대** — 집중하고 싶은 시간대를 설정하면 알림을 보류했다가 팝오버에 `"소식 n건"`으로 조용히 모아 보여줍니다.
+
+---
+
+## 지원 도구
+
+| 도구 | 집계 범위 | 세부 정보 |
+|---|---|---|
+| **Antigravity** | 오늘 · 최근 5시간 · 시간대별 · 최근 14일 | 캐시 적중률 · 영감 게이지 · 모델별 토큰 및 API 단가 환산 |
+| **Gemini CLI** | 오늘 · 최근 5시간 · 시간대별 · 최근 14일 | 세션별 입력/출력/캐시/사고(thoughts) 토큰 집계 |
+| **Claude Code** | 오늘 · 최근 5시간 · 시간대별 · 최근 14일 | 모델별 토큰·비용 환산 및 공식 5시간 / 7일 세션 한도(%) |
+| **통합 모드** | 위 모든 에이전트 합산 | 에이전트별 오늘 토큰 비중 막대 및 통합 집필 |
+
+모두 로컬에서 직접 읽습니다 — 외부 사용량 CLI가 필요 없습니다.
+
+---
+
+## 설치
+
+### 요구사항
+
+macOS 14.0 (Sonoma) 이상 (Apple Silicon 및 Intel Universal 바이너리). 그 외 별도 런타임이나 외부 CLI는 필요하지 않습니다.
+
+### Homebrew
 
 ```bash
 brew tap sangeui/scribe https://github.com/sangeui/Scribe
 brew install --cask sangeui/scribe/scribe
 ```
 
-설치 후 Spotlight(`⌘Space`)에서 **Scribe**를 검색하거나 `/Applications/Scribe.app`을 실행하세요.
+자체 서명/ad-hoc 앱이므로 Cask가 설치 시 Gatekeeper 격리 속성(`com.apple.quarantine`)을 자동으로 제거합니다. 설치 후 `/Applications/Scribe.app`을 바로 실행하세요.
 
-<details>
-<summary><b>업데이트 및 삭제 명령어</b></summary>
+### 직접 설치 (`Scribe.zip` 다운로드)
 
-```bash
-# 최신 버전으로 업데이트
-brew update && brew upgrade --cask sangeui/scribe/scribe
+Homebrew를 쓰지 않는다면 GitHub Releases에서 압축 파일을 바로 내려받을 수 있습니다.
 
-# 앱 삭제
-brew uninstall --cask scribe
-```
-</details>
-
----
-
-### 방법 2. 직접 다운로드 (`Scribe.zip`)
-
-Homebrew를 사용하지 않는다면 GitHub Releases에서 압축 파일을 직접 내려받아 바로 사용할 수 있습니다.
-
-1. **[📦 Scribe.zip 최신 버전 바로 다운로드](https://github.com/sangeui/Scribe/releases/latest/download/Scribe.zip)** 를 클릭해 내려받습니다. (또는 [Releases 페이지](https://github.com/sangeui/Scribe/releases/latest)에서 확인)
-2. 압축을 풀고 **`Scribe.app`** 을 **`응용 프로그램(/Applications)`** 폴더로 이동합니다.
-3. **최초 실행 시 macOS 보안 경고 해제 (최초 1회)**:
-   이 앱은 유료 Apple Developer ID 공증 없이 배포되므로, 처음 더블클릭하면 macOS가 *"손상되었기 때문에 열 수 없습니다"* 또는 *"개발자를 확인할 수 없습니다"* 경고를 표시할 수 있습니다. 아래 두 가지 방법 중 하나로 열면 이후부터는 경고 없이 실행됩니다.
-
-   - **터미널 명령어로 즉시 해제 및 실행 (가장 빠름)**:
+1. **[📦 Scribe.zip 최신 버전 바로 다운로드](https://github.com/sangeui/Scribe/releases/latest/download/Scribe.zip)** (또는 [최신 릴리스 페이지](https://github.com/sangeui/Scribe/releases/latest) 방문)
+2. 압축을 풀고 **`Scribe.app`**을 **`/Applications` (응용 프로그램)** 폴더로 옮깁니다.
+3. 이 앱은 유료 Apple 개발자 계정 공증 없이 배포되므로 첫 실행 시 Gatekeeper가 *"확인되지 않은 개발자"* 또는 *"손상되었기 때문에 열 수 없습니다"* 경고를 띄울 수 있습니다. 아래 둘 중 하나로 **최초 한 번만** 해제하면 됩니다.
+   - **터미널 (권장):**
      ```bash
      xattr -dr com.apple.quarantine /Applications/Scribe.app
      open -a Scribe
      ```
-   - **Finder에서 우클릭으로 열기**:
-     `/Applications/Scribe.app` 아이콘을 **우클릭(Control + 클릭) → 열기(Open)** 를 선택한 뒤, 대화상자에서 **열기**를 클릭합니다.
+   - **Finder:** `/Applications/Scribe.app`을 **우클릭(또는 Control+클릭) → 열기(Open)** → 대화상자에서 **열기**를 다시 클릭.
 
----
-
-## 🔌 지원하는 AI 에이전트 및 데이터 소스 설정
-
-Scribe는 다음 AI 코딩 에이전트의 로컬 토큰 사용량을 자동으로 읽어옵니다.
-
-| 데이터 소스 | 읽어오는 로컬 경로 | 제공 정보 |
-| :--- | :--- | :--- |
-| **Antigravity · Gemini** | `~/.gemini/antigravity/brain`<br>`~/.gemini/tmp` | 오늘/14일/시간대별 토큰, 캐시 효율, 영감 게이지, 감지된 대화 수 |
-| **Claude Code** | `~/.claude/projects` | 오늘/14일/시간대별 토큰, 모델별 비용 환산, 5시간/7일 세션 한도 |
-| **통합 (모두 합산)** | 위 두 경로 모두 합산 | Antigravity · Gemini와 Claude Code에서 태운 모든 토큰을 합산하여 집필 |
-
-### 데이터 소스 변경 방법
-
-1. 메뉴바에서 **Scribe 아이콘(깃펜)** 을 클릭하고 하단의 **톱니바퀴(`⚙`)** 버튼을 누르거나 단축키 **`⌘,`** 를 눌러 **설정** 창을 엽니다.
-2. **집필** 또는 **기록** 탭 맨 위에 있는 **`데이터 소스`** 섹션에서 원하는 에이전트(**Antigravity · Gemini** / **Claude Code** / **통합**)를 직접 클릭해 선택합니다.
-3. 각 소스 카드에서 감지된 로그 파일 수와 오늘 사용한 토큰 수를 실시간으로 확인할 수 있습니다.
-
----
-
-## 🖼 화면 미리보기
-
-### 1. 원문 집필 · 문호 초상화 · 동네 서점
-
-코딩 에이전트가 토큰을 소비할 때마다 프로젝트 구텐베르크(Project Gutenberg)에 수록된 실제 고전 원문이 한 글자씩 타이핑됩니다.
-
-<p align="center">
-  <img src="assets/writing.png" width="520" alt="집필 카드, 작가 초상화, 장신구 및 서점 화면" />
-</p>
-
-### 2. 마을 산책과 작가 살롱
-
-책을 탈고하면 작가가 원고 뭉치를 들고 마을 길을 걸어 서점에 납품합니다. 밤이 되면 탈고한 작가들이 살롱에 모여 문학 담소를 나눕니다.
-
-<table>
-  <tr>
-    <td align="center" width="55%">
-      <img src="assets/village.png" alt="마을 낮과 밤, 서점 손님 대화" /><br/>
-      <sub><b>마을 (낮 · 밤 · 독자와의 대화)</b></sub>
-    </td>
-    <td align="center" width="45%">
-      <img src="assets/salon.png" alt="작가 살롱 낮과 밤" /><br/>
-      <sub><b>작가 살롱 (낮 · 밤의 문학 모임)</b></sub>
-    </td>
-  </tr>
-</table>
-
-### 3. 하루의 시간과 계절을 담는 상시 창
-
-바탕화면에 띄워 두는 상시 창(알약 · 미니 스타일)은 현재 시각의 일출·일몰에 맞춰 새벽, 아침, 한낮, 노을, 밤하늘의 색조로 서서히 물듭니다.
-
-<p align="center">
-  <img src="assets/hours.png" width="760" alt="시간대별 상시 창 색조 변화" />
-</p>
-
----
-
-## 📖 주요 시스템
-
-### ✍️ 토큰을 원고로 바꾸는 집필 규칙
-- **100만 토큰 = 1,000자**: 앱을 처음 켠 시점의 기존 토큰은 기준선(0자)으로 삼고, 그 이후 새로 태운 토큰부터 원문 글자로 변환합니다.
-- **8명의 대문호, 43편의 고전 (총 1,412만 자)**:
-  - **윌리엄 셰익스피어** (7편): *햄릿, 맥베스, 로미오와 줄리엣, 리어왕, 오셀로, 한여름 밤의 꿈, 템페스트*
-  - **찰스 디킨스** (4편): *크리스마스 캐럴, 올리버 트위스트, 두 도시 이야기, 위대한 유산*
-  - **에드거 앨런 포** (4편): *검은 고양이, 어셔가의 몰락, 갈가마귀, 붉은 죽음의 가면*
-  - **루이스 캐럴** (4편): *이상한 나라의 앨리스, 거울 나라의 앨리스, 스나크 사냥, 실비와 브루노*
-  - **로버트 루이스 스티븐슨** (4편): *지킬 박사와 하이드 씨, 보물섬, 유괴, 자살 클럽*
-  - **오스카 와일드** (5편): *행복한 왕자, 도리안 그레이의 초상, 진지함의 중요성, 캔터빌의 유령, 살로메*
-  - **제인 오스틴** (5편): *오만과 편견, 이성과 감성, 엠마, 노생거 사원, 설득*
-  - **요한 볼프강 폰 괴테** (10편): *젊은 베르테르의 슬픔, 파우스트 1·2부, 헤르만과 도로테아, 빌헬름 마이스터의 수업시대 등*
-- **회차(New Game+)와 다중 집필**: 43편을 모두 탈고하면 2회차가 열리며 동시에 두 편, 3회차에는 세 편을 함께 집필합니다.
-
-### ☕ 돌발 상황과 12종의 회복 아이템
-작가는 토큰 100만 개마다 일정 확률로 낮잠을 자거나, 산책을 나가거나, 잉크를 쏟거나, 슬럼프에 빠집니다. **2,500만 토큰마다 1개씩** 얻는 아이템으로 작가를 다독여 즉시 복귀시킬 수 있습니다.
-
-| 상태 | 현상 | 해결 아이템 |
-| :--- | :--- | :--- |
-| **졸음** | 책상에 엎드려 잠듦 | ☕ **커피**, 🍵 **홍차** |
-| **잉크 고갈** | 잉크가 바닥나 펜이 멈춤 | 🖋 **잉크병**, ✏️ **연필** |
-| **자리 비움** | 산책·편지·외출로 자리를 비움 | 🔔 **호출 종**, 🏃 **심부름꾼** |
-| **막힘** | 첫 줄이 안 풀려 멍하니 바라봄 | 🪶 **영감의 깃펜**, 🎵 **오르골** |
-| **불 꺼짐** | 촛불이 꺼져 원고가 안 보임 | 🕯 **새 초**, 🏮 **등잔** |
-| **자연재해** | 쥐·홍수·화재·도둑으로 원고 손실 위험 | 🗄 **금고**, 📄 **사본** (자동 방어) |
-
-남는 아이템을 모으면 작업실에 **탁상등, 난로, 책장, 두꺼운 커튼, 안락의자, 고양이** 등 6종의 가구를 들여 영구 버프를 얻을 수 있습니다.
-
-### 🏪 동네 서점과 출판사 마감
-- 탈고한 책은 **동네 서점**의 진열창과 매대에 올려 판매합니다.
-- 독자 서평, 신문 문화면 소개, 입소문, 광고 캠페인에 따라 하루 판매량이 달라지며 **초판 완판(1천 부) → 재판(1만 부) → 베스트셀러(10만 부) → 밀리언셀러(100만 부)** 단계를 밟아 나갑니다.
-- 매주 출판사에서 보내오는 **주간 마감**을 지키면 보너스 아이템과 판매량 부스트를 받습니다.
-
-### 🏅 74종의 성과와 작가 능력치
-- 일일 토큰 목표, 탈고, 누적 부수, 돌발 상황 대처, 그리고 조건이 숨겨진 **비밀 성과 13종**까지 총 74종의 배지가 준비되어 있습니다.
-- 성과를 달성할 때마다 **필력 · 끈기 · 매력 · 감각 · 운** 능력치 점수를 얻어 작가의 집필 속도와 판매량, 아이템 획득률을 높일 수 있습니다.
-
----
-
-## 🛠 소스에서 직접 빌드하기
-
-Swift 6.0 이상(Xcode 16 이상 또는 Command Line Tools)이 설치된 macOS에서 바로 빌드할 수 있습니다.
+### 소스 빌드
 
 ```bash
-# 1. 저장소 클론
-git clone https://github.com/sangeui/Scribe.git
-cd Scribe
-
-# 2. (선택) 재빌드 시 macOS 권한 설정이 초기화되지 않도록 로컬 자체 서명 인증서 생성
-./scripts/create-signing-cert.sh
-
-# 3. Universal 앱 번들(build/Scribe.app) 및 배포용 압축본(build/Scribe.zip) 빌드
-./scripts/build-app.sh
-
-# 4. 응용 프로그램 폴더에 설치 및 실행
-cp -R build/Scribe.app /Applications/
-open -a Scribe
-```
-
-### 테스트 및 미리보기 렌더링 명령어
-
-```bash
-# 전체 회귀 테스트 게이트 실행 (65개 검증 항목)
-./scripts/test-gate.sh
-
-# 각 화면 PNG 오프스크린 렌더링
-./build/Scribe.app/Contents/MacOS/Scribe --writing assets/writing.png --review --deadline --stats
-./build/Scribe.app/Contents/MacOS/Scribe --styles assets/styles.png
-./build/Scribe.app/Contents/MacOS/Scribe --village assets/village.png
-./build/Scribe.app/Contents/MacOS/Scribe --salon assets/salon.png
-./build/Scribe.app/Contents/MacOS/Scribe --hours assets/hours.png
+swift build                      # 디버그 빌드
+./scripts/test-gate.sh           # 65개 회귀 검증 테스트 실행
+./scripts/create-signing-cert.sh # (선택) 로컬 자체 서명 인증서 생성
+./scripts/build-app.sh           # Universal 릴리스 → build/Scribe.app & build/Scribe.zip
 ```
 
 ---
 
-## 📄 라이선스
+## 데이터 소스
 
-이 프로젝트는 [MIT License](LICENSE)에 따라 배포됩니다. 수록된 43편의 고전 문학 원문은 모두 [Project Gutenberg](https://www.gutenberg.org)의 퍼블릭 도메인(저작권 만료) 작품을 사용합니다.
+| 소스 경로 | 용도 | 비고 |
+|---|---|---|
+| `~/.gemini/antigravity/brain/**/.system_generated/logs/transcript.jsonl`<br>`~/.gemini/antigravity/brain/**/transcript.jsonl` | Antigravity 일별/시간대별/모델별 토큰 | 직접 읽기 전용 스캔; 스텝 인덱스 중복 제거; 파일 수정 시각 증분 캐시 |
+| `~/.gemini/tmp/**/chats/*.json` | Gemini CLI 일별/시간대별/모델별 토큰 | 메시지별 `tokens`(`input`, `output`, `cached`, `thoughts`, `tool`) 읽기 전용 파싱 |
+| `~/.claude/projects/**/*.jsonl` | Claude Code 일별/시간대별/모델별 토큰 | `assistant` 응답의 `usage` 블록 직접 파싱; 메시지 ID 중복 제거; 증분 캐시 |
+| `~/Library/Application Support/Scribe/writing.json` | 집필 진행률, 서재, 서점, 가방, 성과 로컬 저장 | 온디바이스 JSON 파일; 설정에서 언제든 초기화 가능 |
+| Keychain (`Claude Code-credentials`) / `~/.claude/.credentials.json` → `api.anthropic.com` | Claude Code 공식 5시간/7일 한도 % | `Claude Code` 또는 `통합` 소스 사용 시에만 조회; `Antigravity` 단독 모드에서는 호출하지 않음 |
+
+---
+
+## 프라이버시 & 권한
+
+- **온디바이스 우선 (On-device first).** 토큰 사용량은 로컬 Antigravity, Gemini CLI, Claude Code 로그 파일에서 **숫자(`usage` / `tokens`)와 시각, 모델 이름만** 읽습니다. 사용자가 작성한 프롬프트 본문이나 코드는 파싱하지 않으며, 어떤 데이터도 외부 서버로 업로드하지 않습니다.
+- **외부 네트워크 요청 최소화.** `Antigravity` 데이터 소스 모드에서는 외부 네트워크 요청을 전혀 하지 않는 **100% 오프라인**으로 동작합니다. `Claude Code` 모드에서만 공식 5시간/7일 세션 한도 퍼센트를 표시하기 위해 `api.anthropic.com/api/oauth/usage`를 조회합니다.
+- **Keychain (선택).** Claude Code 한도 조회 시 `~/.claude/.credentials.json` 파일이 있으면 우선 읽고, 없을 때만 Keychain 자격증명을 참조합니다.
+
+---
+
+## 라이선스
+
+**MIT** — [LICENSE](LICENSE) 참고. 앱에 수록된 43편의 고전 문학 원문은 모두 [Project Gutenberg](https://www.gutenberg.org/)의 퍼블릭 도메인(저작권 만료) 작품을 사용합니다.
