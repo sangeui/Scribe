@@ -1,0 +1,389 @@
+[
+ {
+  "file": "01-1524.txt",
+  "author": "William Shakespeare",
+  "title": "Hamlet",
+  "titleKo": "햄릿",
+  "authorKo": "윌리엄 셰익스피어",
+  "preserveLines": true,
+  "characters": 177196
+ },
+ {
+  "file": "02-46.txt",
+  "author": "Charles Dickens",
+  "title": "A Christmas Carol",
+  "titleKo": "크리스마스 캐럴",
+  "authorKo": "찰스 디킨스",
+  "preserveLines": false,
+  "characters": 158332
+ },
+ {
+  "file": "03-932.txt",
+  "author": "Edgar Allan Poe",
+  "title": "The Fall of the House of Usher",
+  "titleKo": "어셔가의 몰락",
+  "authorKo": "에드거 앨런 포",
+  "preserveLines": false,
+  "characters": 41501
+ },
+ {
+  "file": "04-11.txt",
+  "author": "Lewis Carroll",
+  "title": "Alice's Adventures in Wonderland",
+  "titleKo": "이상한 나라의 앨리스",
+  "authorKo": "루이스 캐럴",
+  "preserveLines": false,
+  "characters": 143488
+ },
+ {
+  "file": "05-43.txt",
+  "author": "Robert Louis Stevenson",
+  "title": "Strange Case of Dr Jekyll and Mr Hyde",
+  "titleKo": "지킬 박사와 하이드 씨",
+  "authorKo": "로버트 루이스 스티븐슨",
+  "preserveLines": false,
+  "characters": 138757
+ },
+ {
+  "file": "06-844.txt",
+  "author": "Oscar Wilde",
+  "title": "The Importance of Being Earnest",
+  "titleKo": "진지함의 중요성",
+  "authorKo": "오스카 와일드",
+  "preserveLines": true,
+  "characters": 117260
+ },
+ {
+  "file": "07-1342.txt",
+  "author": "Jane Austen",
+  "title": "Pride and Prejudice",
+  "titleKo": "오만과 편견",
+  "authorKo": "제인 오스틴",
+  "preserveLines": false,
+  "characters": 718334
+ },
+ {
+  "file": "08-2527.txt",
+  "author": "Johann Wolfgang von Goethe",
+  "title": "The Sorrows of Young Werther",
+  "titleKo": "젊은 베르테르의 슬픔",
+  "authorKo": "요한 볼프강 폰 괴테",
+  "preserveLines": false,
+  "characters": 235162
+ },
+ {
+  "file": "09-1533.txt",
+  "author": "William Shakespeare",
+  "title": "Macbeth",
+  "titleKo": "맥베스",
+  "authorKo": "윌리엄 셰익스피어",
+  "preserveLines": true,
+  "characters": 104238
+ },
+ {
+  "file": "10-653.txt",
+  "author": "Charles Dickens",
+  "title": "The Chimes",
+  "titleKo": "종소리",
+  "authorKo": "찰스 디킨스",
+  "preserveLines": false,
+  "characters": 168070
+ },
+ {
+  "file": "11-1064.txt",
+  "author": "Edgar Allan Poe",
+  "title": "The Masque of the Red Death",
+  "titleKo": "붉은 죽음의 가면",
+  "authorKo": "에드거 앨런 포",
+  "preserveLines": false,
+  "characters": 13746
+ },
+ {
+  "file": "12-12.txt",
+  "author": "Lewis Carroll",
+  "title": "Through the Looking-Glass",
+  "titleKo": "거울 나라의 앨리스",
+  "authorKo": "루이스 캐럴",
+  "preserveLines": false,
+  "characters": 161987
+ },
+ {
+  "file": "13-120.txt",
+  "author": "Robert Louis Stevenson",
+  "title": "Treasure Island",
+  "titleKo": "보물섬",
+  "authorKo": "로버트 루이스 스티븐슨",
+  "preserveLines": false,
+  "characters": 362929
+ },
+ {
+  "file": "14-174.txt",
+  "author": "Oscar Wilde",
+  "title": "The Picture of Dorian Gray",
+  "titleKo": "도리언 그레이의 초상",
+  "authorKo": "오스카 와일드",
+  "preserveLines": false,
+  "characters": 429032
+ },
+ {
+  "file": "15-105.txt",
+  "author": "Jane Austen",
+  "title": "Persuasion",
+  "titleKo": "설득",
+  "authorKo": "제인 오스틴",
+  "preserveLines": false,
+  "characters": 464587
+ },
+ {
+  "file": "16-14591.txt",
+  "author": "Johann Wolfgang von Goethe",
+  "title": "Faust, Part One",
+  "titleKo": "파우스트 1부",
+  "authorKo": "요한 볼프강 폰 괴테",
+  "preserveLines": true,
+  "characters": 196295
+ },
+ {
+  "file": "17-1513.txt",
+  "author": "William Shakespeare",
+  "title": "Romeo and Juliet",
+  "titleKo": "로미오와 줄리엣",
+  "authorKo": "윌리엄 셰익스피어",
+  "preserveLines": true,
+  "characters": 142149
+ },
+ {
+  "file": "18-678.txt",
+  "author": "Charles Dickens",
+  "title": "The Cricket on the Hearth",
+  "titleKo": "난롯가의 귀뚜라미",
+  "authorKo": "찰스 디킨스",
+  "preserveLines": false,
+  "characters": 175101
+ },
+ {
+  "file": "19-1063.txt",
+  "author": "Edgar Allan Poe",
+  "title": "The Cask of Amontillado",
+  "titleKo": "아몬티야도의 술통",
+  "authorKo": "에드거 앨런 포",
+  "preserveLines": false,
+  "characters": 12943
+ },
+ {
+  "file": "20-13.txt",
+  "author": "Lewis Carroll",
+  "title": "The Hunting of the Snark",
+  "titleKo": "스나크 사냥",
+  "authorKo": "루이스 캐럴",
+  "preserveLines": true,
+  "characters": 29371
+ },
+ {
+  "file": "21-421.txt",
+  "author": "Robert Louis Stevenson",
+  "title": "Kidnapped",
+  "titleKo": "납치",
+  "authorKo": "로버트 루이스 스티븐슨",
+  "preserveLines": false,
+  "characters": 422051
+ },
+ {
+  "file": "22-902.txt",
+  "author": "Oscar Wilde",
+  "title": "The Happy Prince and Other Tales",
+  "titleKo": "행복한 왕자",
+  "authorKo": "오스카 와일드",
+  "preserveLines": false,
+  "characters": 86191
+ },
+ {
+  "file": "23-121.txt",
+  "author": "Jane Austen",
+  "title": "Northanger Abbey",
+  "titleKo": "노생거 사원",
+  "authorKo": "제인 오스틴",
+  "preserveLines": false,
+  "characters": 433274
+ },
+ {
+  "file": "24-78269.txt",
+  "author": "Johann Wolfgang von Goethe",
+  "title": "Novelle",
+  "titleKo": "노벨레",
+  "authorKo": "요한 볼프강 폰 괴테",
+  "preserveLines": false,
+  "characters": 47946
+ },
+ {
+  "file": "25-1514.txt",
+  "author": "William Shakespeare",
+  "title": "A Midsummer Night's Dream",
+  "titleKo": "한여름 밤의 꿈",
+  "authorKo": "윌리엄 셰익스피어",
+  "preserveLines": true,
+  "characters": 95390
+ },
+ {
+  "file": "26-98.txt",
+  "author": "Charles Dickens",
+  "title": "A Tale of Two Cities",
+  "titleKo": "두 도시 이야기",
+  "authorKo": "찰스 디킨스",
+  "preserveLines": false,
+  "characters": 756688
+ },
+ {
+  "file": "27-1065.txt",
+  "author": "Edgar Allan Poe",
+  "title": "The Raven",
+  "titleKo": "갈까마귀",
+  "authorKo": "에드거 앨런 포",
+  "preserveLines": true,
+  "characters": 6373
+ },
+ {
+  "file": "28-620.txt",
+  "author": "Lewis Carroll",
+  "title": "Sylvie and Bruno",
+  "titleKo": "실비와 브루노",
+  "authorKo": "루이스 캐럴",
+  "preserveLines": false,
+  "characters": 363106
+ },
+ {
+  "file": "29-848.txt",
+  "author": "Robert Louis Stevenson",
+  "title": "The Black Arrow",
+  "titleKo": "검은 화살",
+  "authorKo": "로버트 루이스 스티븐슨",
+  "preserveLines": false,
+  "characters": 434352
+ },
+ {
+  "file": "30-14522.txt",
+  "author": "Oscar Wilde",
+  "title": "The Canterville Ghost",
+  "titleKo": "캔터빌의 유령",
+  "authorKo": "오스카 와일드",
+  "preserveLines": false,
+  "characters": 64476
+ },
+ {
+  "file": "31-161.txt",
+  "author": "Jane Austen",
+  "title": "Sense and Sensibility",
+  "titleKo": "이성과 감성",
+  "authorKo": "제인 오스틴",
+  "preserveLines": false,
+  "characters": 669415
+ },
+ {
+  "file": "32-15850.txt",
+  "author": "Johann Wolfgang von Goethe",
+  "title": "Iphigenia in Tauris",
+  "titleKo": "타우리스의 이피게니에",
+  "authorKo": "요한 볼프강 폰 괴테",
+  "preserveLines": true,
+  "characters": 91568
+ },
+ {
+  "file": "33-1531.txt",
+  "author": "William Shakespeare",
+  "title": "Othello",
+  "titleKo": "오셀로",
+  "authorKo": "윌리엄 셰익스피어",
+  "preserveLines": true,
+  "characters": 153774
+ },
+ {
+  "file": "34-790.txt",
+  "author": "Oscar Wilde",
+  "title": "Lady Windermere's Fan",
+  "titleKo": "윈더미어 부인의 부채",
+  "authorKo": "오스카 와일드",
+  "preserveLines": true,
+  "characters": 111110
+ },
+ {
+  "file": "35-158.txt",
+  "author": "Jane Austen",
+  "title": "Emma",
+  "titleKo": "엠마",
+  "authorKo": "제인 오스틴",
+  "preserveLines": false,
+  "characters": 879328
+ },
+ {
+  "file": "36-1945.txt",
+  "author": "Johann Wolfgang von Goethe",
+  "title": "Egmont",
+  "titleKo": "에그몬트",
+  "authorKo": "요한 볼프강 폰 괴테",
+  "preserveLines": false,
+  "characters": 162738
+ },
+ {
+  "file": "37-23042.txt",
+  "author": "William Shakespeare",
+  "title": "The Tempest",
+  "titleKo": "템페스트",
+  "authorKo": "윌리엄 셰익스피어",
+  "preserveLines": true,
+  "characters": 129220
+ },
+ {
+  "file": "38-1958.txt",
+  "author": "Johann Wolfgang von Goethe",
+  "title": "Hermann and Dorothea",
+  "titleKo": "헤르만과 도로테아",
+  "authorKo": "요한 볼프강 폰 괴테",
+  "preserveLines": true,
+  "characters": 131554
+ },
+ {
+  "file": "39-1532.txt",
+  "author": "William Shakespeare",
+  "title": "King Lear",
+  "titleKo": "리어 왕",
+  "authorKo": "윌리엄 셰익스피어",
+  "preserveLines": true,
+  "characters": 154616
+ },
+ {
+  "file": "40-78139e.txt",
+  "author": "Johann Wolfgang von Goethe",
+  "title": "The Recreations of the German Emigrants",
+  "titleKo": "독일 피난민들의 대화",
+  "authorKo": "요한 볼프강 폰 괴테",
+  "preserveLines": false,
+  "characters": 232387
+ },
+ {
+  "file": "41-1287.txt",
+  "author": "Johann Wolfgang von Goethe",
+  "title": "The Poems of Goethe",
+  "titleKo": "괴테 시집",
+  "authorKo": "요한 볼프강 폰 괴테",
+  "preserveLines": true,
+  "characters": 526938
+ },
+ {
+  "file": "42-36483.txt",
+  "author": "Johann Wolfgang von Goethe",
+  "title": "Wilhelm Meister's Apprenticeship",
+  "titleKo": "빌헬름 마이스터의 수업시대",
+  "authorKo": "요한 볼프강 폰 괴테",
+  "preserveLines": false,
+  "characters": 1206332
+ },
+ {
+  "file": "43-78139t.txt",
+  "author": "Johann Wolfgang von Goethe",
+  "title": "Wilhelm Meister's Travels",
+  "titleKo": "빌헬름 마이스터의 편력시대",
+  "authorKo": "요한 볼프강 폰 괴테",
+  "preserveLines": false,
+  "characters": 442561
+ }
+]

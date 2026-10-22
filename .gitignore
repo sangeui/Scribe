@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Swift Package Manager / Xcode
+.build/
+.swiftpm/
+*.xcodeproj
+*.xcworkspace
+DerivedData/
+*.dSYM
+
+# Build & Release outputs
+build/
+dist/
+*.dmg
+*.zip
+
+# Legacy unused assets
+columbus-sprites.png
