@@ -825,15 +825,17 @@ struct BadgeContent: View {
                 }
             }
             if !secrets.isEmpty {
-                HStack(spacing: 8) {
-                    ForEach(secrets) { a in BadgeMedal(achievement: a, unlocked: false, size: 24) }
-                    Text("비밀 성과 \(secrets.count)개").font(.caption).foregroundStyle(.secondary)
-                    Spacer(minLength: 0)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("비밀 성과 \(secrets.count)개").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                    FlowLayout(spacing: 6) {
+                        ForEach(secrets) { a in BadgeMedal(achievement: a, unlocked: false, size: 24) }
+                    }
                 }
                 .hint("비밀 성과", ["이루기 전에는 조건을 가립니다.", "이루면 무엇이었는지 알 수 있습니다."], symbol: "questionmark.circle")
             }
         }
         .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     /// 제목, 받은 수, 등급별 수, 전체 진행 띠. 설명은 마우스를 올리면.
@@ -940,7 +942,7 @@ struct FlowLayout: Layout {
     var spacing: CGFloat = 6
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? 360
+        let width = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? 368
         var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0
         for view in subviews {
             let size = view.sizeThatFits(.unspecified)
