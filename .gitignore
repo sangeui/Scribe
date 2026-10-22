@@ -1,22 +1,31 @@
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# Swift Package Manager / Xcode
+# Swift Package Manager
 .build/
 .swiftpm/
+Package.resolved
 *.xcodeproj
 *.xcworkspace
 DerivedData/
 *.dSYM
 
-# Build & Release outputs
+# App bundle & release build output
 build/
 dist/
 *.dmg
 *.zip
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+*.xcuserstate
+
+# Signing material — never commit private keys / certs
+*.p12
+*.pem
+*.key
+*.cer
+*.certSigningRequest
 
 # Legacy unused assets
 columbus-sprites.png

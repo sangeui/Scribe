@@ -155,27 +155,40 @@ Claude Code 로그인은 Keychain 의 `Claude Code-credentials` 항목에 있습
 
 ## 설치 및 빌드
 
-### 릴리스 압축본(ZIP / DMG)으로 설치할 때
+### 요구 사항
 
-Apple Developer ID 공증 없이(ad-hoc 서명) 웹에서 내려받은 `Scribe.app` 은 macOS Gatekeeper 가 격리(`com.apple.quarantine`) 속성을 붙여 첫 실행을 막을 수 있습니다. `/Applications` 로 옮긴 뒤 터미널에서 아래 한 줄을 실행하면 정상 실행됩니다:
+macOS 14+ (Apple Silicon 또는 Intel). 토큰 사용량은 로컬 Antigravity · Gemini CLI · Claude Code 로그 파일에서 직접 읽으며 외부 CLI 도구가 필요하지 않습니다.
 
-```bash
-xattr -dr com.apple.quarantine /Applications/Scribe.app
-open /Applications/Scribe.app
-```
-
-### 소스에서 직접 빌드할 때
+### Homebrew
 
 ```bash
-./scripts/build-app.sh
-open build/Scribe.app
+brew install --cask sangeui/tap/scribe
 ```
 
-배포용 아카이브(`dist/Scribe-<버전>-macos.zip`, `dist/Scribe-<버전>.dmg`, `dist/SHA256SUMS.txt`)를 만들고 셀프테스트까지 검증하려면:
+자체 서명(self-signed/ad-hoc) 앱이며, Cask 의 `postflight` 가 설치 직후 격리(`com.apple.quarantine`) 속성을 자동으로 제거하므로 별도 조치 없이 바로 실행됩니다.
+
+### 수동 설치 (Homebrew 미사용 시)
+
+GitHub Releases 에서 최신 `Scribe.zip` 을 내려받아 압축을 풀고 `Scribe.app` 을 `/Applications` 로 옮깁니다.
+
+Apple Developer ID 공증(Notarization)을 거치지 않은 자체 서명 앱이므로 첫 실행 시 Gatekeeper 경고가 뜰 수 있습니다. 아래 두 방법 중 하나로 한 번만 풀어 주면 됩니다:
+
+- **Finder**: `/Applications/Scribe.app` 우클릭(또는 Control-클릭) → **열기** → 대화상자에서 다시 **열기**
+- **터미널**:
+  ```bash
+  xattr -dr com.apple.quarantine /Applications/Scribe.app
+  open /Applications/Scribe.app
+  ```
+
+### 소스에서 직접 빌드
 
 ```bash
-./scripts/package-release.sh
+./scripts/create-signing-cert.sh   # (선택, 최초 1회) 재빌드 시 권한 유지를 위한 로컬 코드서명 인증서 생성
+./scripts/build-app.sh             # release Universal(arm64 + x86_64) 빌드 → build/Scribe.app
+./scripts/test-gate.sh             # 빌드 + --selftest 전체 검증
 ```
+
+로컬에서 현재 아키텍처만 빠르게 빌드하려면 `SCRIBE_NATIVE_ARCH_ONLY=1 ./scripts/build-app.sh` 를 실행합니다. 릴리스 절차는 [RELEASE.md](RELEASE.md) 와 `scripts/release.sh` 에 있습니다.
 
 앱 아이콘은 `scripts/generate-icon.swift` 가 만들고, `build/AppIcon.icns` 가 없으면 빌드 스크립트가 자동으로 만듭니다. 원문 폴더 `Books/` 는 앱 안 `Resources/Books` 로 복사됩니다.
 
