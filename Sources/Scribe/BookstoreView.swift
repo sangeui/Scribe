@@ -33,7 +33,9 @@ struct BookstoreContent: View {
 
     @State private var picked: Int?
     @State private var drawer: Drawer?
+    @State private var lastDrawer: Drawer = .reviews
     @State private var showsAllReviews = false
+    @State private var statementExpanded = false
     @Environment(\.colorScheme) private var scheme
 
     /// 살아 있는 것 하나. 칩 한 줄로 보이고, 누른 것만 아래에 펼친다.
@@ -41,18 +43,23 @@ struct BookstoreContent: View {
         case statement, order, reprint(String), ad(String), boost(String)
     }
     @State private var liveSelection: LiveItem?
+    @State private var lastLiveSelection: LiveItem?
 
     /// 메인 화면과 같은 틀. 머리(장면·이름·숫자), 살아 있는 것(배너), 매대, 꼬리표, 한 줄 둘, 발 버튼. 기록은 발 버튼으로 펼친다.
     var body: some View {
         OptionalScroll(enabled: scrollable) {
             VStack(alignment: .leading, spacing: 12) {
                 header
-                // 살아 있는 것은 칩 한 줄로. 누른 것 하나만 아래에 펼친다.
+                // 살아 있는 것은 칩 한 줄로. 누른 것 하나만 아래에 자연스럽게 펼친다.
                 if !liveItems.isEmpty {
-                    liveStrip
-                    if let selected = liveSelection, liveItems.contains(where: { $0.item == selected }) {
-                        liveDetail(selected)
-                            .transition(.move(edge: .top).combined(with: .opacity))
+                    let activeLive = liveSelection.flatMap { sel in liveItems.contains(where: { $0.item == sel }) ? sel : nil }
+                    VStack(alignment: .leading, spacing: 0) {
+                        liveStrip
+                        Collapsible(progress: activeLive != nil ? 1 : 0, topSpacing: 8) {
+                            if let shown = activeLive ?? lastLiveSelection {
+                                liveDetail(shown)
+                            }
+                        }
                     }
                 }
                 stand
@@ -61,20 +68,30 @@ struct BookstoreContent: View {
                     sparkline
                     newsLine
                 }
-                footer
-                if let drawer {
-                    switch drawer {
-                    case .reviews: reviews
-                    case .news: news
-                    case .gossip: gossip
-                    case .statements: statements
+                VStack(alignment: .leading, spacing: 0) {
+                    footer
+                    Collapsible(progress: drawer != nil ? 1 : 0, topSpacing: 12) {
+                        switch drawer ?? lastDrawer {
+                        case .reviews: reviews
+                        case .news: news
+                        case .gossip: gossip
+                        case .statements: statements
+                        }
                     }
                 }
             }
             .padding(16)
+            .onChange(of: drawer) { _, newValue in
+                if let newValue { lastDrawer = newValue }
+            }
+            .onChange(of: liveSelection) { _, newValue in
+                if let newValue { lastLiveSelection = newValue }
+            }
             .animation(.easeOut(duration: 0.25), value: progress.shopBoosts.count)
-            .animation(.easeOut(duration: 0.25), value: drawer)
-            .animation(.easeOut(duration: 0.2), value: liveSelection)
+            .animation(.snappy(duration: 0.26, extraBounce: 0), value: drawer)
+            .animation(.snappy(duration: 0.24, extraBounce: 0), value: liveSelection)
+            .animation(.snappy(duration: 0.24, extraBounce: 0), value: statementExpanded)
+            .animation(.snappy(duration: 0.24, extraBounce: 0), value: showsAllReviews)
         }
     }
 
@@ -129,7 +146,6 @@ struct BookstoreContent: View {
                     .contentTransition(.numericText())
                 Text("이번 주").font(.caption2).foregroundStyle(.secondary)
             }
-            .hint("이번 주 판매", ["월요일부터 지금까지 \(Format.integer(progress.weekSales))부.", "새 토큰 100만 개마다 탈고한 책 한 권에 \(Int(Balance.copiesPerMillion))부쯤 팔립니다."], symbol: "chart.bar")
         }
         .padding(.horizontal, 10).padding(.vertical, 8)
         .background(
@@ -210,7 +226,6 @@ struct BookstoreContent: View {
                 }
             }
         }
-        .hint("지금 살아 있는 것", ["정산서, 독자 주문, 품절·재판, 광고, 서점 사건 보정. 누르면 그것만 아래에 펼쳐지고 다시 누르면 접힙니다.", "점이 붙은 것은 손댈 일이 있는 것입니다."], symbol: "bolt")
     }
 
     @ViewBuilder
@@ -231,9 +246,10 @@ struct BookstoreContent: View {
 
     // MARK: 배너(살아 있는 것)
 
-    /// 지난주 정산서. 한 줄 요약과 주인의 한마디. "펼치기"로 책별 줄을 본다.
+    /// 지난주 정산서. 한 줄 요약과 주인의 한마디. "펼치기"로 책별 줄을 그 자리에서 펼치거나 접는다.
     private func statementBanner(_ statement: Statement) -> some View {
         let delta = Int((statement.trustAfter - statement.trustBefore).rounded())
+        let visibleLines = statement.lines.filter { $0.sold + $0.missed + $0.returned > 0 || $0.slot == .window || $0.slot == .counter }.prefix(6)
         return HStack(alignment: .top, spacing: 10) {
             Symbol(name: "doc.text", size: 16, color: .secondary)
             VStack(alignment: .leading, spacing: 3) {
@@ -243,7 +259,7 @@ struct BookstoreContent: View {
                     if RenderMode.offscreen {
                         ChipLabel(title: "펼치기", prominent: false)
                     } else {
-                        Button(drawer == .statements ? "접기" : "펼치기") { drawer = drawer == .statements ? nil : .statements }
+                        Button(statementExpanded ? "접기" : "펼치기") { statementExpanded.toggle() }
                             .buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
                         Button("닫기") { onDismissStatement(statement.id) }.buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
                     }
@@ -252,12 +268,30 @@ struct BookstoreContent: View {
                      + (statement.missed > 0 ? " · 놓친 손님 \(Format.integer(statement.missed))" : "")
                      + " · 신뢰 \(TrustLevel.of(statement.trustAfter).title)" + (delta != 0 ? "(\(delta > 0 ? "+" : "")\(delta))" : ""))
                     .font(.caption).foregroundStyle(.secondary)
+                Collapsible(progress: statementExpanded ? 1 : 0, topSpacing: 6) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(visibleLines) { line in
+                            HStack(spacing: 6) {
+                                Symbol(name: line.slot.symbol, size: 9)
+                                Text(Library.books.first { $0.file == line.book }?.displayTitle ?? line.book).font(.caption2).lineLimit(1)
+                                Spacer(minLength: 0)
+                                Text("\(Format.integer(line.sold))부"
+                                     + (line.returned > 0 ? " · 반품 \(line.returned)" : "")
+                                     + (line.missed > 0 ? " · 놓침 \(Format.integer(line.missed))" : "")
+                                     + " · 재고 \(Format.short(line.stock))")
+                                    .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
+                            }
+                        }
+                        if !statement.reasons.isEmpty {
+                            Text(statement.reasons.joined(separator: " / ")).font(.caption2).foregroundStyle(.tertiary).fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
                 Text("\"\(statement.keeperLine)\"").font(.caption).italic().foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(12)
         .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .hint("정산서", ["월요일 아침마다 주인이 지난주를 셈해 보냅니다. 책마다 팔린 부수, 반품, 품절로 놓친 손님, 남은 재고."] + statement.reasons.map { "신뢰: " + $0 }, symbol: "doc.text")
     }
 
     /// 품절. 재판이 들어올 때까지.
@@ -273,8 +307,6 @@ struct BookstoreContent: View {
         }
         .padding(12)
         .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .hint("품절 · \(book.displayTitle)", ["재고가 떨어지면 출판사에 재판을 청합니다. 부수는 지난 7일 판매의 \(String(format: "%.1f", Balance.reprintWeeks))배쯤이고 출판사마다 걸리는 시간이 다릅니다(대형 6, 문예 12, 독립 24시간).",
-                                            "신뢰가 높으면 더 빨리 옵니다. 품절 중에 온 손님은 정산서에 놓친 손님으로 남습니다."], symbol: "printer")
     }
 
     private func adBanner(_ book: Book, ends: Date) -> some View {
@@ -306,7 +338,6 @@ struct BookstoreContent: View {
         }
         .padding(12)
         .background((good ? Color(red: 0.2, green: 0.55, blue: 0.3) : Color.orange).opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .hint(boost.source, [progress.shopLog.first { $0.event == event?.id }?.text ?? "", "끝나면 저절로 사라집니다."].filter { !$0.isEmpty }, symbol: event?.symbol ?? "storefront")
     }
 
     // MARK: 매대(원고 자리)
@@ -367,10 +398,6 @@ struct BookstoreContent: View {
                         featured: progress.featuredBook == book.file, advertised: progress.adEnds(for: book) != nil,
                         sales: progress.sales(of: book), soldOut: slot == .storage, pinned: progress.isPinned(book))
             .onTapGesture { picked = index }
-            .hint(book.displayTitle, ["\(book.displayAuthorShort) · \(Format.integer(progress.sales(of: book)))부 · \(progress.salesTier(of: book).title)"
-                                      + (progress.review(of: book).map { " · 서평 \($0.starText)" } ?? ""),
-                                      slot == .storage ? "품절. 재판을 기다립니다." : "재고 \(Format.integer(progress.stock(of: book)))부" + (progress.isPinned(book) ? " · 직접 고른 자리" : ""),
-                                      "누르면 아래 꼬리표가 이 책으로 바뀝니다."], symbol: "book.closed")
     }
 
     // MARK: 한 줄 둘
@@ -413,7 +440,6 @@ struct BookstoreContent: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .hint("서점 소식", [latest.map { "\($0.date.formatted(.dateTime.month(.defaultDigits).day().hour().minute())) · \($0.text)" } ?? "탈고한 책이 있으면 새 토큰 100만 개마다 \(Format.percent(Balance.shopEventChancePerMillion * 100)) 확률로 생깁니다.", "누르면 최근 소식이 펼쳐집니다."], symbol: "storefront")
     }
 
     // MARK: 발
@@ -421,13 +447,9 @@ struct BookstoreContent: View {
     private var footer: some View {
         HStack(spacing: 8) {
             footerButton(symbol: "newspaper", title: "서평", detail: "\(progress.reviews.count)", drawer: .reviews)
-                .hint("서평 \(progress.reviews.count)편", progress.reviews.first.map { r in ["최근 \(r.starText) \(Library.books.first { b in b.file == r.book }?.displayTitle ?? "")"] } ?? ["첫 탈고 뒤 하루쯤 지나 실립니다."], symbol: "newspaper")
             footerButton(symbol: "storefront", title: "소식", detail: "\(progress.shopLog.count)", drawer: .news)
-                .hint("서점 소식 \(progress.shopLog.count)건", ["최근 다섯 건을 펼칩니다."], symbol: "storefront")
             footerButton(symbol: "ear", title: "풍문", detail: "", drawer: .gossip)
-                .hint("풍문", ["판매·서평·사건·돌발 상황·손님 기록에서 뽑은 소문 세 줄. 월요일마다 바뀝니다."], symbol: "ear")
             footerButton(symbol: "doc.text", title: "정산", detail: progress.shop.statements.isEmpty ? "" : "\(progress.shop.statements.count)", drawer: .statements)
-                .hint("정산서", ["월요일마다 주인이 보내는 지난주 셈. 최근 넷을 펼칩니다."], symbol: "doc.text")
         }
     }
 
@@ -472,8 +494,6 @@ struct BookstoreContent: View {
         }
         .padding(12)
         .background(BadgeTier.gold.color.opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .hint("독자 주문", ["\(book?.displayAuthorShort ?? "")의 \(book?.displayTitle ?? "")을 기다리는 독자가 있습니다.",
-                           "\"다음에 쓰기\"로 지금 책 바로 다음에 당겨 오면 됩니다. 기한이 지나면 주문은 사라집니다."], symbol: "envelope.open")
     }
 
     // MARK: 서점 소식
@@ -503,8 +523,6 @@ struct BookstoreContent: View {
         }
         .padding(.horizontal, 10)
         .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .hint("서점 소식", ["새 토큰 100만 개마다 \(Format.percent(Balance.shopEventChancePerMillion * 100)) 확률로 서점에 일이 생깁니다. \(ShopEvents.all.count)가지.",
-                           "판매 보정, 부수 증감, 아이템, 영감, 주인의 밀어주기, 예약 주문. 날씨·계절·밤·책 수에 따라 생기는 일이 다릅니다. 생기면 상시 창에도 잠깐 보입니다."], symbol: "storefront")
     }
 
     private static func effectText(_ event: ShopEvent?, copies: Int?) -> String? {
@@ -588,7 +606,6 @@ struct BookstoreContent: View {
                     Text("주인에게 맡기기").font(.caption2).foregroundStyle(.secondary).underline()
                 } else {
                     Button("주인에게 맡기기") { onLeave(book.file) }.buttonStyle(.plain).font(.caption2).foregroundStyle(.secondary).underline()
-                        .hint("주인에게 맡기기", ["직접 정한 자리를 거두고 주인이 정하게 둡니다. 직접 고른 자리는 이레 동안 그대로이고, 그 뒤엔 저절로 주인에게 돌아갑니다."], symbol: "person")
                 }
             }
             Spacer(minLength: 0)
@@ -724,16 +741,24 @@ struct BookstoreContent: View {
         Group {
             if progress.reviews.isEmpty {
                 Text("첫 탈고 뒤 하루쯤 지나 실립니다.").font(.caption).foregroundStyle(.tertiary)
-                    .hint("서평", ["탈고하면 비평가가 글을 씁니다. \(Int(Balance.reviewHours.lowerBound))~\(Int(Balance.reviewHours.upperBound))시간 뒤 실립니다.",
-                                  "그 책은 별점대로 더 팔리거나 덜 팔립니다. 실릴 때 그 책의 작가가 쓰는 중이면 작가가 하루 동안 영향을 받습니다."], symbol: "newspaper")
             } else {
-                VStack(spacing: 8) {
-                    ForEach(showsAllReviews ? progress.reviews : Array(progress.reviews.prefix(2))) { review in
-                        ReviewCard(review: review)
+                VStack(spacing: 0) {
+                    VStack(spacing: 8) {
+                        ForEach(Array(progress.reviews.prefix(2))) { review in
+                            ReviewCard(review: review)
+                        }
                     }
                     if progress.reviews.count > 2 {
+                        Collapsible(progress: showsAllReviews ? 1 : 0, topSpacing: 8) {
+                            VStack(spacing: 8) {
+                                ForEach(Array(progress.reviews.dropFirst(2))) { review in
+                                    ReviewCard(review: review)
+                                }
+                            }
+                        }
                         Button(showsAllReviews ? "최근 둘만" : "서평 \(progress.reviews.count - 2)편 더") { showsAllReviews.toggle() }
                             .buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
+                            .padding(.top, 8)
                     }
                 }
             }
@@ -754,7 +779,6 @@ struct BookstoreContent: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .hint("풍문", ["판매·서평·사건·돌발 상황·손님 기록에서 뽑은 소문입니다.", "한 주 동안 같고 월요일마다 바뀝니다."], symbol: "ear")
     }
 }
 
@@ -823,7 +847,6 @@ struct TierLadder: View {
                     }
                 }
                 .frame(height: 3)
-                .hint("\(next.title)까지 \(Format.integer(next.copies - sold))부", ["지금 \(Format.integer(sold))부, \(next.title)은 \(Format.integer(next.copies))부부터입니다."], symbol: "chart.line.uptrend.xyaxis")
             }
         }
     }

@@ -65,7 +65,6 @@ struct PopoverView: View {
                 Spacer()
                 Button { village.stop(); showsVillage = false } label: { Symbol(name: "xmark", size: 11) }
                     .buttonStyle(.plain)
-                    .hint("닫기", ["Esc 를 눌러도 닫힙니다."], symbol: "xmark")
             }
             VillageView(progress: writing, state: village, mood: store.mood, fuel: store.effectiveFuelLimit,
                         onPickup: store.pickup, onRecommend: store.recommend) { enter($0) }
@@ -80,7 +79,6 @@ struct PopoverView: View {
                 Spacer()
                 Button { leaveSalon() } label: { Symbol(name: "arrow.uturn.backward", size: 11) }
                     .buttonStyle(.plain)
-                    .hint("나가기", ["Esc 를 눌러도 마을로 나갑니다."], symbol: "arrow.uturn.backward")
             }
             SalonView(progress: writing, state: salon, mood: store.mood, onInvite: store.invite, onLeave: leaveSalon)
         }
@@ -208,7 +206,24 @@ struct PopoverView: View {
                 Symbol(name: "gearshape", size: 13)
             }
             .buttonStyle(.plain)
-            .hint("설정", ["상시 창 모양과 초상화 꾸미기, 집필 수치, 알림과 방해 금지 시간."], symbol: "gearshape")
+            if let release = store.updater.availableRelease {
+                Button {
+                    Task { await store.updater.install(release) }
+                } label: {
+                    HStack(spacing: 4) {
+                        Symbol(name: "arrow.down.circle.fill", size: 11, color: .white)
+                        Text("v\(release.version) 업데이트").font(.caption2.weight(.semibold))
+                    }
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .foregroundStyle(.white)
+                    .background(Color(red: 0.2, green: 0.55, blue: 0.3), in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .hint("새 버전 v\(release.version)", ["누르면 새 버전을 내려받아 서명을 검증한 뒤 자동으로 다시 엽니다.",
+                                                  release.notes.isEmpty ? "기록과 서재는 그대로 이어집니다." : String(release.notes.prefix(120))], symbol: "arrow.down.circle")
+            } else if case .installing(let status) = store.updater.state {
+                Text(status).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+            }
             Spacer()
             if let s = store.snapshot {
                 Text("로그 \(s.scannedFiles)개 · \(s.generatedAt.formatted(date: .omitted, time: .shortened))")
@@ -221,7 +236,6 @@ struct PopoverView: View {
             }
             .buttonStyle(.plain)
             .disabled(store.isRefreshing)
-            .hint("새로고침", ["로그를 다시 훑고 Keychain 의 한도를 다시 읽습니다. 평소에는 15초마다 저절로 합니다."], symbol: "arrow.clockwise")
             Button("종료") { NSApplication.shared.terminate(nil) }
                 .buttonStyle(.plain)
                 .font(.caption)
@@ -287,8 +301,6 @@ private struct NoLogsNote: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .hint("기록을 읽는 곳", ["Antigravity(~/.gemini/antigravity/brain/**/transcript.jsonl), Gemini CLI(~/.gemini/tmp), Claude Code(~/.claude/projects/**/*.jsonl) 로그를 15초마다 읽습니다.",
-                              "바뀐 파일만 다시 읽으며 네트워크로 대화 내용을 보내지 않습니다."], symbol: "doc.text.magnifyingglass")
     }
 }
 

@@ -777,20 +777,24 @@ struct BadgeContent: View {
             }
             if !unlocked.isEmpty {
                 section("받은 뱃지 \(unlocked.count)") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 5), spacing: 12) {
-                        ForEach(showsAllBadges ? unlocked : Array(unlocked.prefix(10))) { a in
-                            VStack(spacing: 4) {
-                                BadgeMedal(achievement: a, unlocked: true, size: 44)
-                                Text(a.title).font(.caption2.weight(.medium)).lineLimit(1).minimumScaleFactor(0.7)
+                    VStack(alignment: .leading, spacing: 0) {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 5), spacing: 12) {
+                            ForEach(Array(unlocked.prefix(10))) { a in
+                                badgeCell(a)
                             }
-                            .frame(maxWidth: .infinity)
-                            .hint("\(a.title) · \(a.tier.name)", [a.detail, "\(date(a).formatted(.dateTime.year().month(.defaultDigits).day())) 달성"]
-                                  + (a.perk.map { ["효과: \($0.text)"] } ?? []) + (progress.badgeRewards[a.id].map { ["받음: \($0)"] } ?? []), symbol: "rosette")
                         }
-                    }
-                    if unlocked.count > 10 {
-                        Button(showsAllBadges ? "최근 10개만" : "모두 보기 \(unlocked.count)개") { showsAllBadges.toggle() }
-                            .buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
+                        if unlocked.count > 10 {
+                            Collapsible(progress: showsAllBadges ? 1 : 0, topSpacing: 12) {
+                                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 5), spacing: 12) {
+                                    ForEach(Array(unlocked.dropFirst(10))) { a in
+                                        badgeCell(a)
+                                    }
+                                }
+                            }
+                            Button(showsAllBadges ? "최근 10개만" : "모두 보기 \(unlocked.count)개") { showsAllBadges.toggle() }
+                                .buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
+                                .padding(.top, 8)
+                        }
                     }
                 }
             }
@@ -831,14 +835,25 @@ struct BadgeContent: View {
                         ForEach(secrets) { a in BadgeMedal(achievement: a, unlocked: false, size: 24) }
                     }
                 }
-                .hint("비밀 성과", ["이루기 전에는 조건을 가립니다.", "이루면 무엇이었는지 알 수 있습니다."], symbol: "questionmark.circle")
             }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .animation(.snappy(duration: 0.24, extraBounce: 0), value: showsAllBadges)
+        .animation(.easeOut(duration: 0.18), value: category)
     }
 
-    /// 제목, 받은 수, 등급별 수, 전체 진행 띠. 설명은 마우스를 올리면.
+    private func badgeCell(_ a: Achievement) -> some View {
+        VStack(spacing: 4) {
+            BadgeMedal(achievement: a, unlocked: true, size: 44)
+            Text(a.title).font(.caption2.weight(.medium)).lineLimit(1).minimumScaleFactor(0.7)
+        }
+        .frame(maxWidth: .infinity)
+        .hint("\(a.title) · \(a.tier.name)", [a.detail, "\(date(a).formatted(.dateTime.year().month(.defaultDigits).day())) 달성"]
+              + (a.perk.map { ["효과: \($0.text)"] } ?? []) + (progress.badgeRewards[a.id].map { ["받음: \($0)"] } ?? []), symbol: "rosette")
+    }
+
+    /// 제목, 받은 수, 등급별 수, 전체 진행 띠.
     private func header(_ unlocked: [Achievement]) -> some View {
         let total = Achievements.all.filter { !$0.daily }.count
         return VStack(alignment: .leading, spacing: 8) {
@@ -865,7 +880,6 @@ struct BadgeContent: View {
             }
             .frame(height: 4)
         }
-        .hint("성과", ["이루면 아이템을 받습니다. 동 1 · 은 2 · 금 3.", "금 뱃지는 작은 효과가 계속 붙습니다.", "\"오늘\" 줄은 자정에 초기화되고 이룰 때마다 아이템 1개, 효과는 그날만입니다."], symbol: "rosette")
     }
 
     private func section(_ title: String, @ViewBuilder body: () -> some View) -> some View {

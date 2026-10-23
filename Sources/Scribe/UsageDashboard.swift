@@ -109,8 +109,6 @@ private struct AntigravityStatusCard: View {
         let files = snapshot?.filesByProvider[.antigravity] ?? snapshot?.scannedFiles ?? 0
         VStack(alignment: .leading, spacing: 10) {
             SectionTitle(text: "Antigravity 세션 현황", detail: "대화 \(files)개 감지")
-                .hint("Antigravity · Gemini 로그", ["~/.gemini/antigravity/brain 아래의 transcript.jsonl 과 ~/.gemini/tmp 세션을 15초마다 읽습니다.",
-                                                  "네트워크나 별도 로그인 없이 로컬 기록만으로 집계합니다."], symbol: "sparkles")
             HStack(alignment: .top, spacing: 12) {
                 metricRing(title: "캐시 효율", percent: cacheHit, subtitle: "입력 중 캐시 읽기", color: ChartPalette.series[2])
                     .frame(maxWidth: .infinity)
@@ -275,7 +273,6 @@ private struct TodayHero: View {
                 }
             }
             .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
-            .hint("오늘과 견주기", ["어제 하루와 지난 7일(오늘 제외)의 하루 평균입니다.", "로그에 남은 모든 모델의 토큰을 합친 값입니다."], symbol: "calendar")
         }
     }
 }
@@ -294,8 +291,6 @@ private struct LimitGauges: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionTitle(text: "한도", detail: updatedAt.map { "\($0.formatted(date: .omitted, time: .shortened)) 기준" })
-                .hint("한도", ["Claude 구독의 사용 한도입니다. 5시간 창과 주간 한도가 있습니다.",
-                              "비공식 API 라 5분보다 자주 읽지 않습니다. 로그인 정보는 Claude Code 의 Keychain 항목에서 읽습니다."], symbol: "gauge.with.needle")
             if !limits.isEmpty {
                 HStack(alignment: .top, spacing: 8) {
                     ForEach(limits) { row in
@@ -317,9 +312,6 @@ private struct LimitGauges: View {
                     .buttonStyle(.bordered).controlSize(.small)
                     .disabled(refreshing)
                 }
-                .hint(needsLogin ? "로그인이 만료됐습니다" : "한도를 못 읽었습니다",
-                      needsLogin ? ["Claude Code 를 한 번 쓰면 로그인이 이어지고, 다음 갱신(최대 5분) 때 저절로 다시 읽습니다.", "바로 보려면 \"다시 읽기\"를 누르세요."]
-                      : [message, "잠시 뒤 저절로 다시 읽습니다."], symbol: needsLogin ? "person.crop.circle.badge.exclamationmark" : "exclamationmark.triangle")
             } else if limits.isEmpty {
                 Text("불러오는 중…").font(.caption).foregroundStyle(.secondary)
             }
@@ -367,7 +359,6 @@ private struct HourlyChart: View {
                          detail: selected.map { "\($0)시 · \(Format.tokens(hours[$0]))" }
                             ?? peak.map { $0.element > 0 ? "가장 많이 쓴 때 \($0.offset)시 · \(Format.tokens($0.element))" : "" },
                          highlighted: selected != nil)
-                .hint("오늘 시간대별", ["0시부터 지금까지 한 시간마다 쓴 토큰입니다. 지금 시간은 진하게.", "막대에 마우스를 올리면 그 시간의 값이 오른쪽에 나옵니다."], symbol: "clock")
             Chart {
                 ForEach(Array(hours.enumerated()), id: \.offset) { hour, tokens in
                     // 숫자 x 축이라 막대 폭을 비율로 주면 그려지지 않는다. 포인트로 준다.
@@ -415,7 +406,6 @@ private struct DailyChart: View {
                              "\($0.day.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated))) · \(Format.tokens($0.tokens)) · \(Format.cost($0.cost))"
                          } ?? (average > 0 ? "평균 \(Format.tokens(average))" : nil),
                          highlighted: pick != nil)
-                .hint("최근 14일", ["하루마다 쓴 토큰입니다. 오늘은 진하게, 점선은 기록이 있는 날의 평균.", "막대에 마우스를 올리면 그날의 토큰과 비용이 오른쪽에 나옵니다."], symbol: "calendar")
             Chart {
                 ForEach(days) { day in
                     let isToday = Calendar.current.isDateInToday(day.day)
@@ -622,10 +612,6 @@ struct UsageSummaryRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .hint(store.agentSource.summaryTitle,
-              ["누르면 옆에 자세한 사용량 화면이 열립니다. 오늘 시간대별, 최근 14일, 모델별 상세 정보.",
-               "데이터 소스(Antigravity · Claude Code · 통합)는 설정에서 직접 고를 수 있습니다."],
-              symbol: "chart.bar")
     }
 
     private func miniCacheGauge(_ percent: Double) -> some View {

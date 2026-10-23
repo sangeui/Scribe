@@ -594,6 +594,23 @@ enum Dump {
         check(Weather.of(jan) == Weather.of(jan.addingTimeInterval(3600 * 20)) && Set(weatherDays).count >= 5
               && !(0..<59).contains { weatherDays[$0] == .heat } && !(150..<240).contains { weatherDays[$0] == .snow },
               "날씨: 하루 동안 같고 1년에 \(Set(weatherDays).count)가지, 겨울엔 더위 없고 여름엔 눈 없음")
+        // 천문(해·달): 시간대 표준 좌표 파싱 및 정오·자정·계절별 고도와 달 위상 검증
+        let seoulCoord = Celestial.parseISO6709("+3733+12658")
+        let sydneyCoord = Celestial.parseISO6709("-3352+15113")
+        check(seoulCoord != nil && abs((seoulCoord?.latitude ?? 0) - 37.55) < 0.01 && (sydneyCoord?.latitude ?? 0) < -33,
+              "천문: ISO 6709 위경도 파싱 서울(\(seoulCoord?.latitude ?? 0)), 시드니(\(sydneyCoord?.latitude ?? 0))")
+        var seoulCal = Calendar(identifier: .gregorian)
+        seoulCal.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        let summerNoon = seoulCal.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 12, minute: 30))!
+        let winterNoon = seoulCal.date(from: DateComponents(year: 2026, month: 12, day: 21, hour: 12, minute: 30))!
+        let winterMidnight = seoulCal.date(from: DateComponents(year: 2026, month: 12, day: 21, hour: 0, minute: 30))!
+        let snapSummer = Celestial.snapshot(at: summerNoon, coordinate: seoulCoord!)
+        let snapWinter = Celestial.snapshot(at: winterNoon, coordinate: seoulCoord!)
+        let snapMidnight = Celestial.snapshot(at: winterMidnight, coordinate: seoulCoord!)
+        check(snapSummer.sun.altitude > 70 && snapWinter.sun.altitude > 25 && snapSummer.sun.altitude > snapWinter.sun.altitude
+              && (0.4...0.6).contains(snapSummer.sun.progress) && snapMidnight.sun.altitude < -40
+              && (0...1).contains(snapSummer.moon.phase) && !snapSummer.summaryLine.isEmpty,
+              "천문: 하지 남중 \(Int(snapSummer.sun.altitude))° > 동지 남중 \(Int(snapWinter.sun.altitude))°, 자정 \(Int(snapMidnight.sun.altitude))°")
         Weather.forced = .cloudy
         // 영감 게이지: 읽기 토큰으로 차고, 가득 차면 영감의 날을 직접 켠다. 처음 보는 날은 기준만 적는다.
         let reader = WritingStore(url: dir.appendingPathComponent("gauge.json"))
@@ -711,9 +728,14 @@ enum Dump {
             let result = withUnsafeMutablePointer(to: &info) { $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), $0, &count) } }
             return result == KERN_SUCCESS ? Int(info.phys_footprint) : 0
         }
+        _ = longest.flatMap { Library.text(of: $0) }
         footprintBefore = footprint()
         var mismatched: [String] = []
-        for book in Library.books where Library.text(of: book)?.count != book.characters { mismatched.append(book.file) }
+        for book in Library.books {
+            autoreleasepool {
+                if Library.text(of: book)?.count != book.characters { mismatched.append(book.file) }
+            }
+        }
         footprintAfter = footprint()
         check(mismatched.isEmpty, "원문: \(Library.books.count)권 글자 수가 목록과 맞음" + (mismatched.isEmpty ? "" : " (다름: \(mismatched))"))
         check(Library.cachedCount <= Library.cacheLimit, "원문: 모두 읽어도 기억하는 책은 \(Library.cachedCount)권 (최대 \(Library.cacheLimit))")
@@ -1067,6 +1089,19 @@ enum Dump {
         w = switchStore.apply(days: days(2_000_000), now: now)
         check(charsBeforeSwitch == 2_000 && charsAtSwitch == 2_000 && Int(w.totalCharacters) == 3_000,
               "데이터 소스 전환: 전환 직후 \(charsAtSwitch)자 그대로, 새 소스에서 +100만 토큰 뒤 \(Int(w.totalCharacters))자")
+
+        // 74. 인앱 자동 업데이터 버전 비교 및 GitHub Release JSON 파싱
+        check(AppUpdater.compareVersions("v0.2.0", "0.1.0") > 0
+              && AppUpdater.compareVersions("0.1.0", "v0.1.0") == 0
+              && AppUpdater.compareVersions("0.1.2", "0.2.0") < 0,
+              "업데이터: SemVer 비교 (v0.2.0 > 0.1.0, 0.1.0 == v0.1.0)")
+        let releaseJSON = Data("""
+        {"tag_name":"v0.2.0","html_url":"https://github.com/sangeui/Scribe/releases/tag/v0.2.0","body":"해와 달 표시 추가","assets":[{"name":"Scribe.zip","browser_download_url":"https://github.com/sangeui/Scribe/releases/download/v0.2.0/Scribe.zip"}]}
+        """.utf8)
+        let parsedNew = AppUpdater.parseRelease(data: releaseJSON, currentVersion: "0.1.0")
+        let parsedSame = AppUpdater.parseRelease(data: releaseJSON, currentVersion: "0.2.0")
+        check(parsedNew?.version == "0.2.0" && parsedSame == nil,
+              "업데이터: 최신 릴리스 감지 (\(parsedNew?.version ?? "-"), 같은 버전이면 무시)")
 
         print(failures == 0 ? "PASS" : "FAILED \(failures)")
     }

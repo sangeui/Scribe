@@ -464,19 +464,16 @@ enum DayPart: String, CaseIterable, Sendable {
     var isDark: Bool { self == .evening || self == .night }
 
     /// 그 시각의 바탕 색조. 시각마다 정한 색 사이를 분 단위로 이어 붙여 하루 내내 조금씩 바뀐다.
-    /// 해 뜨는 때와 지는 때는 달에 따라 한 시간쯤 앞뒤로 움직인다(6월엔 늦게 지고 12월엔 일찍 진다).
+    /// 해 뜨는 때와 지는 때는 현재 시간대의 천문 일출·일몰 시각을 따른다.
     static func tint(at date: Date, calendar: Calendar = .current) -> Color {
-        let comps = calendar.dateComponents([.hour, .minute, .month], from: date)
+        let comps = calendar.dateComponents([.hour, .minute], from: date)
         let hour = Double(comps.hour ?? 12) + Double(comps.minute ?? 0) / 60
-        let month = Double(comps.month ?? 6)
-        let season = cos((month - 6.5) * .pi / 6)
-        let sunrise = 6.5 - 1.0 * season
-        let sunset = 18.0 + 1.2 * season
+        let (sunrise, sunset) = Celestial.sunTimes(on: date, calendar: calendar)
         // (시각, 빨강, 초록, 파랑, 불투명도). 아침 쪽은 해 뜨는 때에, 저녁 쪽은 해 지는 때에 맞춰 옮긴다.
         let keys: [(Double, Double, Double, Double, Double)] = [
             (0, 0.02, 0.02, 0.08, 0.55),
-            (4, 0.02, 0.02, 0.10, 0.55),
-            (sunrise - 1.0, 0.45, 0.30, 0.55, 0.38),
+            (max(0.5, sunrise - 1.4), 0.02, 0.02, 0.10, 0.55),
+            (sunrise - 0.8, 0.45, 0.30, 0.55, 0.38),
             (sunrise, 0.95, 0.60, 0.55, 0.32),
             (sunrise + 1.5, 1.00, 0.85, 0.55, 0.24),
             (sunrise + 3.5, 0.92, 0.93, 0.80, 0.16),
@@ -502,10 +499,10 @@ enum DayPart: String, CaseIterable, Sendable {
 
     /// 그 시각에 바탕이 어두운지. 해 진 뒤 한 시간 반부터 해 뜨기 한 시간 전까지.
     static func isDark(at date: Date, calendar: Calendar = .current) -> Bool {
-        let comps = calendar.dateComponents([.hour, .minute, .month], from: date)
+        let comps = calendar.dateComponents([.hour, .minute], from: date)
         let hour = Double(comps.hour ?? 12) + Double(comps.minute ?? 0) / 60
-        let season = cos((Double(comps.month ?? 6) - 6.5) * .pi / 6)
-        return hour >= 18.0 + 1.2 * season + 1.5 || hour < 6.5 - 1.0 * season - 1.0
+        let (sunrise, sunset) = Celestial.sunTimes(on: date, calendar: calendar)
+        return hour >= sunset + 1.5 || hour < sunrise - 1.0
     }
 
     /// 유리를 다시 만들 간격(10분). 색조만 바꾸면 유리가 전 색을 그대로 들고 있어서 때때로 새로 만든다.

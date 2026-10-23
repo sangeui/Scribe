@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERSION="0.1.0"
+VERSION="$(tr -d '[:space:]' < VERSION)"
 APP_NAME="Scribe"
 BUILD_DIR="build"
 APP="$BUILD_DIR/$APP_NAME.app"

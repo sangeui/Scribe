@@ -118,7 +118,7 @@ Each author features custom pixel expressions for every event, plus unlockable a
 
 <div align="center">
 <h3>🌅 Tinted by Sunrise and Sunset</h3>
-<p>The floating desktop window shifts smoothly through dawn, morning, midday, dusk, and night palettes based on seasonal sunrise and sunset times, complete with live weather effects.</p>
+<p>The floating desktop window shifts smoothly through dawn, morning, midday, dusk, and night palettes based on seasonal sunrise and sunset times, complete with the sun or moon phase in the corner and live weather effects.</p>
 <img src="assets/hours.png" width="720" alt="Hourly tint progression of the floating window">
 </div>
 
@@ -163,6 +163,10 @@ The cask automatically clears the macOS Gatekeeper quarantine attribute on insta
      open -a Scribe
      ```
    - **Finder:** Right-click (or Control-click) `/Applications/Scribe.app` → **Open** → **Open**.
+
+### In-app auto update
+
+Once installed, Scribe automatically checks GitHub Releases for new versions. When an update is available, a **`v0.x.y Update`** pill appears in the popover footer — click it once to download, verify the code signature, and relaunch automatically (you can also check manually or toggle auto-check under **Settings → Record → Update**).
 
 ### Build from source
 

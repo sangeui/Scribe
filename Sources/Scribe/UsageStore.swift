@@ -68,6 +68,7 @@ final class UsageStore {
     @ObservationIgnored private let scanner = ClaudeLogScanner()
     @ObservationIgnored private let writingStore: WritingStore
     @ObservationIgnored private lazy var notifier = Notifier(store: self)
+    let updater = AppUpdater()
 
     /// `persist` 가 false 면 기록 파일을 읽기만 한다. `--dump`, `--snapshot` 같은 확인용 실행에서 쓴다.
     init(persist: Bool = true) {
@@ -109,6 +110,7 @@ final class UsageStore {
                 if Date() >= self.limitsNotBefore {
                     await self.refreshLimits(userInitiated: false)
                 }
+                await self.updater.checkIfNeeded()
                 try? await Task.sleep(for: Self.usageInterval)
             }
         }

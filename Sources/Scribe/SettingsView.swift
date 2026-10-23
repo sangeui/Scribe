@@ -75,7 +75,6 @@ struct SettingsPanel: View {
                     Symbol(name: "gearshape", size: 13)
                     Text("설정").font(.headline)
                     Spacer()
-                    Text(version).font(.caption2).foregroundStyle(.tertiary)
                 }
                 HStack(spacing: 6) {
                     ForEach(SettingsTab.allCases, id: \.self) { candidate in
@@ -104,11 +103,6 @@ struct SettingsPanel: View {
             .contentShape(Capsule())
         }
         .buttonStyle(.plain)
-    }
-
-    private var version: String {
-        guard let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String else { return "개발 빌드" }
-        return "Scribe " + short
     }
 }
 
@@ -159,7 +153,6 @@ struct FloatingSettings: View {
         Form {
             Section {
                 Toggle("데스크톱에 상시 표시", isOn: $store.isFloatingVisible)
-                    .hint("상시 창", ["다른 창 위에 늘 떠 있고 드래그로 옮길 수 있습니다.", "창을 오른쪽 클릭하면 모양을 바꾸거나 숨길 수 있습니다."], symbol: "macwindow")
                 HStack(alignment: .top, spacing: 12) {
                     ForEach(FloatingStyle.allCases, id: \.self) { candidate in
                         styleCard(candidate)
@@ -186,7 +179,6 @@ struct FloatingSettings: View {
                         .padding(.vertical, 2)
                     }
                 }
-                .hint("대표 작가", ["고른 작가의 초상화가 상시 창에 늘 나옵니다.", "글은 지금 쓰는 작품과 작가를 보여 줍니다."], symbol: "person.crop.square")
                 let author = decorAuthor.isEmpty ? (store.writing?.book?.authorShort ?? "Shakespeare") : decorAuthor
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 10) {
@@ -208,7 +200,6 @@ struct FloatingSettings: View {
                     }
                     .id(decorTick)
                 }
-                .hint("초상화 꾸미기", ["오른쪽에서 작가를 고르고 아래에서 장신구를 고릅니다. 성과를 이루면 장신구가 열립니다.", "상시 창·팝오버·서재의 초상화에 모두 보입니다."], symbol: "sparkles")
             } header: {
                 Text("초상화")
             }
@@ -245,7 +236,6 @@ struct FloatingSettings: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .hint(candidate.title, [candidate.detail], symbol: candidate == .pill ? "capsule" : "circle")
     }
 
     private func portraitChoice(_ value: String, title: String, author: String) -> some View {
@@ -280,7 +270,7 @@ struct FloatingSettings: View {
         let selected = Decor.chosen(for: author)?.id == accessory?.id
         let rows = accessory.map { Decor.apply(Portraits.rows(author), accessory: $0) } ?? Portraits.rows(author)
         let lockedBy = accessory?.unlock.flatMap { Achievements.byID($0)?.title }
-        return Button {
+        let button = Button {
             guard unlocked else { return }
             Decor.choose(accessory, for: author)
             decorTick += 1
@@ -300,9 +290,10 @@ struct FloatingSettings: View {
             .frame(width: 50)
         }
         .buttonStyle(.plain)
-        .hint(accessory?.title ?? "장신구 없음",
-              unlocked ? (accessory == nil ? ["장신구를 씌우지 않습니다."] : ["누르면 \(Library.books.first { $0.authorShort == author }?.displayAuthorShort ?? author)에게 씌웁니다."])
-              : ["성과 \"\(lockedBy ?? "")\"를 이루면 열립니다."], symbol: unlocked ? "checkmark.circle" : "lock")
+        if !unlocked, let title = accessory?.title, let lockedBy {
+            return AnyView(button.hint(title, ["성과 \"\(lockedBy)\" 달성 시 열립니다."], symbol: "lock"))
+        }
+        return AnyView(button)
     }
 }
 
@@ -325,10 +316,6 @@ struct AgentSourceSection: View {
                 Note(text: store.agentSource.detail)
             }
             .padding(.vertical, 2)
-            .hint("데이터 소스 · 토큰 공급 에이전트",
-                  ["어느 에이전트의 대화 로그에서 토큰 사용량을 읽어 집필하고 사용량 화면을 보여 줄지 직접 고릅니다.",
-                   "바꾸더라도 지금까지 쓴 글자 수는 그대로 남고, 바꾼 뒤 새로 늘어나는 토큰부터 이어서 씁니다."],
-                  symbol: "cpu")
             LabeledContent("읽는 곳") {
                 Text(store.agentSource.logPathDisplay)
                     .font(.caption.monospaced())
@@ -336,10 +323,6 @@ struct AgentSourceSection: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
-            .hint("로컬 대화 로그",
-                  ["Antigravity(~/.gemini/antigravity/brain), Gemini CLI(~/.gemini/tmp), Claude Code(~/.claude/projects) 로그를 15초마다 읽습니다.",
-                   "바뀐 파일만 다시 읽으며, Claude Code 모드의 한도만 Keychain 의 로그인 정보를 씁니다."],
-                  symbol: "doc.text.magnifyingglass")
         } header: {
             Text("데이터 소스")
         }
@@ -408,27 +391,18 @@ struct WritingSettings: View {
         Form {
             AgentSourceSection(store: store)
             Section {
-                rule("글자", "100만 토큰마다 \(Format.integer(Int(chars.rounded())))자", changed: perks.characterBonus > 0,
-                     hint: ["모든 토큰(입력·출력·캐시)을 합쳐 셉니다.", "영감의 날엔 \(Int(Balance.inspirationMultiplier))배, 비 오는 날엔 5% 더."])
-                rule("아이템", "토큰 \(Format.tokens(Int(perItem)))개마다 하나", changed: perks.itemTokens < 1,
-                     hint: ["멈춘 동안 쓴 토큰도 셉니다. 한 종류는 \(Balance.itemCap)개까지.", "같은 아이템 \(Balance.exchangeCost)개는 다른 하나로 바꿀 수 있습니다."])
-                rule("돌발 상황", "100만 토큰마다 \(Format.percent(chance * 100)) · \(Int(minutes.0.rounded()))~\(Int(minutes.1.rounded()))분", changed: perks.eventChance < 1 || perks.eventDuration < 1,
-                     hint: ["새 토큰 100만 개마다 한 번 추첨합니다. 손님 작가가 있으면 생기지 않습니다.", "맞는 아이템을 권하면 바로 끝나고, 없으면 시간이 지나 저절로 끝납니다."])
-                rule("거절", "\(Format.percent(refusal * 100)) · 기다림 \(Int(wait.0.rounded()))~\(Int(wait.1.rounded()))분", changed: perks.refusalDelta > 0 || perks.refusalWait < 1,
-                     hint: ["아이템을 권하면 이 확률로 거절합니다.", "같은 상황에서 거절당할수록 \(Int(Balance.refusalDecay * 100))%p씩 낮아집니다."])
-                rule("자연재해", "100만 토큰마다 \(Format.percent(Balance.disasterChancePerMillion * 100)) · 원고 \(Int((Balance.disasterLoss.lowerBound * perks.disasterLoss * 100).rounded()))~\(Int((Balance.disasterLoss.upperBound * perks.disasterLoss * 100).rounded()))%", changed: perks.disasterLoss < 1,
-                     hint: ["집필은 멈추지 않고 지금 책의 원고 일부를 잃습니다. 탈고한 책은 그대로입니다.", "금고·사본이 있으면 하나가 저절로 쓰여 잃지 않습니다. 폭풍 날은 확률 2.5배."])
-                rule("사건·비평·마감", "100만 토큰마다 \(Format.percent(Balance.dilemmaChancePerMillion * 100)) · 탈고 뒤 \(Int(Balance.reviewHours.lowerBound))~\(Int(Balance.reviewHours.upperBound))시간 · 월요일", changed: false,
-                     hint: ["선택지가 있는 사건은 앞 사건 뒤 \(Int(Balance.dilemmaCooldown / 3600))시간을 쉬고 다시 추첨합니다.", "비평은 탈고 뒤 실리고, 마감은 월요일마다 지난주 기록으로 냅니다."])
+                rule("글자", "100만 토큰마다 \(Format.integer(Int(chars.rounded())))자", changed: perks.characterBonus > 0)
+                rule("아이템", "토큰 \(Format.tokens(Int(perItem)))개마다 하나", changed: perks.itemTokens < 1)
+                rule("돌발 상황", "100만 토큰마다 \(Format.percent(chance * 100)) · \(Int(minutes.0.rounded()))~\(Int(minutes.1.rounded()))분", changed: perks.eventChance < 1 || perks.eventDuration < 1)
+                rule("거절", "\(Format.percent(refusal * 100)) · 기다림 \(Int(wait.0.rounded()))~\(Int(wait.1.rounded()))분", changed: perks.refusalDelta > 0 || perks.refusalWait < 1)
+                rule("자연재해", "100만 토큰마다 \(Format.percent(Balance.disasterChancePerMillion * 100)) · 원고 \(Int((Balance.disasterLoss.lowerBound * perks.disasterLoss * 100).rounded()))~\(Int((Balance.disasterLoss.upperBound * perks.disasterLoss * 100).rounded()))%", changed: perks.disasterLoss < 1)
+                rule("사건·비평·마감", "100만 토큰마다 \(Format.percent(Balance.dilemmaChancePerMillion * 100)) · 탈고 뒤 \(Int(Balance.reviewHours.lowerBound))~\(Int(Balance.reviewHours.upperBound))시간 · 월요일", changed: false)
                 Note(text: "노란 점은 금 뱃지 효과가 들어간 값입니다.")
             } header: {
                 Text("규칙")
             }
             Section {
                 Toggle("작가가 눈치를 봅니다", isOn: $moodEnabled)
-                    .hint("작가 기분", ["마지막 입력 뒤 지난 시간과 토큰 흐름으로 정합니다. 무엇을 쳤는지는 모릅니다.",
-                                      "쓰는데 토큰이 10분 없으면 곁눈질, 15분 넘게 자리를 비웠는데 토큰이 오면 혼자 열심, 둘 다 조용하면 농땡이.",
-                                      "글자·아이템·판매에는 영향이 없습니다."], symbol: "eye")
                 Picker("농땡이까지", selection: $slackMinutes) {
                     Text("15분").tag(15); Text("30분").tag(30); Text("60분").tag(60)
                 }
@@ -442,14 +416,13 @@ struct WritingSettings: View {
         .scrollContentBackground(.hidden)
     }
 
-    private func rule(_ title: String, _ value: String, changed: Bool, hint lines: [String]) -> some View {
+    private func rule(_ title: String, _ value: String, changed: Bool) -> some View {
         LabeledContent(title) {
             HStack(spacing: 5) {
                 if changed { Circle().fill(BadgeTier.gold.color).frame(width: 6, height: 6) }
                 Text(value).foregroundStyle(.secondary)
             }
         }
-        .hint(title, lines + (changed ? ["노란 점: 금 뱃지 효과가 들어간 값입니다."] : []), symbol: "slider.horizontal.3")
     }
 }
 
@@ -476,20 +449,16 @@ struct NotificationSettings: View {
                         Button("시스템 설정") { store.openNotificationSettings() }.controlSize(.small)
                     }
                 }
-                .hint("알림 권한 · \(store.notificationStatus.title)", [explanation], symbol: "bell.badge")
                 LabeledContent("시험") {
                     Button("시험 알림 보내기") { store.sendTestNotification() }
                         .controlSize(.small)
                         .disabled(store.notificationStatus == .unavailable)
                 }
-                .hint("무엇을 알리나", ["돌발 상황(아이템이 있으면 \"아이템 권하기\" 버튼), 돌아옴, 자연재해, 행운, 성과, 탈고, 판매 단계, 비평, 사건, 마감, 영감 게이지, 지난주 돌아보기.",
-                                    "1분 안에 여러 개가 생기면 \"소식 n건\" 하나로 묶습니다."], symbol: "list.bullet")
             } header: {
                 Text("권한")
             }
             Section {
                 Toggle("알림을 모아 두었다가 끝나면 한 번에", isOn: $quietEnabled)
-                    .hint("방해 금지", ["이 시간에는 알림을 보내지 않고 모아 둡니다. 끝나면 요약 하나로 보냅니다.", "모아 둔 동안은 팝오버에 \"방해 금지 · 소식 n건\"으로 보입니다."], symbol: "moon.zzz")
                 LabeledContent("시간") {
                     HStack(spacing: 6) {
                         HourStepper(hour: $quietStart)
@@ -504,8 +473,6 @@ struct NotificationSettings: View {
             }
             Section {
                 Toggle("화면이 잠긴 동안 진행을 알립니다", isOn: $lockEnabled)
-                    .hint("잠금 화면", ["잠긴 동안 글자가 늘었을 때만 진행률과 늘어난 글자, 돌발 상황 수를 보냅니다.",
-                                      "시스템 설정 > 알림 > Scribe 의 \"잠금 화면에 표시\"가 켜져 있어야 합니다."], symbol: "lock")
                 Picker("간격", selection: $lockMinutes) {
                     Text("30분").tag(30); Text("60분").tag(60); Text("2시간").tag(120)
                 }
@@ -527,26 +494,14 @@ struct NotificationSettings: View {
         case .notAsked, .unavailable: .secondary
         }
     }
-
-    private var explanation: String {
-        switch store.notificationStatus {
-        case .allowed:
-            return "알림 센터로 보냅니다. 누르면 Scribe 가 열립니다."
-        case .denied:
-            return "macOS 가 권한을 거절했습니다(ad-hoc 서명이면 그럴 수 있습니다). 시스템 설정 > 알림에서 Scribe 를 켜 주세요. 그 전까지는 스크립트 편집기 이름의 간이 알림으로 갑니다."
-        case .notAsked:
-            return "첫 알림을 보낼 때 권한을 묻습니다. 시험 알림을 보내면 바로 묻습니다."
-        case .unavailable:
-            return "swift run 으로 띄운 실행 파일은 알림 센터를 쓸 수 없습니다. scripts/build-app.sh 로 만든 앱에서만 보냅니다."
-        }
-    }
 }
 
 // MARK: - 기록
 
-/// 기록: 데이터 소스 선택, 파일 위치와 내보내기·가져오기, 서재 통계, 앱 정보.
+/// 기록: 데이터 소스 선택, 파일 위치와 내보내기·가져오기, 서재 통계, 앱 업데이트.
 struct RecordSettings: View {
     @Bindable var store: UsageStore
+    @AppStorage(AppUpdater.autoCheckKey) private var autoCheckUpdates = true
 
     var body: some View {
         Form {
@@ -559,8 +514,6 @@ struct RecordSettings: View {
                         Button("Finder") { NSWorkspace.shared.activateFileViewerSelecting([WritingStore.defaultURL]) }.controlSize(.small)
                     }
                 }
-                .hint("기록 파일", ["날짜별 글자 수, 아이템, 돌발 상황·사건·비평 기록, 성과, 판매가 들어 있습니다.",
-                                  "저장할 때마다 직전 파일을 writing.backup.json 으로 남기고, 읽지 못하는 파일은 broken-<시각>.json 으로 옮깁니다."], symbol: "doc")
                 LabeledContent("옮기기") {
                     HStack(spacing: 8) {
                         Button("내보내기…") { store.exportRecordInteractively() }.controlSize(.small)
@@ -568,13 +521,11 @@ struct RecordSettings: View {
                         if let message = store.transferMessage { Text(message).font(.caption).foregroundStyle(.secondary) }
                     }
                 }
-                .hint("다른 Mac 으로", ["내보낸 파일을 그쪽에서 가져오면 됩니다.", "가져오면 지금 기록은 imported-backup-<시각>.json 으로 남기고 바꿉니다. 토큰 기준선은 다시 잡습니다."], symbol: "arrow.left.arrow.right")
             } header: {
                 Text("기록")
             }
             Section {
                 LabeledContent("작품") { Text("\(Library.books.count)편 · 작가 \(Library.authors.count)명 · \(Format.tokens(Library.roundCharacters))자").foregroundStyle(.secondary) }
-                    .hint("원문", ["Books/manifest.json 에 순서와 글자 수가 있습니다."], symbol: "books.vertical")
                 LabeledContent("출처") {
                     VStack(alignment: .trailing, spacing: 2) {
                         HStack(spacing: 6) {
@@ -585,7 +536,6 @@ struct RecordSettings: View {
                             .font(.caption).foregroundStyle(.tertiary).multilineTextAlignment(.trailing)
                     }
                 }
-                .hint("원서 출처", ["원문은 모두 저작권이 끝난 퍼블릭 도메인 텍스트이고 Project Gutenberg 에서 가져왔습니다.", "한국어 번역본은 번역자 저작권이 있어 넣지 않았습니다. 제목과 작가 이름만 한국어로 보여 줍니다."], symbol: "text.book.closed")
                 if let w = store.writing {
                     LabeledContent("진행") { Text("\(w.round + 1)회차 · \(w.finishedInRound)편 탈고 · 모두 \(Format.integer(Int(w.totalCharacters)))자").foregroundStyle(.secondary) }
                     LabeledContent("성과") { Text("\(w.badges.count)개 · 아이템 \(ItemKind.allCases.reduce(0) { $0 + w.count($1) })개 · 판매 \(Format.integer(w.totalSales))부").foregroundStyle(.secondary) }
@@ -594,21 +544,76 @@ struct RecordSettings: View {
                 Text("서재")
             }
             Section {
-                LabeledContent("Scribe") {
-                    Text(version).foregroundStyle(.secondary)
+                LabeledContent("현재 버전") {
+                    HStack(spacing: 10) {
+                        versionBadge
+                        updateActionButton
+                    }
                 }
-                .hint("Scribe", ["Claude Code 토큰 사용량을 고전 집필로 바꿔 보여 주는 메뉴바 앱입니다.", "번들 ID local.scribe · ad-hoc 서명"], symbol: "info.circle")
+                Toggle("자동으로 업데이트 확인", isOn: $autoCheckUpdates)
+                if case .failed(let message) = store.updater.state {
+                    Note(text: message)
+                }
             } header: {
-                Text("정보")
+                Text("업데이트")
             }
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
     }
 
-    private var version: String {
+    @ViewBuilder
+    private var versionBadge: some View {
+        HStack(spacing: 6) {
+            Text(versionText)
+                .font(.callout.monospacedDigit())
+                .foregroundStyle(.secondary)
+            switch store.updater.state {
+            case .upToDate:
+                Text("최신")
+                    .font(.caption2.weight(.semibold))
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .foregroundStyle(Color(red: 0.2, green: 0.55, blue: 0.3))
+                    .background(Color(red: 0.2, green: 0.55, blue: 0.3).opacity(0.14), in: Capsule())
+            case .available(let release):
+                Text("새 버전 v\(release.version)")
+                    .font(.caption2.weight(.semibold))
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .foregroundStyle(BadgeTier.gold.color)
+                    .background(BadgeTier.gold.color.opacity(0.16), in: Capsule())
+            default:
+                EmptyView()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var updateActionButton: some View {
+        switch store.updater.state {
+        case .idle, .upToDate, .failed:
+            Button("업데이트 확인") { Task { await store.updater.check(userInitiated: true) } }
+                .controlSize(.small)
+        case .checking:
+            HStack(spacing: 5) {
+                ProgressView().controlSize(.mini)
+                Text("확인 중").font(.caption).foregroundStyle(.secondary)
+            }
+        case .available(let release):
+            Button("설치 및 재시작") {
+                Task { await store.updater.install(release) }
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+        case .installing(let status):
+            HStack(spacing: 5) {
+                ProgressView().controlSize(.mini)
+                Text(status).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var versionText: String {
         guard let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String else { return "개발 빌드" }
-        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
-        return build.map { "\(short) (\($0))" } ?? short
+        return "v" + short
     }
 }

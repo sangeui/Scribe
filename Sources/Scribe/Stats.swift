@@ -205,9 +205,11 @@ struct MiniRing: View {
 
     var body: some View {
         ZStack {
-            Circle().stroke(Color.secondary.opacity(0.18), lineWidth: 2.5)
-            Circle().trim(from: 0, to: max(0.02, min(1, fraction)))
-                .stroke(color, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+            Circle().inset(by: 1.2)
+                .stroke(Color.secondary.opacity(0.18), lineWidth: 2.2)
+            Circle().inset(by: 1.2)
+                .trim(from: 0, to: max(0.02, min(1, fraction)))
+                .stroke(color, style: StrokeStyle(lineWidth: 2.2, lineCap: .round))
                 .rotationEffect(.degrees(-90))
                 .animation(.easeOut(duration: 0.5), value: fraction)
             Symbol(name: symbol, size: 7, color: color)

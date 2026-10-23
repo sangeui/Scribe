@@ -183,18 +183,25 @@ struct FloatingPill: View {
             .frame(width: Self.size.width, height: Self.size.height, alignment: .leading)
             .frame(width: width, height: Self.size.height, alignment: .leading)
             .clipShape(Capsule())
-            // 날씨 색이 옅게 깔리고, 비나 눈이 오면 유리 위에 내린다.
             // 날씨 바탕(흐림·비·폭풍·눈·안개·더위)이 유리 위에 깔리고, 비나 눈이 오면 그 위에 내린다.
             .background(WeatherBackdrop(weather: progress.weather, animated: animated).clipShape(Capsule()))
-            .overlay(WeatherOverlay(weather: progress.weather, animated: animated).clipShape(Capsule()))
             // 확인용 그림(ImageRenderer)은 글래스를 그리지 못해 알약째 비어 나온다. 그때는 반투명 재질로.
             // 밤에는 유리에 남색이 옅게 든다. 초상화의 밤 색과 맞춘다.
             .modifier(PillBackground(glass: animated, tint: tintDate.map { DayPart.tint(at: $0) } ?? dayPart?.tint))
+            // 알약 상단 여백에 현재 위치 기준의 해·달 고도와 수평 궤적, 달의 위상을 띄운다.
+            .overlay(
+                CelestialBackdrop(date: tintDate ?? (animated ? Date() : nil), dayPart: dayPart, weather: progress.weather, dark: ink.dark)
+                    .frame(width: Self.size.width, height: Self.size.height)
+                    .opacity(contentOpacity)
+                    .frame(width: width, height: Self.size.height, alignment: .leading)
+                    .clipShape(Capsule())
+            )
+            .overlay(WeatherOverlay(weather: progress.weather, animated: animated).clipShape(Capsule()))
             // 바탕이 어두우면 고리·배지도 어두운 모양 색으로. 글자는 위에서 직접 정했다.
             .environment(\.colorScheme, ink.dark ? .dark : .light)
             // 때가 바뀌면 유리를 새로 만든다. 색조만 바꾸면 유리가 전 색을 그대로 들고 있었다.
             .id(tintDate.map { "\(DayPart.tintKey(at: $0))" } ?? dayPart?.rawValue ?? "")
-            .help("\(book.displayTitle) · \(book.displayAuthor)\n\(Format.integer(progress.charactersInBook)) / \(Format.integer(book.characters))자 · 오늘 \(Format.integer(Int(progress.todayCharacters)))자\n\(progress.weather.line)")
+            .help("\(book.displayTitle) · \(book.displayAuthor)\n\(Format.integer(progress.charactersInBook)) / \(Format.integer(book.characters))자 · 오늘 \(Format.integer(Int(progress.todayCharacters)))자\n\(progress.weather.line) · \(Celestial.snapshot(at: tintDate ?? Date()).summaryLine)")
         }
     }
 

@@ -24,7 +24,7 @@ struct HintPreferenceKey: PreferenceKey {
     }
 }
 
-/// 마우스를 올린 뒤 0.4초 지나면 힌트를 올린다.
+/// 마우스를 올린 뒤 0.65초 지나면 힌트를 올린다.
 private struct HintModifier: ViewModifier {
     let hint: Hint
     @State private var hovering = false
@@ -38,7 +38,7 @@ private struct HintModifier: ViewModifier {
                 delay?.cancel()
                 if inside {
                     delay = Task {
-                        try? await Task.sleep(for: .milliseconds(400))
+                        try? await Task.sleep(for: .milliseconds(650))
                         if !Task.isCancelled, hovering { showing = true }
                     }
                 } else {

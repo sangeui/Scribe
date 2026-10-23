@@ -218,34 +218,39 @@ struct WritingView: View {
             if let deadline = progress.deadline {
                 DeadlineRow(deadline: deadline, progress: progress.deadlineProgress, bookFraction: progress.fraction)
             }
-            statusLine(book)
-            if statusExpanded || progress.inspirationReady {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
-                        InspirationRow(fraction: progress.inspirationFraction, ready: progress.inspirationReady, onIgnite: onIgnite)
-                        StaminaRow(stamina: progress.sheet.stamina, max: progress.statPerks.staminaMax, tired: progress.tired)
-                    }
-                    StatsRow(sheet: progress.sheet, tokensToNext: progress.tokensToNextStat, authorName: book.displayAuthorShort)
-                    if !progress.boosts.isEmpty {
-                        FlowLayout(spacing: 4) {
-                            ForEach(progress.boosts) { boost in BoostChip(boost: boost) }
+            let expanded = RenderMode.offscreen ? (statusExpanded || progress.inspirationReady) : statusExpanded
+            VStack(alignment: .leading, spacing: 0) {
+                statusLine(book, expanded: expanded)
+                Collapsible(progress: expanded ? 1 : 0, topSpacing: 10) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            InspirationRow(fraction: progress.inspirationFraction, ready: progress.inspirationReady, onIgnite: onIgnite)
+                            StaminaRow(stamina: progress.sheet.stamina, max: progress.statPerks.staminaMax, tired: progress.tired)
+                        }
+                        StatsRow(sheet: progress.sheet, tokensToNext: progress.tokensToNextStat, authorName: book.displayAuthorShort)
+                        if !progress.boosts.isEmpty {
+                            FlowLayout(spacing: 4) {
+                                ForEach(progress.boosts) { boost in BoostChip(boost: boost) }
+                            }
                         }
                     }
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
             }
             footer
+        }
+        .onChange(of: progress.inspirationReady) { old, ready in
+            if !old && ready { statusExpanded = true }
         }
         .animation(.easeOut(duration: 0.28), value: progress.activeEvent?.id)
         .animation(.easeOut(duration: 0.28), value: progress.dilemma?.id)
         .animation(.easeOut(duration: 0.28), value: progress.luck?.id)
         .animation(.easeOut(duration: 0.28), value: progress.note?.date)
         .animation(.easeOut(duration: 0.28), value: progress.boosts.count)
-        .animation(.easeOut(duration: 0.22), value: statusExpanded)
+        .animation(.snappy(duration: 0.26, extraBounce: 0), value: statusExpanded)
     }
 
-    /// 아래쪽 상태 한 줄. 영감·체력·능력치·보정을 요약하고, 누르면 펼친다. 손댈 일이 있는 항목(영감 찼음, 지침)은 색이 붙는다.
-    private func statusLine(_ book: Book) -> some View {
+    /// 아래쪽 상태 한 줄. 영감·체력·능력치·보정을 요약하고, 누르면 펼치거나 접는다. 손댈 일이 있는 항목(영감 찼음, 지침)은 색이 붙는다.
+    private func statusLine(_ book: Book, expanded: Bool) -> some View {
         let gold = BadgeTier.gold.color
         let heart: Color = progress.sheet.stamina <= progress.statPerks.staminaMax * 0.1 ? .red : progress.tired ? .orange : .secondary
         let boosts = progress.boosts.count
@@ -257,15 +262,13 @@ struct WritingView: View {
                 if boosts > 0 { statusItem("arrow.up.right", "보정 \(boosts)", Color(red: 0.2, green: 0.55, blue: 0.3)) }
                 Spacer(minLength: 0)
                 Symbol(name: "chevron.down", size: 9)
-                    .rotationEffect(.degrees(statusExpanded ? 180 : 0))
+                    .rotationEffect(.degrees(expanded ? 180 : 0))
             }
             .padding(.horizontal, 10).padding(.vertical, 6)
             .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .hint("작가 상태", ["영감 게이지, 체력, 능력치 \(progress.sheet.total), 살아 있는 보정 \(boosts). 누르면 펼쳐집니다.",
-                          "영감이 차거나 체력이 바닥나면 여기 색이 붙습니다."], symbol: "person")
     }
 
     private func statusItem(_ symbol: String, _ text: String, _ color: Color) -> some View {
@@ -317,11 +320,11 @@ struct WritingView: View {
             }
             Spacer(minLength: 6)
             // 작은 고리 둘: 체력(붉은색), 영감(금색). 접어 두어도 한눈에.
-            VStack(spacing: 3) {
+            VStack(spacing: 6) {
                 MiniRing(fraction: progress.sheet.stamina / max(1, progress.statPerks.staminaMax),
                          color: progress.tired ? .orange : Color(red: 0.85, green: 0.35, blue: 0.4), symbol: "heart.fill")
                     .hint("체력 \(Int(progress.sheet.stamina.rounded())) / \(Int(progress.statPerks.staminaMax))",
-                          [progress.tired ? "지쳤습니다. 글자가 \(Int((1 - Balance.staminaTiredMultiplier) * 100))% 덜 늘고 0이 되면 탈진합니다." : "쓰면 줄고 쉬면 돌아옵니다. 아래 상태 줄을 펼치면 자세히 보입니다."], symbol: "heart")
+                          [progress.tired ? "지쳤습니다. 글자가 \(Int((1 - Balance.staminaTiredMultiplier) * 100))% 덜 늘고 0이 되면 탈진합니다." : "쓰면 줄고 쉬면 돌아옵니다."], symbol: "heart")
                 MiniRing(fraction: progress.inspirationFraction, color: BadgeTier.gold.color, symbol: "sparkles")
                     .hint("영감 \(Format.percent(progress.inspirationFraction * 100))",
                           [progress.inspirationReady ? "찼습니다. 아래 \"영감 켜기\"를 누르세요." : "읽기 토큰이 쌓이면 찹니다. 차면 한 시간 동안 글자가 두 배."], symbol: "sparkles")
@@ -340,7 +343,6 @@ struct WritingView: View {
                            startPoint: .leading, endPoint: .trailing),
             in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .animation(.easeInOut(duration: 0.6), value: book.id)
-        .hint(book.displayTitle, ["원제 \(book.title)", book.author, "\(Format.integer(book.characters))자 · 이번 회차 \(progress.orderPosition + 1)번째"], symbol: "book.closed")
     }
 
     private func progressBar(_ book: Book) -> some View {
@@ -359,7 +361,6 @@ struct WritingView: View {
                 if progress.todayCharacters > 0 {
                     Text("· 오늘 +\(Format.integer(Int(progress.todayCharacters)))")
                         .foregroundStyle(book.spineColor)
-                        .hint("오늘 쓴 글자", ["오늘 \(Format.integer(Int(progress.todayCharacters)))자. 새 토큰 100만 개에 \(Int(Writing.charactersPerMillionTokens))자씩, 필력·날씨·영감·보정이 곱해집니다."], symbol: "pencil")
                 }
                 Spacer()
                 if let days = progress.daysToFinish { Text("탈고까지 약 \(days)일") }
@@ -374,7 +375,6 @@ struct WritingView: View {
         let items = ItemKind.allCases.reduce(0) { $0 + progress.count($1) }
         let earned = Achievements.all.filter { !$0.daily && (progress.badges[$0.id] != nil || $0.isMet(progress.facts)) }.count
         return HStack(spacing: 6) {
-            let total = Achievements.all.filter { !$0.daily }.count
             Button(action: onVillage) {
                 Symbol(name: "map", size: 12)
                     .frame(width: 34)
@@ -383,19 +383,11 @@ struct WritingView: View {
                     .contentShape(Capsule())
             }
             .buttonStyle(.plain)
-            .hint("마을", ["작업실, 창고, 서점이 있는 작은 맵입니다. 이 단추나 방향키로 엽니다.", "맵에서는 방향키로 걷습니다. 문 앞에서 ↑ 를 누르거나 건물을 클릭하면 들어갑니다.", "사람이나 물건 앞에서 Return 을 누르면 말을 겁니다."], symbol: "map")
+            .hint("마을", ["작업실, 창고, 서점, 살롱이 있는 작은 맵입니다."], symbol: "map")
             footerButton(symbol: "shippingbox", title: "창고", detail: "\(items)", action: onBag)
-                .hint("창고 · 아이템 \(items)개", ["토큰 \(Format.tokens(Balance.tokensPerItem))개마다 하나, 다음까지 \(Format.tokens(progress.tokensToNextItem))개.",
-                                              "같은 아이템 \(Balance.exchangeCost)개는 다른 하나로 바꿀 수 있습니다.", "최근 돌발 상황 기록도 여기 있습니다."], symbol: "bag")
             footerButton(symbol: "rosette", title: "성과", detail: "\(earned)", action: onBadges)
-                .hint("성과 · \(earned) / \(total)", ["이루면 아이템을 받고 금 뱃지는 효과가 계속 붙습니다.",
-                                                   Achievements.nextGoals(earned: { progress.badges[$0.id] != nil || $0.isMet(progress.facts) }).first.map { "다음 목표: \($0.title)" } ?? "모두 이뤘습니다."], symbol: "rosette")
             footerButton(symbol: "books.vertical", title: "서재", detail: "\(progress.finishedInRound)/\(Library.books.count)", action: onShelf)
-                .hint("서재 · \(progress.round + 1)회차", ["\(Library.books.count)편 가운데 \(progress.finishedInRound)편 탈고.",
-                                                     progress.nextBook.map { "다음 책: \($0.displayTitle) (\($0.displayAuthorShort))" } ?? "", "순서를 바꾸거나 원고를 읽을 수 있습니다."].filter { !$0.isEmpty }, symbol: "books.vertical")
             footerButton(symbol: "storefront", title: "서점", detail: Format.short(progress.totalSales), action: onBookstore)
-                .hint("서점 · \(Format.integer(progress.totalSales))부", ["서평 \(progress.reviews.count)편." + (progress.reviews.first.map { r in " 최근 \(r.starText) \(Library.books.first { $0.file == r.book }?.displayTitle ?? "")" } ?? ""),
-                                                                "매대, 서평, 사건, 풍문."], symbol: "storefront")
         }
     }
 
@@ -588,10 +580,6 @@ struct QuarrelLines: View {
         }
         .padding(.horizontal, 10).padding(.vertical, 8)
         .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .hint(title, title == "말다툼"
-              ? ["손님 작가가 머무는 동안 \(Balance.quarrelMinutes)분쯤마다 한 번씩 합니다.", "글자에는 영향이 없습니다."]
-              : ["책이 다음 작가 차례로 넘어갔습니다. 떠나는 작가와 오는 작가가 한 마디씩 합니다.", "상시 창에서는 의자가 비었다가 새 작가가 앉습니다."],
-              symbol: "bubble.left.and.bubble.right")
     }
 
     private func line(_ author: String, _ text: String) -> some View {
@@ -659,6 +647,44 @@ struct EventBanner: View {
 }
 
 // MARK: - 옆 패널 서재
+
+/// 높이를 0에서 원래 크기까지 연속 보간해 페이드인·아웃 없이 서랍처럼 자연스럽게 펼치고 접는 틀.
+/// 부모 `VStack`의 간격까지 함께 접히도록 위쪽 여백(`topSpacing`)을 안쪽에 넣어 클리핑한다.
+struct Collapsible<Content: View>: View, Animatable {
+    nonisolated var progress: CGFloat
+    var topSpacing: CGFloat = 0
+    @ViewBuilder let content: () -> Content
+    @State private var measuredHeight: CGFloat = 0
+
+    nonisolated var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    var body: some View {
+        let clamped = min(max(progress, 0), 1)
+        if RenderMode.offscreen {
+            if clamped > 0.001 {
+                content().padding(.top, topSpacing)
+            }
+        } else {
+            let currentHeight: CGFloat? = measuredHeight > 0 ? measuredHeight * clamped : (clamped > 0.001 ? nil : 0)
+            content()
+                .padding(.top, topSpacing)
+                .fixedSize(horizontal: false, vertical: true)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { h in
+                    if h > 0, abs(measuredHeight - h) > 0.5 {
+                        measuredHeight = h
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(height: currentHeight, alignment: .bottom)
+                .clipped()
+                .allowsHitTesting(clamped > 0.5)
+                .accessibilityHidden(clamped < 0.5)
+        }
+    }
+}
 
 /// `enabled` 일 때만 `ScrollView` 로 감싼다.
 struct OptionalScroll<Content: View>: View {
@@ -749,11 +775,9 @@ struct Showcase: View {
                         if tier != .none {
                             Text(tier.title).font(.system(size: 9, weight: .semibold))
                                 .foregroundStyle(tier >= .bestseller ? BadgeTier.gold.color : tier == .reprint ? BadgeTier.silver.color : .secondary)
-                                .hint(tier.title, [tier.meaning + "."], symbol: "chart.line.uptrend.xyaxis")
                         }
                     }
                     .frame(width: 64)
-                    .hint(book.displayTitle, ["\(book.displayAuthorShort) · \(Format.integer(progress.sales(of: book)))부" + (tier == .none ? "" : " · \(tier.title)"), "누르면 위 칸에 이 책이 나옵니다."], symbol: "book.closed")
                 }
                 Spacer(minLength: 0)
             }
@@ -828,7 +852,6 @@ private struct BookDetail: View {
                         }
                         if pendingOfAuthor.count >= 2 {
                             action("\(book.displayAuthorShort) 몰아 쓰기") { onFocusAuthor(book.authorShort) }
-                                .hint("몰아 쓰기", ["이 작가의 남은 \(pendingOfAuthor.count)편을 지금 책 다음에 이어 씁니다.", "회차마다 순서를 따로 기억합니다."], symbol: "text.line.first.and.arrowtriangle.forward")
                         }
                     }
                 }
@@ -918,7 +941,7 @@ private struct AuthorRow: View {
                         Spine(book: book, status: BookStatus(index: index, progress: progress), selected: index == selected,
                               tier: progress.salesTier(of: book))
                             .onTapGesture { onSelect(index) }
-                            .hint(book.displayTitle, ["\(book.title) · \(Format.integer(book.characters))자", "누르면 위 칸에 이 책이 나옵니다."], symbol: "book.closed")
+                            .hint(book.displayTitle, ["\(book.title) · \(Format.integer(book.characters))자"], symbol: "book.closed")
                     }
                 }
             }
@@ -1034,7 +1057,6 @@ struct BagContent: View {
                 Text("작업실").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 Text("\(progress.studio.count) / \(Studio.all.count)").font(.caption2.monospacedDigit()).foregroundStyle(.tertiary)
             }
-            .hint("작업실", ["아이템으로 가구를 들입니다. 한 번 사면 효과가 계속 붙고 초상화 뒤 책상에 그려집니다.", "아이템이 쌓이면 여기에 쓰세요."], symbol: "house")
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 6), GridItem(.flexible(), spacing: 6)], spacing: 6) {
                 ForEach(Studio.all) { furniture in
                     furnitureCard(furniture, progress)
@@ -1066,7 +1088,6 @@ struct BagContent: View {
         .padding(8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(owned ? Color(red: 0.2, green: 0.55, blue: 0.3).opacity(0.08) : Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .hint(furniture.title, [furniture.effect + ".", owned ? "이미 들였습니다." : "값: \(furniture.costText). 주황 숫자는 모자라는 아이템입니다."], symbol: furniture.symbol)
     }
 
     /// 값 표시. 가진 수/필요한 수, 모자라면 주황.
@@ -1241,7 +1262,6 @@ struct BagContent: View {
             Text("×\(count)").font(.callout.monospacedDigit()).foregroundStyle(count > 0 ? .primary : .tertiary)
             if count >= Balance.itemCap {
                 Text("가득").font(.caption2.weight(.semibold)).foregroundStyle(.orange)
-                    .hint("가득", ["한 종류는 \(Balance.itemCap)개까지입니다.", "더 나와도 다른 종류로 갑니다. 모두 가득이면 없던 일이 됩니다."], symbol: "bag")
             }
             Spacer()
             if count >= Balance.exchangeCost, RenderMode.offscreen {
@@ -1255,7 +1275,6 @@ struct BagContent: View {
                     Text("\(Balance.exchangeCost)개 바꾸기").font(.caption)
                 }
                 .menuStyle(.borderlessButton).fixedSize()
-                .hint("교환", ["\(item.title) \(Balance.exchangeCost)개를 다른 아이템 하나로 바꿉니다.", "가득 찬 종류로는 바꿀 수 없습니다."], symbol: "arrow.left.arrow.right")
             }
             if usable, RenderMode.offscreen {
                 ChipLabel(title: "권하기", prominent: true)
@@ -1412,8 +1431,6 @@ struct BetBanner: View {
             }
             .padding(12)
             .background(gold.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .hint("내기", ["이기면 아이템 \(Balance.betWinItems)개와 판매 +\(Int((Balance.betSalesBoost - 1) * 100))%(하루), 지면 아이템 \(Balance.betLoseItems)개를 잃고 손님이 한동안 그 얘기만 합니다.",
-                          "손님이 가기 전까지입니다. 사양해도 됩니다."], symbol: "dice")
         }
     }
 }
