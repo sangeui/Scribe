@@ -27,12 +27,12 @@
 <table>
 <tr>
 <td width="46%" align="center" valign="middle">
-<img src="assets/screenshot-home.png" width="380" alt="Popover home — floating pill, active manuscript, deadline, and today's token summary">
-<br><sub><b>Menu Bar Popover</b> — Live manuscript typing · Publisher deadline · Today's token summary</sub>
+<img src="assets/screenshot-home.png" width="380" alt="Popover home — floating pill, unified writing card, deadline, and today's token summary">
+<br><sub><b>Menu Bar Popover</b> — Unified writing card · Minimal manuscript strip · Publisher deadline · Today's token summary</sub>
 </td>
 <td width="54%" align="center" valign="middle">
 <img src="assets/screenshot-floating.png" width="420" alt="Floating desktop pill and mini styles in light and dark mode">
-<br><sub><b>Floating Desktop Study (Pill & Mini)</b> — Tinted by real sunrise, sunset, moon phase & weather</sub>
+<br><sub><b>Floating Desktop Study (Pill & Mini)</b> — Daily writing progress tinted by real sunrise, sunset, moon phase & weather</sub>
 </td>
 </tr>
 </table>
@@ -99,7 +99,7 @@ Switch your active data source anytime under **Settings (<kbd>⌘</kbd><kbd>,</k
 ## How it works
 
 1. **Code as usual.** Every token you burn in Antigravity, Gemini CLI, or Claude Code fuels your author's pen. Existing tokens at first launch become your baseline, and new tokens from that point on write classic literature.
-2. **Real classics, typed letter by letter.** Public-domain classics from Project Gutenberg are bundled offline. Open the **Shelf** anytime to read every page your tokens have written so far.
+2. **Real classics, written letter by letter.** Public-domain classics from Project Gutenberg are bundled offline in a single high-compression archive (`books.pak`) and typed live along the minimal manuscript strip in your writing card. Open the **Shelf** anytime to preview opening passages or read every page your tokens have written so far.
 3. **Care for your author.** While writing, your author might doze off, run out of ink, wander out for a stroll, or hit writer's block. Tokens you spend grant recovery items (Coffee, Tea, Ink Bottle, Bell, Muse Quill, etc.) to bring them right back to the desk.
 4. **Finish & deliver to the Bookstore.** Completing a book triggers a completion card, and your author walks down the village path carrying the manuscript to the **Bookstore**.
 5. **Run the Bookstore & hit weekly deadlines.** Place finished books in the display window or main table. Critic reviews, newspaper features, school orders, and ad campaigns push your books from **First Print Sold Out → Reprint → Bestseller → Million Seller**.
@@ -114,7 +114,7 @@ Switch your active data source anytime under **Settings (<kbd>⌘</kbd><kbd>,</k
 <td width="48%" align="center"><img src="assets/screenshot-shelf.png" width="340" alt="Shelf panel — literary masters and classic books"></td>
 <td width="52%" valign="middle">
 <h3>Literary Masters & Classic Library</h3>
-Collect works by <b>William Shakespeare · Charles Dickens · Edgar Allan Poe · Lewis Carroll · Robert Louis Stevenson · Oscar Wilde · Jane Austen · Johann Wolfgang von Goethe</b>. Click any book on the Shelf to read the actual manuscript pages you've written.
+Collect works by <b>William Shakespeare · Charles Dickens · Edgar Allan Poe · Lewis Carroll · Robert Louis Stevenson · Oscar Wilde · Jane Austen · Johann Wolfgang von Goethe</b>. Preview opening excerpts, reorder your upcoming writing queue, and expand any author's wooden bookshelf to customize accessories and view stats.
 </td>
 </tr>
 <tr>

@@ -171,10 +171,7 @@ struct FloatingPill: View {
                         AuthorStatusLine(event: event, color: ink.faint, fontSize: 10)
                             .fixedSize()
                     } else {
-                        ManuscriptText(book: book, target: progress.charactersInBook, fontSize: 11,
-                                       singleLine: true, color: .primary.opacity(0.85), tempo: progress.caffeinated ? Balance.caffeineTempo : 1)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .frame(height: 15)
+                        writingSummary(book, ink: ink)
                     }
                 }
             }
@@ -201,8 +198,41 @@ struct FloatingPill: View {
             .environment(\.colorScheme, ink.dark ? .dark : .light)
             // 때가 바뀌면 유리를 새로 만든다. 색조만 바꾸면 유리가 전 색을 그대로 들고 있었다.
             .id(tintDate.map { "\(DayPart.tintKey(at: $0))" } ?? dayPart?.rawValue ?? "")
-            .help("\(book.displayTitle) · \(book.displayAuthor)\n\(Format.integer(progress.charactersInBook)) / \(Format.integer(book.characters))자 · 오늘 \(Format.integer(Int(progress.todayCharacters)))자\n\(progress.weather.line) · \(Celestial.snapshot(at: tintDate ?? Date()).summaryLine)")
+            .help("\(book.displayTitle) · \(book.displayAuthor)\n전체 \(Format.integer(book.characters))자 중 \(Format.integer(progress.charactersInBook))자 집필 · 오늘 \(Format.integer(Int(progress.todayCharacters)))자\n\(progress.weather.line) · \(Celestial.snapshot(at: tintDate ?? Date()).summaryLine)")
         }
+    }
+
+    private func writingSummary(_ book: Book, ink: PillInk) -> some View {
+        HStack(spacing: 4) {
+            PixelIconView(rows: PixelIcon.quill, color: ink.faint, scale: 10 / 9)
+            MarqueeText(text: pillSummaryText(book), color: ink.secondary, animated: animated)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 15)
+    }
+
+    private func pillSummaryText(_ book: Book) -> String {
+        let today = Int(progress.todayCharacters)
+        if progress.charactersInBook == 0 {
+            return "백지 위에서 첫 문장을 고르고 있습니다"
+        }
+        if let guest = progress.guestAuthor {
+            let guestName = Library.books.first { $0.authorShort == guest }?.displayAuthorShort ?? guest
+            if today > 0 {
+                return Format.resolve("\(guestName)(와|과) 함께 오늘 \(Format.integer(today))자를 썼습니다")
+            }
+            return Format.resolve("\(guestName)(와|과) 나란히 앉아 원고를 이어 갑니다")
+        }
+        if progress.luck?.id == Lucks.inspiration.id {
+            if today > 0 {
+                return "영감이 떠올라 오늘 \(Format.integer(today))자를 썼습니다"
+            }
+            return "영감이 떠올라 붓끝이 두 배로 달립니다"
+        }
+        if today > 0 {
+            return "오늘 \(Format.integer(today))자를 써 내려갔습니다"
+        }
+        return "지금까지 \(Format.integer(progress.charactersInBook))자를 써 내려갔습니다"
     }
 
     private func useButton(_ cure: ItemKind, count: Int) -> some View {
@@ -274,7 +304,7 @@ enum FloatingStyle: String, CaseIterable {
 
     var detail: String {
         switch self {
-        case .pill: "초상화, 제목과 작가, 지금 쓰는 문장 한 줄"
+        case .pill: "초상화, 제목과 작가, 오늘의 집필 진도 한 줄"
         case .mini: "바탕 없이 초상화와 진행 고리만. 깃펜이 움직이면 쓰는 중"
         }
     }
@@ -390,7 +420,7 @@ struct FloatingMini: View {
 
     private func helpText(_ book: Book, event: AuthorEvent?) -> String {
         var lines = ["\(book.displayTitle) · \(book.displayAuthor)",
-                     "\(Format.integer(progress.charactersInBook)) / \(Format.integer(book.characters))자 · 오늘 \(Format.integer(Int(progress.todayCharacters)))자"]
+                     "전체 \(Format.integer(book.characters))자 중 \(Format.integer(progress.charactersInBook))자 집필 · 오늘 \(Format.integer(Int(progress.todayCharacters)))자"]
         if let event { lines.append("멈춤: \(event.text)") }
         return lines.joined(separator: "\n")
     }

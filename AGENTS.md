@@ -57,6 +57,15 @@
    - `README.md`, `README.en.md`, GitHub 저장소 설명(About), 홍보 이미지 등에 **작품 수, 문호 수, 장신구 수, 업적 수 등 향후 변경될 수 있는 특정 숫자를 적지 않는다.**
    - 코드 내에서는 항상 `Library.books.count`, `Library.authors.count`, `Decor.all.count` 등 동적 속성을 사용한다.
 2. **자연스러운 접기/펼치기 애니메이션**:
-   - 화면 내 아코디언/서랍 요소를 펼치거나 접을 때는 단순 `.opacity` 페이드인·아웃 대신 [`Collapsible`](Sources/Scribe/WritingView.swift) 컨테이너를 사용해 높이가 연속적으로 보간되도록 구현한다.
-3. **문서 일관성 확인**:
+   - 화면 내 아코디언/서랍 요소를 펼치거나 접을 때는 단순 `.opacity` 페이드인·아웃 대신 [`Collapsible`](Sources/Scribe/Views/WritingView.swift) 컨테이너를 사용해 높이가 연속적으로 보간되도록 구현한다.
+3. **소스 디렉토리 구조 (`Sources/Scribe/`)**:
+   - 단일 파일이 과도하게 비대해져 에이전트 탐색 성능을 떨어뜨리지 않도록 다음 7개 하위 폴더 구조를 유지한다:
+     - `App/`: 앱 진입점(`App.swift`), 자동 업데이터(`Updater.swift`), 알림(`Notifier.swift`), 조사·숫자 포맷(`Format.swift`)
+     - `Telemetry/`: 에이전트 로그 파서(`ClaudeLogScanner.swift`), 한도 조회(`ClaudeLimits.swift`), 단가(`Pricing.swift`), 집계 모델·스토어(`UsageModels.swift`, `UsageStore.swift`)
+     - `Simulation/`: 원문 서재(`Library.swift`), 집필 상태·진행도(`WritingState.swift`), 집필 엔진(`WritingStore.swift`), 돌발 상황·대사·기분·능력치·마감·사건·서점·비평·독자·업적·날씨
+     - `World/`: 픽셀 마을 도트(`VillageSprites.swift`), 마을 상태·경로(`VillageModel.swift`), 마을 뷰(`VillageView.swift`), 마을 대화(`VillageTalk.swift`), 문학 살롱(`Salon.swift`), 작업실 가구(`Studio.swift`)
+     - `Art/`: 픽셀 렌더러(`Pixels.swift`), 문호 초상화(`Portraits.swift`, `PortraitArt.swift`, `LivePortrait.swift`), 장신구(`Decor.swift`)
+     - `Views/`: 팝오버(`PopoverView.swift`), 바탕화면 상시 창(`FloatingWindow.swift`), 옆 패널(`SidePanel.swift`), 집필 카드(`WritingView.swift`), 서재(`ShelfView.swift`), 가방(`BagView.swift`), 서점(`BookstoreView.swift`), 토큰 대시보드(`UsageDashboard.swift`), 설정(`SettingsView.swift`), 힌트(`Hint.swift`)
+     - `Testing/`: 셀프 테스트(`Selftest.swift`), 스냅샷·투어 이미지 렌더러(`SnapshotRenderer.swift`)
+4. **문서 일관성 확인**:
    - 문서나 버전을 건드린 뒤에는 `./scripts/release.sh --check-only`를 실행해 경고가 없는지 확인한다.

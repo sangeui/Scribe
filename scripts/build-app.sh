@@ -52,8 +52,8 @@ if [ ! -f "$BUILD_DIR/AppIcon.icns" ]; then
 fi
 cp "$BUILD_DIR/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 
-# 집필 모드 원문(Project Gutenberg 퍼블릭 도메인 텍스트). zlib 로 압축해 넣고 앱이 읽을 때 푼다.
-if [ ! -f "$BUILD_DIR/Books/manifest.json" ]; then
+# 집필 모드 원문(Project Gutenberg 퍼블릭 도메인 텍스트). lzma 단일 컨테이너(books.pak)로 압축해 넣고 앱이 읽을 때 해당 구간만 푼다.
+if [ ! -f "$BUILD_DIR/Books/books.pak" ] || [ "Books/manifest.json" -nt "$BUILD_DIR/Books/manifest.json" ]; then
     swift scripts/pack-books.swift Books "$BUILD_DIR/Books"
 fi
 cp -R "$BUILD_DIR/Books" "$APP/Contents/Resources/Books"

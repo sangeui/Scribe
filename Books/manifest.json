@@ -1,389 +1,842 @@
 [
- {
-  "file": "01-1524.txt",
-  "author": "William Shakespeare",
-  "title": "Hamlet",
-  "titleKo": "햄릿",
-  "authorKo": "윌리엄 셰익스피어",
-  "preserveLines": true,
-  "characters": 177196
- },
- {
-  "file": "02-46.txt",
-  "author": "Charles Dickens",
-  "title": "A Christmas Carol",
-  "titleKo": "크리스마스 캐럴",
-  "authorKo": "찰스 디킨스",
-  "preserveLines": false,
-  "characters": 158332
- },
- {
-  "file": "03-932.txt",
-  "author": "Edgar Allan Poe",
-  "title": "The Fall of the House of Usher",
-  "titleKo": "어셔가의 몰락",
-  "authorKo": "에드거 앨런 포",
-  "preserveLines": false,
-  "characters": 41501
- },
- {
-  "file": "04-11.txt",
-  "author": "Lewis Carroll",
-  "title": "Alice's Adventures in Wonderland",
-  "titleKo": "이상한 나라의 앨리스",
-  "authorKo": "루이스 캐럴",
-  "preserveLines": false,
-  "characters": 143488
- },
- {
-  "file": "05-43.txt",
-  "author": "Robert Louis Stevenson",
-  "title": "Strange Case of Dr Jekyll and Mr Hyde",
-  "titleKo": "지킬 박사와 하이드 씨",
-  "authorKo": "로버트 루이스 스티븐슨",
-  "preserveLines": false,
-  "characters": 138757
- },
- {
-  "file": "06-844.txt",
-  "author": "Oscar Wilde",
-  "title": "The Importance of Being Earnest",
-  "titleKo": "진지함의 중요성",
-  "authorKo": "오스카 와일드",
-  "preserveLines": true,
-  "characters": 117260
- },
- {
-  "file": "07-1342.txt",
-  "author": "Jane Austen",
-  "title": "Pride and Prejudice",
-  "titleKo": "오만과 편견",
-  "authorKo": "제인 오스틴",
-  "preserveLines": false,
-  "characters": 718334
- },
- {
-  "file": "08-2527.txt",
-  "author": "Johann Wolfgang von Goethe",
-  "title": "The Sorrows of Young Werther",
-  "titleKo": "젊은 베르테르의 슬픔",
-  "authorKo": "요한 볼프강 폰 괴테",
-  "preserveLines": false,
-  "characters": 235162
- },
- {
-  "file": "09-1533.txt",
-  "author": "William Shakespeare",
-  "title": "Macbeth",
-  "titleKo": "맥베스",
-  "authorKo": "윌리엄 셰익스피어",
-  "preserveLines": true,
-  "characters": 104238
- },
- {
-  "file": "10-653.txt",
-  "author": "Charles Dickens",
-  "title": "The Chimes",
-  "titleKo": "종소리",
-  "authorKo": "찰스 디킨스",
-  "preserveLines": false,
-  "characters": 168070
- },
- {
-  "file": "11-1064.txt",
-  "author": "Edgar Allan Poe",
-  "title": "The Masque of the Red Death",
-  "titleKo": "붉은 죽음의 가면",
-  "authorKo": "에드거 앨런 포",
-  "preserveLines": false,
-  "characters": 13746
- },
- {
-  "file": "12-12.txt",
-  "author": "Lewis Carroll",
-  "title": "Through the Looking-Glass",
-  "titleKo": "거울 나라의 앨리스",
-  "authorKo": "루이스 캐럴",
-  "preserveLines": false,
-  "characters": 161987
- },
- {
-  "file": "13-120.txt",
-  "author": "Robert Louis Stevenson",
-  "title": "Treasure Island",
-  "titleKo": "보물섬",
-  "authorKo": "로버트 루이스 스티븐슨",
-  "preserveLines": false,
-  "characters": 362929
- },
- {
-  "file": "14-174.txt",
-  "author": "Oscar Wilde",
-  "title": "The Picture of Dorian Gray",
-  "titleKo": "도리언 그레이의 초상",
-  "authorKo": "오스카 와일드",
-  "preserveLines": false,
-  "characters": 429032
- },
- {
-  "file": "15-105.txt",
-  "author": "Jane Austen",
-  "title": "Persuasion",
-  "titleKo": "설득",
-  "authorKo": "제인 오스틴",
-  "preserveLines": false,
-  "characters": 464587
- },
- {
-  "file": "16-14591.txt",
-  "author": "Johann Wolfgang von Goethe",
-  "title": "Faust, Part One",
-  "titleKo": "파우스트 1부",
-  "authorKo": "요한 볼프강 폰 괴테",
-  "preserveLines": true,
-  "characters": 196295
- },
- {
-  "file": "17-1513.txt",
-  "author": "William Shakespeare",
-  "title": "Romeo and Juliet",
-  "titleKo": "로미오와 줄리엣",
-  "authorKo": "윌리엄 셰익스피어",
-  "preserveLines": true,
-  "characters": 142149
- },
- {
-  "file": "18-678.txt",
-  "author": "Charles Dickens",
-  "title": "The Cricket on the Hearth",
-  "titleKo": "난롯가의 귀뚜라미",
-  "authorKo": "찰스 디킨스",
-  "preserveLines": false,
-  "characters": 175101
- },
- {
-  "file": "19-1063.txt",
-  "author": "Edgar Allan Poe",
-  "title": "The Cask of Amontillado",
-  "titleKo": "아몬티야도의 술통",
-  "authorKo": "에드거 앨런 포",
-  "preserveLines": false,
-  "characters": 12943
- },
- {
-  "file": "20-13.txt",
-  "author": "Lewis Carroll",
-  "title": "The Hunting of the Snark",
-  "titleKo": "스나크 사냥",
-  "authorKo": "루이스 캐럴",
-  "preserveLines": true,
-  "characters": 29371
- },
- {
-  "file": "21-421.txt",
-  "author": "Robert Louis Stevenson",
-  "title": "Kidnapped",
-  "titleKo": "납치",
-  "authorKo": "로버트 루이스 스티븐슨",
-  "preserveLines": false,
-  "characters": 422051
- },
- {
-  "file": "22-902.txt",
-  "author": "Oscar Wilde",
-  "title": "The Happy Prince and Other Tales",
-  "titleKo": "행복한 왕자",
-  "authorKo": "오스카 와일드",
-  "preserveLines": false,
-  "characters": 86191
- },
- {
-  "file": "23-121.txt",
-  "author": "Jane Austen",
-  "title": "Northanger Abbey",
-  "titleKo": "노생거 사원",
-  "authorKo": "제인 오스틴",
-  "preserveLines": false,
-  "characters": 433274
- },
- {
-  "file": "24-78269.txt",
-  "author": "Johann Wolfgang von Goethe",
-  "title": "Novelle",
-  "titleKo": "노벨레",
-  "authorKo": "요한 볼프강 폰 괴테",
-  "preserveLines": false,
-  "characters": 47946
- },
- {
-  "file": "25-1514.txt",
-  "author": "William Shakespeare",
-  "title": "A Midsummer Night's Dream",
-  "titleKo": "한여름 밤의 꿈",
-  "authorKo": "윌리엄 셰익스피어",
-  "preserveLines": true,
-  "characters": 95390
- },
- {
-  "file": "26-98.txt",
-  "author": "Charles Dickens",
-  "title": "A Tale of Two Cities",
-  "titleKo": "두 도시 이야기",
-  "authorKo": "찰스 디킨스",
-  "preserveLines": false,
-  "characters": 756688
- },
- {
-  "file": "27-1065.txt",
-  "author": "Edgar Allan Poe",
-  "title": "The Raven",
-  "titleKo": "갈까마귀",
-  "authorKo": "에드거 앨런 포",
-  "preserveLines": true,
-  "characters": 6373
- },
- {
-  "file": "28-620.txt",
-  "author": "Lewis Carroll",
-  "title": "Sylvie and Bruno",
-  "titleKo": "실비와 브루노",
-  "authorKo": "루이스 캐럴",
-  "preserveLines": false,
-  "characters": 363106
- },
- {
-  "file": "29-848.txt",
-  "author": "Robert Louis Stevenson",
-  "title": "The Black Arrow",
-  "titleKo": "검은 화살",
-  "authorKo": "로버트 루이스 스티븐슨",
-  "preserveLines": false,
-  "characters": 434352
- },
- {
-  "file": "30-14522.txt",
-  "author": "Oscar Wilde",
-  "title": "The Canterville Ghost",
-  "titleKo": "캔터빌의 유령",
-  "authorKo": "오스카 와일드",
-  "preserveLines": false,
-  "characters": 64476
- },
- {
-  "file": "31-161.txt",
-  "author": "Jane Austen",
-  "title": "Sense and Sensibility",
-  "titleKo": "이성과 감성",
-  "authorKo": "제인 오스틴",
-  "preserveLines": false,
-  "characters": 669415
- },
- {
-  "file": "32-15850.txt",
-  "author": "Johann Wolfgang von Goethe",
-  "title": "Iphigenia in Tauris",
-  "titleKo": "타우리스의 이피게니에",
-  "authorKo": "요한 볼프강 폰 괴테",
-  "preserveLines": true,
-  "characters": 91568
- },
- {
-  "file": "33-1531.txt",
-  "author": "William Shakespeare",
-  "title": "Othello",
-  "titleKo": "오셀로",
-  "authorKo": "윌리엄 셰익스피어",
-  "preserveLines": true,
-  "characters": 153774
- },
- {
-  "file": "34-790.txt",
-  "author": "Oscar Wilde",
-  "title": "Lady Windermere's Fan",
-  "titleKo": "윈더미어 부인의 부채",
-  "authorKo": "오스카 와일드",
-  "preserveLines": true,
-  "characters": 111110
- },
- {
-  "file": "35-158.txt",
-  "author": "Jane Austen",
-  "title": "Emma",
-  "titleKo": "엠마",
-  "authorKo": "제인 오스틴",
-  "preserveLines": false,
-  "characters": 879328
- },
- {
-  "file": "36-1945.txt",
-  "author": "Johann Wolfgang von Goethe",
-  "title": "Egmont",
-  "titleKo": "에그몬트",
-  "authorKo": "요한 볼프강 폰 괴테",
-  "preserveLines": false,
-  "characters": 162738
- },
- {
-  "file": "37-23042.txt",
-  "author": "William Shakespeare",
-  "title": "The Tempest",
-  "titleKo": "템페스트",
-  "authorKo": "윌리엄 셰익스피어",
-  "preserveLines": true,
-  "characters": 129220
- },
- {
-  "file": "38-1958.txt",
-  "author": "Johann Wolfgang von Goethe",
-  "title": "Hermann and Dorothea",
-  "titleKo": "헤르만과 도로테아",
-  "authorKo": "요한 볼프강 폰 괴테",
-  "preserveLines": true,
-  "characters": 131554
- },
- {
-  "file": "39-1532.txt",
-  "author": "William Shakespeare",
-  "title": "King Lear",
-  "titleKo": "리어 왕",
-  "authorKo": "윌리엄 셰익스피어",
-  "preserveLines": true,
-  "characters": 154616
- },
- {
-  "file": "40-78139e.txt",
-  "author": "Johann Wolfgang von Goethe",
-  "title": "The Recreations of the German Emigrants",
-  "titleKo": "독일 피난민들의 대화",
-  "authorKo": "요한 볼프강 폰 괴테",
-  "preserveLines": false,
-  "characters": 232387
- },
- {
-  "file": "41-1287.txt",
-  "author": "Johann Wolfgang von Goethe",
-  "title": "The Poems of Goethe",
-  "titleKo": "괴테 시집",
-  "authorKo": "요한 볼프강 폰 괴테",
-  "preserveLines": true,
-  "characters": 526938
- },
- {
-  "file": "42-36483.txt",
-  "author": "Johann Wolfgang von Goethe",
-  "title": "Wilhelm Meister's Apprenticeship",
-  "titleKo": "빌헬름 마이스터의 수업시대",
-  "authorKo": "요한 볼프강 폰 괴테",
-  "preserveLines": false,
-  "characters": 1206332
- },
- {
-  "file": "43-78139t.txt",
-  "author": "Johann Wolfgang von Goethe",
-  "title": "Wilhelm Meister's Travels",
-  "titleKo": "빌헬름 마이스터의 편력시대",
-  "authorKo": "요한 볼프강 폰 괴테",
-  "preserveLines": false,
-  "characters": 442561
- }
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 177196,
+    "file" : "01-1524.txt",
+    "opening" : "by William Shakespeare Contents ACT I Scene I. Elsinore. A platform before the Castle Scene II. Elsinore. A room of state in the Castle Scene III. A room in Polonius’s house Scene IV. The platform Scene V. A more remote part of the Castle A",
+    "preserveLines" : true,
+    "title" : "Hamlet",
+    "titleKo" : "햄릿"
+  },
+  {
+    "author" : "Charles Dickens",
+    "authorKo" : "찰스 디킨스",
+    "characters" : 158332,
+    "file" : "02-46.txt",
+    "opening" : "IN PROSE BEING A Ghost Story of Christmas by Charles Dickens PREFACE I HAVE endeavoured in this Ghostly little book, to raise the Ghost of an Idea, which shall not put my readers out of humour with themselves, with each other, with the seas",
+    "preserveLines" : false,
+    "title" : "A Christmas Carol",
+    "titleKo" : "크리스마스 캐럴"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 41501,
+    "file" : "03-932.txt",
+    "opening" : "Son coeur est un luth suspendu; Sitot qu'on le touche il resonne. DE BERANGER. During the whole of a dull, dark, and soundless day in the autumn of the year, when the clouds hung oppressively low in the heavens, I had been passing alone, on",
+    "preserveLines" : false,
+    "title" : "The Fall of the House of Usher",
+    "titleKo" : "어셔가의 몰락"
+  },
+  {
+    "author" : "Lewis Carroll",
+    "authorKo" : "루이스 캐럴",
+    "characters" : 143488,
+    "file" : "04-11.txt",
+    "opening" : "by Lewis Carroll THE MILLENNIUM FULCRUM EDITION 3.0 Contents CHAPTER I. Down the Rabbit-Hole CHAPTER II. The Pool of Tears CHAPTER III. A Caucus-Race and a Long Tale CHAPTER IV. The Rabbit Sends in a Little Bill CHAPTER V. Advice from a Cat",
+    "preserveLines" : false,
+    "title" : "Alice's Adventures in Wonderland",
+    "titleKo" : "이상한 나라의 앨리스"
+  },
+  {
+    "author" : "Robert Louis Stevenson",
+    "authorKo" : "로버트 루이스 스티븐슨",
+    "characters" : 138757,
+    "file" : "05-43.txt",
+    "opening" : "by Robert Louis Stevenson Contents STORY OF THE DOOR SEARCH FOR MR. HYDE DR. JEKYLL WAS QUITE AT EASE THE CAREW MURDER CASE INCIDENT OF THE LETTER INCIDENT OF DR. LANYON INCIDENT AT THE WINDOW THE LAST NIGHT DR. LANYON’S NARRATIVE HENRY JEK",
+    "preserveLines" : false,
+    "title" : "Strange Case of Dr Jekyll and Mr Hyde",
+    "titleKo" : "지킬 박사와 하이드 씨"
+  },
+  {
+    "author" : "Oscar Wilde",
+    "authorKo" : "오스카 와일드",
+    "characters" : 117260,
+    "file" : "06-844.txt",
+    "opening" : "A Trivial Comedy for Serious People THE PERSONS IN THE PLAY John Worthing, J.P. Algernon Moncrieff Rev. Canon Chasuble, D.D. Merriman, Butler Lane, Manservant Lady Bracknell Hon. Gwendolen Fairfax Cecily Cardew Miss Prism, Governess THE SCE",
+    "preserveLines" : true,
+    "title" : "The Importance of Being Earnest",
+    "titleKo" : "진지함의 중요성"
+  },
+  {
+    "author" : "Jane Austen",
+    "authorKo" : "제인 오스틴",
+    "characters" : 718334,
+    "file" : "07-1342.txt",
+    "opening" : "GEORGE ALLEN PUBLISHER 156 CHARING CROSS ROAD LONDON RUSKIN HOUSE ] [Illustration: Reading Jane’s Letters. Chap 34. ] PRIDE. and PREJUDICE by Jane Austen, with a Preface by George Saintsbury and Illustrations by Hugh Thomson Ruskin 156. Cha",
+    "preserveLines" : false,
+    "title" : "Pride and Prejudice",
+    "titleKo" : "오만과 편견"
+  },
+  {
+    "author" : "Johann Wolfgang von Goethe",
+    "authorKo" : "요한 볼프강 폰 괴테",
+    "characters" : 235162,
+    "file" : "08-2527.txt",
+    "opening" : "by Johann Wolfgang von Goethe PREFACE I have carefully collected whatever I have been able to learn of the story of poor Werther, and here present it to you, knowing that you will thank me for it. To his spirit and character you cannot refu",
+    "preserveLines" : false,
+    "title" : "The Sorrows of Young Werther",
+    "titleKo" : "젊은 베르테르의 슬픔"
+  },
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 104238,
+    "file" : "09-1533.txt",
+    "opening" : "by William Shakespeare Contents ACT I Scene I. An open Place. Scene II. A Camp near Forres. Scene III. A heath. Scene IV. Forres. A Room in the Palace. Scene V. Inverness. A Room in Macbeth’s Castle. Scene VI. The same. Before the Castle. S",
+    "preserveLines" : true,
+    "title" : "Macbeth",
+    "titleKo" : "맥베스"
+  },
+  {
+    "author" : "Charles Dickens",
+    "authorKo" : "찰스 디킨스",
+    "characters" : 168070,
+    "file" : "10-653.txt",
+    "opening" : "Transcribed from Charles Scribner’s Sons “Works of Charles Dickens” edition by David Price, email ccx074@pglaf.org THE CHIMES A Goblin Story OF SOME BELLS THAT RANG AN OLD YEAR OUT AND A NEW YEAR IN CHAPTER I—First Quarter. There are not ma",
+    "preserveLines" : false,
+    "title" : "The Chimes",
+    "titleKo" : "종소리"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 13746,
+    "file" : "11-1064.txt",
+    "opening" : "by Edgar Allan Poe The “Red Death” had long devastated the country. No pestilence had ever been so fatal, or so hideous. Blood was its Avatar and its seal—the redness and the horror of blood. There were sharp pains, and sudden dizziness, an",
+    "preserveLines" : false,
+    "title" : "The Masque of the Red Death",
+    "titleKo" : "붉은 죽음의 가면"
+  },
+  {
+    "author" : "Lewis Carroll",
+    "authorKo" : "루이스 캐럴",
+    "characters" : 161987,
+    "file" : "12-12.txt",
+    "opening" : "And What Alice Found There By Lewis Carroll The Millennium Fulcrum Edition 1.7 DRAMATIS PERSONÆ. (As arranged before commencement of game.) WHITE RED. PIECES. PAWNS. PAWNS. PIECES. Tweedledee. Daisy. Daisy. Humpty Dumpty. Unicorn. Haigha. M",
+    "preserveLines" : false,
+    "title" : "Through the Looking-Glass",
+    "titleKo" : "거울 나라의 앨리스"
+  },
+  {
+    "author" : "Robert Louis Stevenson",
+    "authorKo" : "로버트 루이스 스티븐슨",
+    "characters" : 362929,
+    "file" : "13-120.txt",
+    "opening" : "by Robert Louis Stevenson TREASURE ISLAND To S.L.O., an American gentleman in accordance with whose classic taste the following narrative has been designed, it is now, in return for numerous delightful hours, and with the kindest wishes, de",
+    "preserveLines" : false,
+    "title" : "Treasure Island",
+    "titleKo" : "보물섬"
+  },
+  {
+    "author" : "Oscar Wilde",
+    "authorKo" : "오스카 와일드",
+    "characters" : 429032,
+    "file" : "14-174.txt",
+    "opening" : "by Oscar Wilde Contents THE PREFACE CHAPTER I. CHAPTER II. CHAPTER III. CHAPTER IV. CHAPTER V. CHAPTER VI. CHAPTER VII. CHAPTER VIII. CHAPTER IX. CHAPTER X. CHAPTER XI. CHAPTER XII. CHAPTER XIII. CHAPTER XIV. CHAPTER XV. CHAPTER XVI. CHAPTE",
+    "preserveLines" : false,
+    "title" : "The Picture of Dorian Gray",
+    "titleKo" : "도리언 그레이의 초상"
+  },
+  {
+    "author" : "Jane Austen",
+    "authorKo" : "제인 오스틴",
+    "characters" : 464587,
+    "file" : "15-105.txt",
+    "opening" : "by Jane Austen (1818) Contents CHAPTER I. CHAPTER II. CHAPTER III. CHAPTER IV. CHAPTER V. CHAPTER VI. CHAPTER VII. CHAPTER VIII. CHAPTER IX. CHAPTER X. CHAPTER XI. CHAPTER XII. CHAPTER XIII. CHAPTER XIV. CHAPTER XV. CHAPTER XVI. CHAPTER XVI",
+    "preserveLines" : false,
+    "title" : "Persuasion",
+    "titleKo" : "설득"
+  },
+  {
+    "author" : "Johann Wolfgang von Goethe",
+    "authorKo" : "요한 볼프강 폰 괴테",
+    "characters" : 196295,
+    "file" : "16-14591.txt",
+    "opening" : "by Johann Wolfgang von Goethe DEDICATION Again ye come, ye hovering Forms! I find ye, As early to my clouded sight ye shone! Shall I attempt, this once, to seize and bind ye? Still o’er my heart is that illusion thrown? Ye crowd more near! ",
+    "preserveLines" : true,
+    "title" : "Faust, Part One",
+    "titleKo" : "파우스트 1부"
+  },
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 142149,
+    "file" : "17-1513.txt",
+    "opening" : "by William Shakespeare Contents THE PROLOGUE. ACT I Scene I. A public place. Scene II. A Street. Scene III. Room in Capulet’s House. Scene IV. A Street. Scene V. A Hall in Capulet’s House. ACT II CHORUS. Scene I. An open place adjoining Cap",
+    "preserveLines" : true,
+    "title" : "Romeo and Juliet",
+    "titleKo" : "로미오와 줄리엣"
+  },
+  {
+    "author" : "Charles Dickens",
+    "authorKo" : "찰스 디킨스",
+    "characters" : 175101,
+    "file" : "18-678.txt",
+    "opening" : "Transcribed from the Charles Scribner’s Sons “Works of Charles Dickens” edition by David Price, email ccx074@pglaf.org THE CRICKET ON THE HEARTH A Fairy Tale of Home TO LORD JEFFREY THIS LITTLE STORY IS INSCRIBED WITH THE AFFECTION AND ATTA",
+    "preserveLines" : false,
+    "title" : "The Cricket on the Hearth",
+    "titleKo" : "난롯가의 귀뚜라미"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 12943,
+    "file" : "19-1063.txt",
+    "opening" : "by Edgar Allan Poe The thousand injuries of Fortunato I had borne as I best could, but when he ventured upon insult, I vowed revenge. You, who so well know the nature of my soul, will not suppose, however, that I gave utterance to a threat.",
+    "preserveLines" : false,
+    "title" : "The Cask of Amontillado",
+    "titleKo" : "아몬티야도의 술통"
+  },
+  {
+    "author" : "Lewis Carroll",
+    "authorKo" : "루이스 캐럴",
+    "characters" : 29371,
+    "file" : "20-13.txt",
+    "opening" : "an Agony in Eight Fits by Lewis Carroll THE MILLENNIUM FULCRUM EDITION 1.2 Inscribed to a dear Child: in memory of golden summer hours and whispers of a summer sea. Girt with a boyish garb for boyish task, Eager she wields her spade: yet lo",
+    "preserveLines" : true,
+    "title" : "The Hunting of the Snark",
+    "titleKo" : "스나크 사냥"
+  },
+  {
+    "author" : "Robert Louis Stevenson",
+    "authorKo" : "로버트 루이스 스티븐슨",
+    "characters" : 422051,
+    "file" : "21-421.txt",
+    "opening" : "KIDNAPPED BEING MEMOIRS OF THE ADVENTURES OF DAVID BALFOUR IN THE YEAR 1751 HOW HE WAS KIDNAPPED AND CAST AWAY; HIS SUFFERINGS IN A DESERT ISLE; HIS JOURNEY IN THE WILD HIGHLANDS; HIS ACQUAINTANCE WITH ALAN BRECK STEWART AND OTHER NOTORIOUS",
+    "preserveLines" : false,
+    "title" : "Kidnapped",
+    "titleKo" : "납치"
+  },
+  {
+    "author" : "Oscar Wilde",
+    "authorKo" : "오스카 와일드",
+    "characters" : 86191,
+    "file" : "22-902.txt",
+    "opening" : "BY OSCAR WILDE ILLUSTRATED BY WALTER CRANE AND JACOMB HOOD * * * * * SEVENTH IMPRESSION * * * * * LONDON DAVID NUTT, 57–59 LONG ACRE 1910 * * * * * First Edition May 1888 Second Impression January 1889 Third Impression February 1902 Fourth ",
+    "preserveLines" : false,
+    "title" : "The Happy Prince and Other Tales",
+    "titleKo" : "행복한 왕자"
+  },
+  {
+    "author" : "Jane Austen",
+    "authorKo" : "제인 오스틴",
+    "characters" : 433274,
+    "file" : "23-121.txt",
+    "opening" : "by Jane Austen (1803) Contents ADVERTISEMENT BY THE AUTHORESS, TO NORTHANGER ABBEY CHAPTER 1 CHAPTER 2 CHAPTER 3 CHAPTER 4 CHAPTER 5 CHAPTER 6 CHAPTER 7 CHAPTER 8 CHAPTER 9 CHAPTER 10 CHAPTER 11 CHAPTER 12 CHAPTER 13 CHAPTER 14 CHAPTER 15 C",
+    "preserveLines" : false,
+    "title" : "Northanger Abbey",
+    "titleKo" : "노생거 사원"
+  },
+  {
+    "author" : "Johann Wolfgang von Goethe",
+    "authorKo" : "요한 볼프강 폰 괴테",
+    "characters" : 47946,
+    "file" : "24-78269.txt",
+    "opening" : "by Johann Wolfgang von Goethe THE PRINCESS AND THE TIGER The thick fog of an early autumnal morning obscured the extensive courts which surrounded the Prince’s castle, but through the mists, which gradually dispersed, a stranger might obser",
+    "preserveLines" : false,
+    "title" : "Novelle",
+    "titleKo" : "노벨레"
+  },
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 95390,
+    "file" : "25-1514.txt",
+    "opening" : "by William Shakespeare Contents ACT I Scene I. Athens. A room in the Palace of Theseus Scene II. The Same. A Room in a Cottage ACT II Scene I. A wood near Athens Scene II. Another part of the wood ACT III Scene I. The Wood. Scene II. Anothe",
+    "preserveLines" : true,
+    "title" : "A Midsummer Night's Dream",
+    "titleKo" : "한여름 밤의 꿈"
+  },
+  {
+    "author" : "Charles Dickens",
+    "authorKo" : "찰스 디킨스",
+    "characters" : 756688,
+    "file" : "26-98.txt",
+    "opening" : "A STORY OF THE FRENCH REVOLUTION By Charles Dickens CONTENTS Book the First--Recalled to Life CHAPTER I The Period CHAPTER II The Mail CHAPTER III The Night Shadows CHAPTER IV The Preparation CHAPTER V The Wine-shop CHAPTER VI The Shoemaker",
+    "preserveLines" : false,
+    "title" : "A Tale of Two Cities",
+    "titleKo" : "두 도시 이야기"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 6373,
+    "file" : "27-1065.txt",
+    "opening" : "by Edgar Allan Poe Once upon a midnight dreary, while I pondered, weak and weary, Over many a quaint and curious volume of forgotten lore— While I nodded, nearly napping, suddenly there came a tapping, As of some one gently rapping, rapping",
+    "preserveLines" : true,
+    "title" : "The Raven",
+    "titleKo" : "갈까마귀"
+  },
+  {
+    "author" : "Lewis Carroll",
+    "authorKo" : "루이스 캐럴",
+    "characters" : 363106,
+    "file" : "28-620.txt",
+    "opening" : "By Lewis Carroll Is all our Life, then but a dream Seen faintly in the goldern gleam Athwart Time's dark resistless stream? Bowed to the earth with bitter woe Or laughing at some raree-show We flutter idly to and fro. Man's little Day in ha",
+    "preserveLines" : false,
+    "title" : "Sylvie and Bruno",
+    "titleKo" : "실비와 브루노"
+  },
+  {
+    "author" : "Robert Louis Stevenson",
+    "authorKo" : "로버트 루이스 스티븐슨",
+    "characters" : 434352,
+    "file" : "29-848.txt",
+    "opening" : "Critic on the Hearth: No one but myself knows what I have suffered, nor what my books have gained, by your unsleeping watchfulness and admirable pertinacity. And now here is a volume that goes into the world and lacks your imprimatur: a str",
+    "preserveLines" : false,
+    "title" : "The Black Arrow",
+    "titleKo" : "검은 화살"
+  },
+  {
+    "author" : "Oscar Wilde",
+    "authorKo" : "오스카 와일드",
+    "characters" : 64476,
+    "file" : "30-14522.txt",
+    "opening" : "file which includes the original illustrations. See 14522-h.htm or 14522-h.zip: or THE CANTERVILLE GHOST by WILDE An amusing chronicle of the tribulations of the Ghost of Canterville Chase when his ancestral halls became the home of the Ame",
+    "preserveLines" : false,
+    "title" : "The Canterville Ghost",
+    "titleKo" : "캔터빌의 유령"
+  },
+  {
+    "author" : "Jane Austen",
+    "authorKo" : "제인 오스틴",
+    "characters" : 669415,
+    "file" : "31-161.txt",
+    "opening" : "by Jane Austen (1811) Contents CHAPTER I CHAPTER II CHAPTER III CHAPTER IV CHAPTER V CHAPTER VI CHAPTER VII CHAPTER VIII CHAPTER IX CHAPTER X CHAPTER XI CHAPTER XII CHAPTER XIII CHAPTER XIV CHAPTER XV CHAPTER XVI CHAPTER XVII CHAPTER XVIII ",
+    "preserveLines" : false,
+    "title" : "Sense and Sensibility",
+    "titleKo" : "이성과 감성"
+  },
+  {
+    "author" : "Johann Wolfgang von Goethe",
+    "authorKo" : "요한 볼프강 폰 괴테",
+    "characters" : 91568,
+    "file" : "32-15850.txt",
+    "opening" : "by Johann Wolfgang von Goethe PERSONS OF THE DRAMA. IPHIGENIA. THOAS, King of the Taurians. ORESTES. PYLADES. ARKAS. ACT THE FIRST. SCENE I. A Grove before the Temple of Diana. IPHIGENIA. Beneath your leafy gloom, ye waving boughs Of this o",
+    "preserveLines" : true,
+    "title" : "Iphigenia in Tauris",
+    "titleKo" : "타우리스의 이피게니에"
+  },
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 153774,
+    "file" : "33-1531.txt",
+    "opening" : "by William Shakespeare Contents ACT I Scene I. Venice. A street Scene II. Venice. Another street Scene III. Venice. A council chamber ACT II Scene I. A seaport in Cyprus. A Platform Scene II. A street Scene III. A Hall in the Castle ACT III",
+    "preserveLines" : true,
+    "title" : "Othello",
+    "titleKo" : "오셀로"
+  },
+  {
+    "author" : "Oscar Wilde",
+    "authorKo" : "오스카 와일드",
+    "characters" : 111110,
+    "file" : "34-790.txt",
+    "opening" : "A PLAY ABOUT A GOOD WOMAN BY OSCAR WILDE * * * * * METHUEN & CO. LTD. 36 ESSEX STREET W.C. LONDON Sixteenth Edition First Published 1893 First Issued by Methuen & Co. Ltd. (Limited Editions on 1908 Hand-made Paper and Japanese Vellum) Febru",
+    "preserveLines" : true,
+    "title" : "Lady Windermere's Fan",
+    "titleKo" : "윈더미어 부인의 부채"
+  },
+  {
+    "author" : "Jane Austen",
+    "authorKo" : "제인 오스틴",
+    "characters" : 879328,
+    "file" : "35-158.txt",
+    "opening" : "by Jane Austen Contents VOLUME I. CHAPTER I. CHAPTER II. CHAPTER III. CHAPTER IV. CHAPTER V. CHAPTER VI. CHAPTER VII. CHAPTER VIII. CHAPTER IX. CHAPTER X. CHAPTER XI. CHAPTER XII. CHAPTER XIII. CHAPTER XIV. CHAPTER XV. CHAPTER XVI. CHAPTER ",
+    "preserveLines" : false,
+    "title" : "Emma",
+    "titleKo" : "엠마"
+  },
+  {
+    "author" : "Johann Wolfgang von Goethe",
+    "authorKo" : "요한 볼프강 폰 괴테",
+    "characters" : 162738,
+    "file" : "36-1945.txt",
+    "opening" : "by Johann Wolfgang von Goethe DRAMATIS PERSONAE Margaret of Parma, (Daughter of Charles V., and Regent of the Netherlands) Count Egmont, (Prince of Gaure) The Duke of Alva William of Orange Ferdinand, (his natural Son) Machiavel, in the ser",
+    "preserveLines" : false,
+    "title" : "Egmont",
+    "titleKo" : "에그몬트"
+  },
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 129220,
+    "file" : "37-23042.txt",
+    "opening" : "This text uses utf-8 (unicode) file encoding. If the apostrophes and quotation marks in this paragraph appear as garbage, make sure your text reader’s “character set” or “file encoding” is set to Unicode (UTF-8). You may also need to change",
+    "preserveLines" : true,
+    "title" : "The Tempest",
+    "titleKo" : "템페스트"
+  },
+  {
+    "author" : "Johann Wolfgang von Goethe",
+    "authorKo" : "요한 볼프강 폰 괴테",
+    "characters" : 131554,
+    "file" : "38-1958.txt",
+    "opening" : "by Johann Wolfgang von Goethe CALLIOPE FATE AND SYMPATHY \"Truly, I never have seen the market and street so deserted! How as if it were swept looks the town, or had perished! Not fifty Are there, methinks, of all our inhabitants in it remai",
+    "preserveLines" : true,
+    "title" : "Hermann and Dorothea",
+    "titleKo" : "헤르만과 도로테아"
+  },
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 154616,
+    "file" : "39-1532.txt",
+    "opening" : "by William Shakespeare Contents ACT I Scene I. A Room of State in King Lear’s Palace Scene II. A Hall in the Earl of Gloucester’s Castle Scene III. A Room in the Duke of Albany’s Palace Scene IV. A Hall in Albany’s Palace Scene V. Court bef",
+    "preserveLines" : true,
+    "title" : "King Lear",
+    "titleKo" : "리어 왕"
+  },
+  {
+    "author" : "Johann Wolfgang von Goethe",
+    "authorKo" : "요한 볼프강 폰 괴테",
+    "characters" : 232387,
+    "file" : "40-78139e.txt",
+    "opening" : "by Johann Wolfgang von Goethe At that unhappy period, so fruitful in disasters to Germany, to Europe, and, indeed, to the whole world, when the French army overran the Continent, a family of distinction was compelled to forsake their proper",
+    "preserveLines" : false,
+    "title" : "The Recreations of the German Emigrants",
+    "titleKo" : "독일 피난민들의 대화"
+  },
+  {
+    "author" : "Johann Wolfgang von Goethe",
+    "authorKo" : "요한 볼프강 폰 괴테",
+    "characters" : 526938,
+    "file" : "41-1287.txt",
+    "opening" : "by Johann Wolfgang von Goethe DEDICATION. The morn arrived; his footstep quickly scared The gentle sleep that round my senses clung, And I, awak'ning, from my cottage fared, And up the mountain side with light heart sprung; At every step I ",
+    "preserveLines" : true,
+    "title" : "The Poems of Goethe",
+    "titleKo" : "괴테 시집"
+  },
+  {
+    "author" : "Johann Wolfgang von Goethe",
+    "authorKo" : "요한 볼프강 폰 괴테",
+    "characters" : 1206332,
+    "file" : "42-36483.txt",
+    "opening" : "by Johann Wolfgang von Goethe BOOK I. CHAPTER I. The play was late in breaking up: old Barbara went more than once to the window, and listened for the sound of carriages. She was waiting for Mariana, her pretty mistress, who had that night,",
+    "preserveLines" : false,
+    "title" : "Wilhelm Meister's Apprenticeship",
+    "titleKo" : "빌헬름 마이스터의 수업시대"
+  },
+  {
+    "author" : "Johann Wolfgang von Goethe",
+    "authorKo" : "요한 볼프강 폰 괴테",
+    "characters" : 442561,
+    "file" : "43-78139t.txt",
+    "opening" : "by Johann Wolfgang von Goethe MEISTER’S TRAVELS; OR, THE RENUNCIANTS. A NOVEL. To travel now the Apprentice does essay, And every step is girt with doubt and danger: In truth, he uses not to sing or pray; But, is his path perplexed, this to",
+    "preserveLines" : false,
+    "title" : "Wilhelm Meister's Travels",
+    "titleKo" : "빌헬름 마이스터의 편력시대"
+  },
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 121280,
+    "file" : "44-1515.txt",
+    "opening" : "by William Shakespeare Contents ACT I Scene I. Venice. A street. Scene II. Belmont. A room in Portia’s house. Scene III. Venice. A public place. ACT II Scene I. Belmont. A room in Portia’s house. Scene II. Venice. A street. Scene III. The s",
+    "preserveLines" : true,
+    "title" : "The Merchant of Venice",
+    "titleKo" : "베니스의 상인"
+  },
+  {
+    "author" : "Charles Dickens",
+    "authorKo" : "찰스 디킨스",
+    "characters" : 892477,
+    "file" : "45-730.txt",
+    "opening" : "OR THE PARISH BOY’S PROGRESS by Charles Dickens Contents I TREATS OF THE PLACE WHERE OLIVER TWIST WAS BORN AND OF THE CIRCUMSTANCES ATTENDING HIS BIRTH II TREATS OF OLIVER TWIST’S GROWTH, EDUCATION, AND BOARD III RELATES HOW OLIVER TWIST WA",
+    "preserveLines" : false,
+    "title" : "Oliver Twist",
+    "titleKo" : "올리버 트위스트"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 75830,
+    "file" : "46-2147a.txt",
+    "opening" : "What ho! what ho! this fellow is dancing mad! He hath been bitten by the Tarantula. _—All in the Wrong._ Many years ago, I contracted an intimacy with a Mr. William Legrand. He was of an ancient Huguenot family, and had once been wealthy; b",
+    "preserveLines" : false,
+    "title" : "The Gold-Bug",
+    "titleKo" : "황금충"
+  },
+  {
+    "author" : "Lewis Carroll",
+    "authorKo" : "루이스 캐럴",
+    "characters" : 433255,
+    "file" : "47-48795.txt",
+    "opening" : "BY LEWIS CARROLL _WITH FORTY-SIX ILLUSTRATIONS BY HARRY FURNISS_ _New York_ MACMILLAN AND CO. AND LONDON 1894 _The Right of Translation and Reproduction is Reserved_ Dreams, that elude the Waker’s frenzied grasp— Hands, stark and still, on ",
+    "preserveLines" : false,
+    "title" : "Sylvie and Bruno Concluded",
+    "titleKo" : "실비와 브루노 완결편"
+  },
+  {
+    "author" : "Robert Louis Stevenson",
+    "authorKo" : "로버트 루이스 스티븐슨",
+    "characters" : 464310,
+    "file" : "48-864.txt",
+    "opening" : "The Master of Ballantrae A Winter’s Tale by Robert Louis Stevenson Contents PREFACE CHAPTER I. SUMMARY OF EVENTS DURING THIS MASTER’S WANDERINGS CHAPTER II. SUMMARY OF EVENTS (_continued_) CHAPTER III. THE MASTER’S WANDERINGS CHAPTER IV. PE",
+    "preserveLines" : false,
+    "title" : "The Master of Ballantrae",
+    "titleKo" : "발란트래의 주인"
+  },
+  {
+    "author" : "Oscar Wilde",
+    "authorKo" : "오스카 와일드",
+    "characters" : 178592,
+    "file" : "49-885.txt",
+    "opening" : "A PLAY BY OSCAR WILDE * * * * * METHUEN & CO. LTD. 36 ESSEX STREET W.C. LONDO",
+    "preserveLines" : true,
+    "title" : "An Ideal Husband",
+    "titleKo" : "이상적인 남편"
+  },
+  {
+    "author" : "Jane Austen",
+    "authorKo" : "제인 오스틴",
+    "characters" : 883628,
+    "file" : "50-141.txt",
+    "opening" : "(1814) By Jane Austen Contents CHAPTER I CHAPTER II CHAPTER III CHAPTER IV CHAPTER V CHAPTER VI CHAPTER VII CHAPTER VIII CHAPTER IX CHAPTER X CHAPTER XI CHAPTER XII CHAPTER XIII CHAPTER XIV CHAPTER XV CHAPTER XVI CHAPTER XVII CHAPTER XVIII ",
+    "preserveLines" : false,
+    "title" : "Mansfield Park",
+    "titleKo" : "맨스필드 파크"
+  },
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 116484,
+    "file" : "51-1522.txt",
+    "opening" : "JULIUS CAESAR by William Shakespeare Contents ACT I Scene I. Rome. A street Scene II. The same. A public place Scene III. The same. A street ACT II Scene I. Rome. Brutus’ orchard Scene II. A room in Caesar’s palace Scene III. A street near ",
+    "preserveLines" : true,
+    "title" : "Julius Caesar",
+    "titleKo" : "줄리어스 시저"
+  },
+  {
+    "author" : "Charles Dickens",
+    "authorKo" : "찰스 디킨스",
+    "characters" : 994274,
+    "file" : "52-1400.txt",
+    "opening" : "Great Expectations [1867 Edition] by Charles Dickens Contents Chapter I. Chapter II. Chapter III. Chapter IV. Chapter V. Chapter VI. Chapter VII. Chapter VIII. Chapter IX. Chapter X. Chapter XI. Chapter XII. Chapter XIII. Chapter XIV. Chapt",
+    "preserveLines" : false,
+    "title" : "Great Expectations",
+    "titleKo" : "위대한 유산"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 79052,
+    "file" : "53-2147b.txt",
+    "opening" : "What song the Syrens sang, or what name Achilles assumed when he hid himself among women, although puzzling questions, are not beyond _all_ conjecture. —_Sir Thomas Browne._ The mental features discoursed of as the analytical, are, in thems",
+    "preserveLines" : false,
+    "title" : "The Murders in the Rue Morgue",
+    "titleKo" : "모르그가의 살인 사건"
+  },
+  {
+    "author" : "Lewis Carroll",
+    "authorKo" : "루이스 캐럴",
+    "characters" : 85122,
+    "file" : "54-651.txt",
+    "opening" : "AND OTHER POEMS * * * * * BY LEWIS CARROLL * * * * * _WITH ILLUSTRATIONS_ BY",
+    "preserveLines" : true,
+    "title" : "Phantasmagoria and Other Poems",
+    "titleKo" : "판타스마고리아"
+  },
+  {
+    "author" : "Robert Louis Stevenson",
+    "authorKo" : "로버트 루이스 스티븐슨",
+    "characters" : 347196,
+    "file" : "55-372.txt",
+    "opening" : "A ROMANCE BY ROBERT LOUIS STEVENSON [Picture: Decorative graphic] A NEW EDITION * * * * * LONDON CHATTO & WINDUS 1905 TO NELLY VAN DE GRIFT (MRS. ADULFO SANCHEZ, OF MONTEREY) At last, after so many years, I have the pleasure of re-introduci",
+    "preserveLines" : false,
+    "title" : "Prince Otto",
+    "titleKo" : "오토 왕자"
+  },
+  {
+    "author" : "Oscar Wilde",
+    "authorKo" : "오스카 와일드",
+    "characters" : 129271,
+    "file" : "56-854.txt",
+    "opening" : "NO IMPORTANCE A PLAY BY OSCAR WILDE * * * * * METHUEN & CO., LTD. 36 ESSEX STREET W.C.",
+    "preserveLines" : true,
+    "title" : "A Woman of No Importance",
+    "titleKo" : "보잘것없는 여인"
+  },
+  {
+    "author" : "Jane Austen",
+    "authorKo" : "제인 오스틴",
+    "characters" : 127336,
+    "file" : "57-946.txt",
+    "opening" : "by Jane Austen CONTENTS I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI XXII XXIII XXIV XXV XXVI XXVII XXVIII XXIX XXX XXXI XXXII XXXIII XXXIV XXXV XXXVI XXXVII XXXVIII XXXIX XL XLI CONCLUSION I _Lady Susan Verno",
+    "preserveLines" : false,
+    "title" : "Lady Susan",
+    "titleKo" : "레이디 수잔"
+  },
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 115448,
+    "file" : "58-1526.txt",
+    "opening" : "by William Shakespeare Contents ACT I Scene I. An Apartment in the Duke’s Palace. Scene II. The sea-coast. Scene III. A Room in Olivia’s House. Scene IV. A Room in the Duke’s Palace. Scene V. A Room in Olivia’s House. ACT II Scene I. The se",
+    "preserveLines" : true,
+    "title" : "Twelfth Night",
+    "titleKo" : "십이야"
+  },
+  {
+    "author" : "Charles Dickens",
+    "authorKo" : "찰스 디킨스",
+    "characters" : 577907,
+    "file" : "59-786.txt",
+    "opening" : "* * * * * By CHARLES DICKENS * * * * * _With illustrations by Marcus Stone_, _Maurice_ _Greiffenhagen_, _and F. Walker_ * * * * * LONDON: CHAPMAN & HALL, LD. NEW YORK: CHARLES SCRIBNER’S SONS 1905 CONTENTS _BOOK THE FIRST_. _SOWING_ PAGE CH",
+    "preserveLines" : false,
+    "title" : "Hard Times",
+    "titleKo" : "어려운 시절"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 40475,
+    "file" : "60-2148a.txt",
+    "opening" : "Nil sapientiæ odiosius acumine nimio.—_Seneca_. At Paris, just after dark one gusty evening in the autumn of 18-, I was enjoying the twofold luxury of meditation and a meerschaum, in company with my friend C. Auguste Dupin, in his little ba",
+    "preserveLines" : false,
+    "title" : "The Purloined Letter",
+    "titleKo" : "도둑맞은 편지"
+  },
+  {
+    "author" : "Lewis Carroll",
+    "authorKo" : "루이스 캐럴",
+    "characters" : 158638,
+    "file" : "61-29042.txt",
+    "opening" : "Minor punctuation errors have been changed without notice. Printer errors have been changed and are listed at the end. All other inconsistencies are as in the original. In this version the square root symbol is indicated by [** sqrt], the s",
+    "preserveLines" : false,
+    "title" : "A Tangled Tale",
+    "titleKo" : "엉킨 이야기"
+  },
+  {
+    "author" : "Robert Louis Stevenson",
+    "authorKo" : "로버트 루이스 스티븐슨",
+    "characters" : 52607,
+    "file" : "62-136.txt",
+    "opening" : "********************************************************************** THIS EBOOK WAS ONE OF PROJECT GUTENBERG'S EARLY FILES PRODUCED AT A TIME WHEN PROOFING METHODS AND TOOLS WERE NOT WELL DEVELOPED. THERE IS AN IMPROVED EDITION OF THIS TI",
+    "preserveLines" : true,
+    "title" : "A Child's Garden of Verses",
+    "titleKo" : "어린이 시의 정원"
+  },
+  {
+    "author" : "Oscar Wilde",
+    "authorKo" : "오스카 와일드",
+    "characters" : 94052,
+    "file" : "63-921.txt",
+    "opening" : ". . . Suffering is one very long moment. We cannot divide it by seasons. We can only record its moods, and chronicle their return. With us time itself does not progress. It revolves. It seems to circle round one centre of pain. The paralysi",
+    "preserveLines" : false,
+    "title" : "De Profundis",
+    "titleKo" : "옥중기"
+  },
+  {
+    "author" : "Jane Austen",
+    "authorKo" : "제인 오스틴",
+    "characters" : 186102,
+    "file" : "64-1212.txt",
+    "opening" : "A Collection of Juvenile Writings By Jane Austen CONTENTS LOVE AND FREINDSHIP LETTER the FIRST From ISABEL to LAURA LETTER 2nd LAURA to ISABEL LETTER 3rd LAURA to MARIANNE LETTER 4th Laura to MARIANNE LETTER 5th LAURA to MARIANNE LETTER 6th",
+    "preserveLines" : false,
+    "title" : "Love and Freindship",
+    "titleKo" : "사랑과 우정"
+  },
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 122742,
+    "file" : "65-1519.txt",
+    "opening" : "by William Shakespeare Contents ACT I Scene I. Before Leonato’s House. Scene II. A room in Leonato’s house. Scene III. Another room in Leonato’s house. ACT II Scene I. A hall in Leonato’s house. Scene II. Another room in Leonato’s house. Sc",
+    "preserveLines" : true,
+    "title" : "Much Ado About Nothing",
+    "titleKo" : "헛소동"
+  },
+  {
+    "author" : "Charles Dickens",
+    "authorKo" : "찰스 디킨스",
+    "characters" : 186242,
+    "file" : "66-644.txt",
+    "opening" : "CHAPTER I The Gift Bestowed Everybody said so. Far be it from me to assert that what everybody says must be true. Everybody is, often, as likely to be wrong as right. In the general experience, everybody has been wrong so often, and it has ",
+    "preserveLines" : false,
+    "title" : "The Haunted Man and the Ghost's Bargain",
+    "titleKo" : "유령 들린 사내"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 21693,
+    "file" : "67-2148b.txt",
+    "opening" : "For the most wild, yet most homely narrative which I am about to pen, I neither expect nor solicit belief. Mad indeed would I be to expect it, in a case where my very senses reject their own evidence. Yet, mad am I not—and very surely do I ",
+    "preserveLines" : false,
+    "title" : "The Black Cat",
+    "titleKo" : "검은 고양이"
+  },
+  {
+    "author" : "Lewis Carroll",
+    "authorKo" : "루이스 캐럴",
+    "characters" : 393293,
+    "file" : "68-28696.txt",
+    "opening" : "SYMBOLIC LOGIC By Lewis Carroll pg-ii pg-iii pg-iv A Syllogism worked out. That story of yours, about your once meeting the sea-serpent, always sets me off yawning; I never yawn, unless when I'm listening to something totally devoid of inte",
+    "preserveLines" : false,
+    "title" : "Symbolic Logic",
+    "titleKo" : "기호 논리학"
+  },
+  {
+    "author" : "Robert Louis Stevenson",
+    "authorKo" : "로버트 루이스 스티븐슨",
+    "characters" : 433369,
+    "file" : "69-344.txt",
+    "opening" : "by ROBERT LOUIS STEVENSON tenth edition LONDON CHATTO & WINDUS 1904 Three of the following Tales have appeared in the _Cornhill Magazine_; one in _Longman’s_; one in Mr. Henry Norman’s Christmas Annual; and one in the _Court and Society Rev",
+    "preserveLines" : false,
+    "title" : "The Merry Men and Other Tales",
+    "titleKo" : "유쾌한 사내들"
+  },
+  {
+    "author" : "Oscar Wilde",
+    "authorKo" : "오스카 와일드",
+    "characters" : 174971,
+    "file" : "70-873.txt",
+    "opening" : "* * * * * TO CONSTANCE MARY WILDE * * * * * A HOUSE OF POMEGRANATES BY OSCAR WILDE * * * * * METHUEN & CO. LTD. 36 ESSEX STREET W.C. LONDON _Seventh Edition_ _First Published_ 1891 _First Issued by Methuen and Co._ (_Limited Editions on",
+    "preserveLines" : false,
+    "title" : "A House of Pomegranates",
+    "titleKo" : "석류의 집"
+  },
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 127036,
+    "file" : "71-1523.txt",
+    "opening" : "by William Shakespeare Contents ACT I Scene I. An Orchard near Oliver’s house Scene II. A Lawn before the Duke’s Palace Scene III. A Room in the Palace ACT II Scene I. The Forest of Arden Scene II. A Room in the Palace Scene III. Before Oli",
+    "preserveLines" : true,
+    "title" : "As You Like It",
+    "titleKo" : "뜻대로 하세요"
+  },
+  {
+    "author" : "Charles Dickens",
+    "authorKo" : "찰스 디킨스",
+    "characters" : 587278,
+    "file" : "72-675.txt",
+    "opening" : "AMERICAN NOTES FOR GENERAL CIRCULATION AND PICTURES FROM ITALY {1} BY CHARLES DICKENS * * * * * WITH 8 ILLUSTRATIONS BY MARCUS STONE, R.A. * * * * * LONDON CHAPMAN & HALL, LTD. 1913 * * * * * I DEDICATE THIS BOOK TO THOSE FRIENDS OF MINE IN",
+    "preserveLines" : false,
+    "title" : "American Notes",
+    "titleKo" : "미국 기행"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 33964,
+    "file" : "73-2148c.txt",
+    "opening" : "Impia tortorum longos hic turba furores Sanguinis innocui, non satiata, aluit. Sospite nunc patria, fracto nunc funeris antro, Mors ubi dira fuit vita salusque patent. [_Quatrain composed for the gates of a market to be erected upon the sit",
+    "preserveLines" : false,
+    "title" : "The Pit and the Pendulum",
+    "titleKo" : "구덩이와 진자"
+  },
+  {
+    "author" : "Lewis Carroll",
+    "authorKo" : "루이스 캐럴",
+    "characters" : 98334,
+    "file" : "74-4763.txt",
+    "opening" : "By Lewis Carroll --------------------- |9 | 10| | | | | -----x------ | | |11 | 12| | | | | | | |---y-----m------y'---| | | | | | | |13 | 14| | | -----x'----- | | | | |15 | 1",
+    "preserveLines" : false,
+    "title" : "The Game of Logic",
+    "titleKo" : "논리의 게임"
+  },
+  {
+    "author" : "Robert Louis Stevenson",
+    "authorKo" : "로버트 루이스 스티븐슨",
+    "characters" : 564742,
+    "file" : "75-839.txt",
+    "opening" : "BY ROBERT LOUIS STEVENSON LONDON CHATTO & WINDUS 1920 _Printed at_ The Ballantyne Press Spottiswoode, Ballantyne & Co. Ltd. _Colchester_, _London & Eton_, _England_ TO _Robert Allan Mowbray Stevenson_ IN GRATEFUL REMEMBRANCE OF THEIR YOUTH ",
+    "preserveLines" : false,
+    "title" : "New Arabian Nights",
+    "titleKo" : "신 아라비안 나이트"
+  },
+  {
+    "author" : "Oscar Wilde",
+    "authorKo" : "오스카 와일드",
+    "characters" : 332419,
+    "file" : "76-887.txt",
+    "opening" : "BY OSCAR WILDE * * * * * METHUEN & CO. LTD. 36 ESSEX STREET W.C. LONDON * * * * * _First Published_, _at 1s. net_, _in 1913_ * * * * * _This Book was First Published_ _1891_ _Second Edition_ _1894_ _First Published_ (_Third Edition_) _by Me",
+    "preserveLines" : false,
+    "title" : "Intentions",
+    "titleKo" : "의향"
+  },
+  {
+    "author" : "William Shakespeare",
+    "authorKo" : "윌리엄 셰익스피어",
+    "characters" : 96209,
+    "file" : "77-1041.txt",
+    "opening" : "by William Shakespeare I From fairest creatures we desire increase, That thereby beauty’s rose might never die, But as the riper should by time decease, His tender heir might bear his memory: But thou, contracted to thine own bright eyes, F",
+    "preserveLines" : true,
+    "title" : "Shakespeare's Sonnets",
+    "titleKo" : "셰익스피어 소네트집"
+  },
+  {
+    "author" : "Charles Dickens",
+    "authorKo" : "찰스 디킨스",
+    "characters" : 539715,
+    "file" : "78-564.txt",
+    "opening" : "by Charles Dickens Contents CHAPTER I. THE DAWN CHAPTER II. A DEAN, AND A CHAPTER ALSO CHAPTER III. THE NUNS’ HOUSE CHAPTER IV. MR. SAPSEA CHAPTER V. MR. DURDLES AND FRIEND CHAPTER VI. PHILANTHROPY IN MINOR CANON CORNER CHAPTER VII. MORE CO",
+    "preserveLines" : false,
+    "title" : "The Mystery of Edwin Drood",
+    "titleKo" : "에드윈 드루드의 비밀"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 11175,
+    "file" : "79-2148d.txt",
+    "opening" : "True!—nervous—very, very dreadfully nervous I had been and am; but why will you say that I am mad? The disease had sharpened my senses—not destroyed—not dulled them. Above all was the sense of hearing acute. I heard all things in the heaven",
+    "preserveLines" : false,
+    "title" : "The Tell-Tale Heart",
+    "titleKo" : "고자질하는 심장"
+  },
+  {
+    "author" : "Robert Louis Stevenson",
+    "authorKo" : "로버트 루이스 스티븐슨",
+    "characters" : 249858,
+    "file" : "80-329.txt",
+    "opening" : "Island Nights’ Entertainments by Robert Louis Stevenson Contents The Beach of Falesá A south sea bridal The Ban The Missionary Devil-work Night in the bush The Bottle Imp The Isle of voices THE BEACH OF FALESÁ. CHAPTER I. A SOUTH SEA BRIDAL",
+    "preserveLines" : false,
+    "title" : "Island Nights' Entertainments",
+    "titleKo" : "남태평양 야화"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 23559,
+    "file" : "81-2147c.txt",
+    "opening" : "Qui n’a plus qu’un moment a vivre N’a plus rien a dissimuler. —Quinault—Atys. Of my country and of my family I have little to say. Ill usage and length of years have driven me from the one, and estranged me from the other. Hereditary wealth",
+    "preserveLines" : false,
+    "title" : "MS. Found in a Bottle",
+    "titleKo" : "병 속에서 발견된 원고"
+  },
+  {
+    "author" : "Robert Louis Stevenson",
+    "authorKo" : "로버트 루이스 스티븐슨",
+    "characters" : 189716,
+    "file" : "82-535.txt",
+    "opening" : "Transcribed by David Price, email ccx074@coventry.ac.uk Second proof by Margaret Price. Travels with a Donkey in the Cevennes by Robert Louis Stevenson A New Impression with a Frontispiece by Walter Crane London: Chatto & Windus, 1907 [Fron",
+    "preserveLines" : false,
+    "title" : "Travels with a Donkey in the Cevennes",
+    "titleKo" : "당나귀를 타고 세벤을 거닐다"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 34846,
+    "file" : "83-2149a.txt",
+    "opening" : "And the will therein lieth, which dieth not. Who knoweth the mysteries of the will, with its vigor? For God is but a great will pervading all things by nature of its intentness. Man doth not yield himself to the angels, nor unto death utter",
+    "preserveLines" : false,
+    "title" : "Ligeia",
+    "titleKo" : "리지아"
+  },
+  {
+    "author" : "Edgar Allan Poe",
+    "authorKo" : "에드거 앨런 포",
+    "characters" : 402934,
+    "file" : "84-51060.txt",
+    "opening" : "OF NANTUCKET. COMPRISING THE DETAILS OF A MUTINY AND ATROCIOUS BUTCHERY ON BOARD THE AMERICAN BRIG GRAMPUS, ON HER WAY TO THE SOUTH SEAS, IN THE MONTH OF JUNE, 1827. WITH AN ACCOUNT OF THE RECAPTURE OF THE VESSEL BY THE SURVIVERS; THEIR SHI",
+    "preserveLines" : false,
+    "title" : "The Narrative of Arthur Gordon Pym",
+    "titleKo" : "아서 고든 핌의 모험"
+  }
 ]
