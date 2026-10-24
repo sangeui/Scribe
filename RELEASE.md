@@ -100,8 +100,9 @@
 
 ```bash
 # 최초 설치
-brew install --cask sangeui/tap/scribe
+brew tap sangeui/scribe https://github.com/sangeui/Scribe
+brew install --cask sangeui/scribe/scribe
 
 # 새 버전 업데이트
-brew update && brew upgrade --cask sangeui/tap/scribe
+brew update && brew upgrade --cask sangeui/scribe/scribe
 ```

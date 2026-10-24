@@ -4,133 +4,82 @@
 
 # Scribe
 
-**당신의 AI 코딩 토큰을 고전 문학 집필로 — 메뉴바에서.**
+**당신의 AI 코딩 토큰을 고전 문학 집필로 — macOS 메뉴바에서.**
+
+*Native Swift 6 · Zero External Dependencies · On-Device Token Tracker & Literary Simulation*
 
 [![Release](https://img.shields.io/github/v/release/sangeui/Scribe?color=444d56&label=release)](https://github.com/sangeui/Scribe/releases/latest)
 [![Download](https://img.shields.io/badge/Download-Scribe.zip-2ea44f?logo=apple)](https://github.com/sangeui/Scribe/releases/latest/download/Scribe.zip)
+[![Homebrew](https://img.shields.io/badge/Homebrew-cask-8957e5)](#설치)
 [![macOS](https://img.shields.io/badge/macOS-14%2B%20(Universal)-0969da)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-6-f05138)](https://swift.org)
-[![Homebrew](https://img.shields.io/badge/Homebrew-cask-8957e5)](#homebrew)
 [![License](https://img.shields.io/badge/license-MIT-3fb950)](LICENSE)
 
 **한국어** · [English](README.en.md)
 
-[왜 Scribe인가요](#왜-scribe인가요) · [어떻게 작동하나요](#어떻게-작동하나요) · [둘러보기](#둘러보기) · [지원 도구](#지원-도구) · [설치](#설치) · [데이터 소스 & 프라이버시](#데이터-소스)
+[설치](#설치) · [핵심 특징](#왜-scribe인가요) · [지원 도구](#지원-도구) · [작동 방식](#어떻게-작동하나요) · [둘러보기](#둘러보기) · [데이터 소스 & 프라이버시](#데이터-소스) · [FAQ](#faq)
 
 </div>
 
-**Scribe**는 당신이 이미 태우고 있는 AI 코딩 토큰(**Antigravity** · **Gemini CLI** · **Claude Code**)을 macOS 메뉴바와 바탕화면 속 작은 **고전 문학 작가의 작업실**로 바꿔줍니다. 토큰을 쓰면 셰익스피어부터 괴테까지 대문호들이 프로젝트 구텐베르크(Project Gutenberg)의 실제 고전 원문을 한 글자씩 집필하고, 탈고한 책을 동네 서점에 납품해 베스트셀러로 키우며, 밤에는 작가 살롱에 모여 담소를 나눕니다. 그 아래에는 정밀한 로컬 사용량 트래커가 함께 돌아갑니다 — 오늘의 토큰·비용 환산·캐시 효율·최근 사용량 추이를 로컬 로그에서 직접 읽습니다.
+<br>
 
-> 토큰 사용량은 로컬 **Antigravity · Gemini CLI · Claude Code** 데이터에서 직접 읽습니다(`totalTokens` = input + output + cache, 로컬 날짜 기준) — 외부 CLI나 API 키, 별도 로그인이 전혀 필요 없으며 프롬프트와 대화 내용은 Mac 밖으로 전송되지 않습니다.
+<div align="center">
+<table>
+<tr>
+<td width="46%" align="center" valign="middle">
+<img src="assets/screenshot-home.png" width="380" alt="팝오버 홈 — 상시 창 알약, 원문 집필 카드, 마감, 오늘의 토큰 요약">
+<br><sub><b>메뉴바 팝오버</b> — 실시간 집필 원고 · 출판사 마감 · 오늘의 토큰 요약</sub>
+</td>
+<td width="54%" align="center" valign="middle">
+<img src="assets/screenshot-floating.png" width="420" alt="바탕화면 상시 창(알약·미니)과 라이트·다크 스타일">
+<br><sub><b>바탕화면 상시 창 (Pill & Mini)</b> — 일출·일몰·달 위상·날씨가 살아 숨 쉬는 데스크탑 작업실</sub>
+</td>
+</tr>
+</table>
+</div>
+
+**Scribe**는 매일 사용하는 AI 코딩 토큰(**Antigravity** · **Gemini CLI** · **Claude Code**)을 macOS 메뉴바와 바탕화면 속 작은 **고전 문학 작가의 작업실**로 바꿔주는 네이티브 앱입니다. 토큰을 쓰면 셰익스피어부터 괴테까지 대문호들이 프로젝트 구텐베르크(Project Gutenberg)의 실제 고전 원문을 한 글자씩 집필하고, 탈고한 책을 동네 서점에 납품해 베스트셀러로 키우며, 밤에는 작가 살롱에 모여 담소를 나눕니다. 그 아래에는 정밀한 로컬 사용량 트래커가 함께 돌아갑니다 — 오늘의 토큰·비용 환산·캐시 효율·최근 사용량 추이를 로컬 로그에서 직접 읽습니다.
+
+> [!NOTE]
+> **100% 온디바이스 로그 파싱 (`totalTokens` = input + output + cache, 로컬 날짜 기준)**
+> 외부 사용량 CLI, 별도 API 키, 계정 로그인이 필요 없습니다. Scribe는 로컬 로그에서 토큰 수·시각·모델명만 읽기 전용으로 스캔하며, 프롬프트와 코드는 파싱하거나 Mac 밖으로 전송하지 않습니다.
+
+---
+
+## 설치
+
+### Homebrew (권장)
+
+```bash
+brew tap sangeui/scribe https://github.com/sangeui/Scribe
+brew install --cask sangeui/scribe/scribe
+```
+
+Cask가 설치 시 macOS Gatekeeper 격리 속성(`com.apple.quarantine`)을 자동으로 해제합니다. 설치 후 `/Applications/Scribe.app`을 바로 실행하세요.
+
+### 직접 다운로드 (`Scribe.zip`)
+
+1. **[최신 Scribe.zip 바로 다운로드](https://github.com/sangeui/Scribe/releases/latest/download/Scribe.zip)** (또는 [GitHub Releases](https://github.com/sangeui/Scribe/releases/latest) 방문)
+2. 압축을 풀고 **`Scribe.app`**을 **`/Applications` (응용 프로그램)** 폴더로 옮깁니다.
+
+> [!TIP]
+> **첫 실행 시 *"확인되지 않은 개발자"* 경고가 뜰 때**
+> 유료 Apple 개발자 공증(Notarization) 없이 자체 서명 배포되므로 최초 실행 시 한 번만 격리 속성을 해제해 주세요:
+> ```bash
+> xattr -dr com.apple.quarantine /Applications/Scribe.app && open -a Scribe
+> ```
+> 또는 Finder에서 `/Applications/Scribe.app`을 <kbd>Control</kbd>+클릭(우클릭) → **열기(Open)**를 선택하면 됩니다. 이후 새 버전이 나오면 팝오버 하단의 **`v0.x.y 업데이트`** 버튼 하나로 앱 내에서 자동 업데이트됩니다.
+
+**시스템 요구사항:** macOS 14.0 (Sonoma) 이상 · Apple Silicon (`arm64`) 및 Intel (`x86_64`) Universal 바이너리 · 외부 런타임 불필요.
 
 ---
 
 ## 왜 Scribe인가요
 
-- **열어보는 게 기다려지는 토큰 사용량 트래커.** 코딩하며 태운 토큰이 그냥 숫자로 사라지지 않고 *햄릿*, *크리스마스 캐럴*, *어셔가의 몰락*, *파우스트* 등 고전 문학의 실제 원문 타이핑으로 쌓입니다.
-- **오늘의 토큰 소비와 캐시 효율을 한눈에.** 대시보드나 브라우저 탭을 열지 않아도 메뉴바와 바탕화면 상시 창에서 오늘 사용량, 시간대별 추이, 일별 기록을 바로 확인합니다.
-- **작가를 돌보고 서점을 운영하는 잔잔한 시뮬레이션.** 졸고 있는 작가에게 커피를 건네고, 탈고한 책을 서점 진열창에 올려 비평가 서평과 주간 정산서를 받아보세요.
-
-<div align="center">
-<img src="assets/screenshot-home.png" width="400" alt="팝오버 홈 — 상시 창 알약, 원문 집필 카드, 마감, 오늘의 토큰 요약">
-</div>
-
----
-
-## 어떻게 작동하나요
-
-1. 💻 **평소처럼 코딩하세요.** Antigravity, Gemini CLI, Claude Code에서 태우는 토큰이 곧 작가의 집필 연료가 됩니다. 앱을 처음 켠 시점의 기존 토큰은 기준선으로 삼고, 그 뒤 새로 쓴 토큰부터 원문 글자로 변환합니다.
-2. 🪶 **실제 고전 원문이 한 글자씩 타이핑됩니다.** 구텐베르크 프로젝트의 퍼블릭 도메인 고전 원문이 실시간으로 원고지에 채워집니다. 서재에서 언제든 지금까지 쓴 원문을 펼쳐 읽을 수 있습니다.
-3. ☕ **돌발 상황을 돌봐 주세요.** 토큰을 쓰는 동안 작가가 책상에서 꾸벅 졸거나, 산책을 나가거나, 잉크가 바닥나거나, 첫 문장이 막혀 멈추기도 합니다. 토큰이 쌓일 때마다 얻는 커피·홍차·잉크병·호출 종·영감의 깃펜으로 작가를 다독여 즉시 복귀시키세요.
-4. 🏛 **탈고와 서점 납품.** 한 편을 끝까지 쓰면 탈고 카드와 함께 작가가 원고 뭉치를 들고 마을 길을 걸어 **동네 서점**에 납품합니다.
-5. 📈 **동네 서점과 주간 마감.** 서점 진열창과 매대에 책을 배치하면 독자 서평, 신문 문화면 소개, 학교 단체 주문, 입소문이 일어나며 **초판 완판 → 재판 → 베스트셀러 → 밀리언셀러**로 성장합니다.
-6. 🥂 **작가 살롱과 다회차 집필.** 책을 탈고한 문호들은 밤마다 살롱에 모여 문학 담소를 나눕니다. 서재의 모든 작품을 탈고하면 다음 회차가 열리며 여러 작가가 동시에 집필합니다.
-
----
-
-## 둘러보기
-
-<table>
-<tr>
-<td width="48%" align="center"><img src="assets/screenshot-floating.png" width="360" alt="바탕화면 상시 창(알약·미니)과 라이트·다크 스타일"></td>
-<td width="52%" valign="middle">
-<h3>🖥️ 바탕화면 한구석에 두는 작업실</h3>
-작가를 메뉴바 밖 바탕화면으로 꺼내 <b>알약(Pill)</b> 또는 <b>미니(Mini)</b> 스타일로 띄워 둘 수 있습니다. 현재 타이핑 중인 문장이 실시간으로 흐르고, 투명도를 조절하거나 원하는 위치로 드래그해 고정할 수 있습니다.
-</td>
-</tr>
-<tr>
-<td width="52%" valign="middle">
-<h3>📚 대문호들과 고전 문학 서재</h3>
-<b>윌리엄 셰익스피어 · 찰스 디킨스 · 에드거 앨런 포 · 루이스 캐럴 · 로버트 루이스 스티븐슨 · 오스카 와일드 · 제인 오스틴 · 요한 볼프강 폰 괴테</b> 등 시대를 대표하는 작가들의 고전 작품이 수록되어 있습니다. 책을 클릭하면 지금까지 집필한 실제 원문을 책장 넘기듯 읽을 수 있습니다.
-</td>
-<td width="48%" align="center"><img src="assets/screenshot-shelf.png" width="340" alt="서재 패널 — 대문호들과 고전 문학 진척도"></td>
-</tr>
-<tr>
-<td width="48%" align="center"><img src="assets/screenshot-bookstore.png" width="340" alt="동네 서점 — 진열창, 매대, 서평, 판매 추이"></td>
-<td width="52%" valign="middle">
-<h3>🏪 내 원고가 팔리는 동네 서점</h3>
-탈고한 책은 동네 서점의 <b>진열창</b>과 <b>매대</b>에 올려 판매합니다. 품절되면 재판을 찍고, 광고를 집행하거나 서점 주인에게 진열을 맡길 수 있습니다. 매주 월요일에는 판매 부수·반품·놓친 손님과 주인의 한마디가 적힌 <b>주간 정산서</b>가 도착합니다.
-</td>
-</tr>
-<tr>
-<td width="52%" valign="middle">
-<h3>☕ 작업실 가구와 회복 아이템</h3>
-토큰을 쓰며 얻는 아이템으로 졸음·잉크 고갈·외출·슬럼프·정전을 해결하고, 금고와 사본으로 자연재해(쥐·홍수·화재·도둑)로부터 원고를 지킵니다. 남는 아이템을 모으면 작업실에 <b>탁상등 · 난로 · 책장 · 두꺼운 커튼 · 안락의자 · 고양이</b> 등의 가구를 들여 영구 효과를 얻습니다.
-</td>
-<td width="48%" align="center"><img src="assets/screenshot-bag.png" width="340" alt="가방 및 작업실 패널 — 작업실 가구와 회복 아이템"></td>
-</tr>
-<tr>
-<td width="48%" align="center"><img src="assets/village.png" width="340" alt="마을 낮과 밤, 독자와의 대화"></td>
-<td width="52%" valign="middle">
-<h3>🏘️ 방향키로 걸어 다니는 마을과 독자들</h3>
-팝오버에서 지도 버튼을 누르거나 방향키를 누르면 픽셀 마을이 열립니다. 작업실·창고·서점·살롱 사이를 걸어 다니며 길에서 마주친 독자에게 책을 추천하고, 땅에 떨어진 아이템을 주울 수 있습니다.
-</td>
-</tr>
-<tr>
-<td width="52%" valign="middle">
-<h3>🥂 문호들이 모이는 작가 살롱</h3>
-책을 탈고한 작가들은 마을의 <b>살롱</b>에 머뭅니다. 살롱에 들어가 동료 문호들과 시대를 넘나드는 대화를 나누거나, 마음에 드는 작가를 작업실의 손님 작가로 초대해 함께 집필할 수 있습니다.
-</td>
-<td width="48%" align="center"><img src="assets/salon.png" width="340" alt="작가 살롱 낮과 밤"></td>
-</tr>
-<tr>
-<td width="48%" align="center"><img src="assets/screenshot-usage.png" width="340" alt="토큰 사용량 대시보드 — 오늘 토큰, 캐시 효율, 시간대별·일별 차트"></td>
-<td width="52%" valign="middle">
-<h3>📊 에이전트별 토큰 사용량 대시보드</h3>
-<b>Antigravity · Gemini</b>와 <b>Claude Code</b>의 오늘 토큰, API 단가 환산 비용, 캐시 적중률, 영감 게이지, 오늘 시간대별 막대 차트, 최근 일별 추이, 모델별 세부 내역을 한 화면에서 확인합니다.
-</td>
-</tr>
-<tr>
-<td width="52%" valign="middle">
-<h3>🏅 성과 배지와 작가 능력치</h3>
-일일 토큰 목표(동·은·금 메달), 탈고, 누적 판매 부수, 서점 운영, 돌발 상황 대처, 자연재해 극복, 그리고 조건이 숨겨진 <b>비밀 성과</b>까지 다양한 업적 배지가 준비되어 있습니다. 성과를 달성할 때마다 <b>필력 · 끈기 · 매력 · 감각 · 운</b> 능력치가 올라갑니다.
-</td>
-<td width="48%" align="center"><img src="assets/screenshot-badges.png" width="340" alt="성과 패널 — 업적 배지와 비밀 성과"></td>
-</tr>
-<tr>
-<td width="48%" align="center"><img src="assets/screenshot-portraits.png" width="340" alt="대문호 초상화, 돌발 상황 표정, 수집 가능한 장신구"></td>
-<td width="52%" valign="middle">
-<h3>🎨 다채로운 표정과 수집 장신구</h3>
-작가마다 고유한 돌발 상황 표정(졸음, 찻잔, 열쇠 찾기, 거울 보기 등)이 그려지며, 특정 성과를 달성하면 <b>외알 안경 · 선글라스 · 파이프 · 월계관 · 왕관 · 장미 · 나비넥타이</b> 등의 장신구를 해금해 초상화에 씌울 수 있습니다.
-</td>
-</tr>
-</table>
-
-<div align="center">
-<h3>🌅 일출과 일몰을 따라 물드는 시간의 빛</h3>
-<p>바탕화면 상시 창은 현재 계절의 일출·일몰 시각에 맞춰 새벽·아침·한낮·노을·밤하늘의 색조로 서서히 물들며, 구석의 해와 달(실제 위상), 그리고 비·안개·눈·폭풍 등 오늘의 날씨 효과가 함께 반영됩니다.</p>
-<img src="assets/hours.png" width="720" alt="시간대별 상시 창 색조 변화">
-</div>
-
----
-
-## 이 밖에도
-
-- **데이터 소스 직접 선택** — **설정(`⌘,`) → 집필 / 기록 탭 상단 `데이터 소스`**에서 **Antigravity · Gemini**, **Claude Code**, **통합(모두 합산)** 중 원하는 공급원을 직접 고를 수 있습니다. 소스를 전환해도 지금까지 쓴 원고 글자 수는 그대로 보존됩니다.
-- **출판사 주간 마감** — 매주 출판사에서 목표 글자 수나 토큰 마감을 제안합니다. 기한까지 완수하면 보너스 아이템과 서점 판매량 부스트를 받습니다.
-- **집필 중 딜레마와 내기** — 편집자의 제목 변경 요청, 연재 제안, 길고양이 입양 같은 선택지(`Dilemma`)와 손님 작가의 제한 시간 집필 내기(`Bet`)가 찾아옵니다.
-- **영감 게이지와 점화** — 입력·캐시 읽기 토큰이 쌓이면 영감 게이지가 차오르고, **영감 켜기**를 누르면 일정 시간 동안 집필 속도가 크게 오릅니다.
-- **방해 금지 시간대** — 집중하고 싶은 시간대를 설정하면 알림을 보류했다가 팝오버에 모아 보여줍니다.
+- **열어보는 게 기다려지는 토큰 사용량 트래커** — 코딩하며 태운 토큰이 숫자로만 사라지지 않고 *햄릿*, *크리스마스 캐럴*, *어셔가의 몰락*, *파우스트* 등 고전 문학의 실제 원문 타이핑으로 한 글자씩 쌓입니다.
+- **오늘의 토큰 소비와 캐시 효율을 한눈에** — 브라우저 대시보드나 터미널 CLI를 따로 열지 않아도 메뉴바와 바탕화면 상시 창에서 **Antigravity · Gemini CLI · Claude Code**의 오늘 사용량, API 단가 환산 비용, 캐시 적중률, 시간대별·일별 추이를 즉시 확인합니다.
+- **작가를 돌보고 서점을 운영하는 잔잔한 시뮬레이션** — 졸고 있는 작가에게 커피를 건네고, 탈고한 책을 서점 진열창에 올려 비평가 서평과 월요일 주간 정산서를 받아보세요.
+- **가볍고 빠른 순수 macOS 네이티브 앱** — Electron이나 웹뷰 없이 순수 **Swift 6 (`AppKit` + `SwiftUI`)**와 외부 패키지 의존성 0개(`Package.swift`)로 작성되어 배터리와 메모리를 최소한으로 사용합니다.
 
 ---
 
@@ -139,55 +88,98 @@
 | 도구 | 집계 범위 | 세부 정보 |
 |---|---|---|
 | **Antigravity** | 오늘 · 최근 세션 · 시간대별 · 최근 일별 추이 | 캐시 적중률 · 영감 게이지 · 모델별 토큰 및 API 단가 환산 |
-| **Gemini CLI** | 오늘 · 최근 세션 · 시간대별 · 최근 일별 추이 | 세션별 입력/출력/캐시/사고(thoughts) 토큰 집계 |
-| **Claude Code** | 오늘 · 최근 세션 · 시간대별 · 최근 일별 추이 | 모델별 토큰·비용 환산 및 공식 세션/주간 한도(%) |
+| **Gemini CLI** | 오늘 · 최근 세션 · 시간대별 · 최근 일별 추이 | 세션별 입력 / 출력 / 캐시 / 사고(`thoughts`) 토큰 집계 |
+| **Claude Code** | 오늘 · 최근 세션 · 시간대별 · 최근 일별 추이 | 모델별 토큰·비용 환산 및 공식 세션 / 주간 한도(%) |
 | **통합 모드** | 위 모든 에이전트 합산 | 에이전트별 오늘 토큰 비중 막대 및 통합 집필 |
 
-모두 로컬에서 직접 읽습니다 — 외부 사용량 CLI가 필요 없습니다.
+**설정(<kbd>⌘</kbd><kbd>,</kbd>) → 집필 / 기록 → `데이터 소스`**에서 언제든 공급원을 전환할 수 있으며, 소스를 바꿔도 지금까지 집필한 원고 글자 수는 그대로 보존됩니다.
 
 ---
 
-## 설치
+## 어떻게 작동하나요
 
-### 요구사항
+1. **평소처럼 코딩하세요.** Antigravity, Gemini CLI, Claude Code에서 태우는 토큰이 곧 작가의 집필 연료가 됩니다. 앱을 처음 켠 시점의 기존 토큰은 기준선으로 삼고, 그 뒤 새로 쓴 토큰부터 원문 글자로 변환합니다.
+2. **실제 고전 원문이 한 글자씩 타이핑됩니다.** 구텐베르크 프로젝트의 퍼블릭 도메인 고전 원문이 실시간으로 원고지에 채워집니다. **서재**에서 언제든 지금까지 쓴 원문을 책장 넘기듯 펼쳐 읽을 수 있습니다.
+3. **돌발 상황을 돌봐 주세요.** 토큰을 쓰는 동안 작가가 책상에서 꾸벅 졸거나, 산책을 나가거나, 잉크가 바닥나거나, 첫 문장이 막혀 멈추기도 합니다. 토큰이 쌓일 때마다 얻는 커피·홍차·잉크병·호출 종·영감의 깃펜으로 작가를 다독여 즉시 복귀시키세요.
+4. **탈고와 서점 납품.** 한 편을 끝까지 쓰면 탈고 카드와 함께 작가가 원고 뭉치를 들고 마을 길을 걸어 **동네 서점**에 납품합니다.
+5. **동네 서점과 주간 마감.** 서점 진열창과 매대에 책을 배치하면 독자 서평, 신문 문화면 소개, 학교 단체 주문, 입소문이 일어나며 **초판 완판 → 재판 → 베스트셀러 → 밀리언셀러**로 성장합니다.
+6. **작가 살롱과 다회차 집필.** 책을 탈고한 문호들은 밤마다 살롱에 모여 문학 담소를 나눕니다. 서재의 모든 작품을 탈고하면 다음 회차가 열리며 여러 작가가 동시에 집필합니다.
 
-macOS 14.0 (Sonoma) 이상 (Apple Silicon 및 Intel Universal 바이너리). 그 외 별도 런타임이나 외부 CLI는 필요하지 않습니다.
+---
 
-### Homebrew
+## 둘러보기
 
-```bash
-brew tap sangeui/scribe https://github.com/sangeui/Scribe
-brew install --cask sangeui/scribe/scribe
-```
+<table>
+<tr>
+<td width="48%" align="center"><img src="assets/screenshot-shelf.png" width="340" alt="서재 패널 — 대문호들과 고전 문학 진척도"></td>
+<td width="52%" valign="middle">
+<h3>대문호들과 고전 문학 서재</h3>
+<b>윌리엄 셰익스피어 · 찰스 디킨스 · 에드거 앨런 포 · 루이스 캐럴 · 로버트 루이스 스티븐슨 · 오스카 와일드 · 제인 오스틴 · 요한 볼프강 폰 괴테</b> 등 시대를 대표하는 작가들의 고전 작품이 수록되어 있습니다. 책을 클릭하면 지금까지 집필한 실제 원문을 책장 넘기듯 읽을 수 있습니다.
+</td>
+</tr>
+<tr>
+<td width="52%" valign="middle">
+<h3>내 원고가 팔리는 동네 서점</h3>
+탈고한 책은 동네 서점의 <b>진열창</b>과 <b>매대</b>에 올려 판매합니다. 품절되면 재판을 찍고, 광고를 집행하거나 서점 주인에게 진열을 맡길 수 있습니다. 매주 월요일에는 판매 부수·반품·놓친 손님과 주인의 한마디가 적힌 <b>주간 정산서</b>가 도착합니다.
+</td>
+<td width="48%" align="center"><img src="assets/screenshot-bookstore.png" width="340" alt="동네 서점 — 진열창, 매대, 서평, 판매 추이"></td>
+</tr>
+<tr>
+<td width="48%" align="center"><img src="assets/screenshot-bag.png" width="340" alt="가방 및 작업실 패널 — 작업실 가구와 회복 아이템"></td>
+<td width="52%" valign="middle">
+<h3>작업실 가구와 회복 아이템</h3>
+토큰을 쓰며 얻는 아이템으로 졸음·잉크 고갈·외출·슬럼프·정전을 해결하고, 금고와 사본으로 자연재해(쥐·홍수·화재·도둑)로부터 원고를 지킵니다. 남는 아이템을 모으면 작업실에 <b>탁상등 · 난로 · 책장 · 두꺼운 커튼 · 안락의자 · 고양이</b> 등의 가구를 들여 영구 효과를 얻습니다.
+</td>
+</tr>
+<tr>
+<td width="52%" valign="middle">
+<h3>방향키로 걸어 다니는 마을과 독자들</h3>
+팝오버에서 지도 버튼을 누르거나 방향키(<kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd>)를 누르면 픽셀 마을이 열립니다. 작업실·창고·서점·살롱 사이를 걸어 다니며 길에서 마주친 독자에게 책을 추천하고, 땅에 떨어진 아이템을 주울 수 있습니다.
+</td>
+<td width="48%" align="center"><img src="assets/village.png" width="340" alt="마을 낮과 밤, 독자와의 대화"></td>
+</tr>
+<tr>
+<td width="48%" align="center"><img src="assets/salon.png" width="340" alt="작가 살롱 낮과 밤"></td>
+<td width="52%" valign="middle">
+<h3>문호들이 모이는 작가 살롱</h3>
+책을 탈고한 작가들은 마을의 <b>살롱</b>에 머뭅니다. 살롱에 들어가 동료 문호들과 시대를 넘나드는 대화를 나누거나, 마음에 드는 작가를 작업실의 손님 작가로 초대해 함께 집필할 수 있습니다.
+</td>
+</tr>
+<tr>
+<td width="52%" valign="middle">
+<h3>에이전트별 토큰 사용량 대시보드</h3>
+<b>Antigravity · Gemini</b>와 <b>Claude Code</b>의 오늘 토큰, API 단가 환산 비용, 캐시 적중률, 영감 게이지, 오늘 시간대별 막대 차트, 최근 일별 추이, 모델별 세부 내역을 한 화면에서 확인합니다.
+</td>
+<td width="48%" align="center"><img src="assets/screenshot-usage.png" width="340" alt="토큰 사용량 대시보드 — 오늘 토큰, 캐시 효율, 시간대별·일별 차트"></td>
+</tr>
+<tr>
+<td width="48%" align="center"><img src="assets/screenshot-badges.png" width="340" alt="성과 패널 — 업적 배지와 비밀 성과"></td>
+<td width="52%" valign="middle">
+<h3>성과 배지와 작가 능력치</h3>
+일일 토큰 목표(동·은·금 메달), 탈고, 누적 판매 부수, 서점 운영, 돌발 상황 대처, 자연재해 극복, 그리고 조건이 숨겨진 <b>비밀 성과</b>까지 다양한 업적 배지가 준비되어 있습니다. 성과를 달성할 때마다 <b>필력 · 끈기 · 매력 · 감각 · 운</b> 능력치가 올라갑니다.
+</td>
+</tr>
+<tr>
+<td width="52%" valign="middle">
+<h3>다채로운 표정과 수집 장신구</h3>
+작가마다 고유한 돌발 상황 표정(졸음, 찻잔, 열쇠 찾기, 거울 보기 등)이 그려지며, 특정 성과를 달성하면 <b>외알 안경 · 선글라스 · 파이프 · 월계관 · 왕관 · 장미 · 나비넥타이</b> 등의 장신구를 해금해 초상화에 씌울 수 있습니다.
+</td>
+<td width="48%" align="center"><img src="assets/screenshot-portraits.png" width="340" alt="대문호 초상화, 돌발 상황 표정, 수집 가능한 장신구"></td>
+</tr>
+</table>
 
-자체 서명/ad-hoc 앱이므로 Cask가 설치 시 Gatekeeper 격리 속성(`com.apple.quarantine`)을 자동으로 제거합니다. 설치 후 `/Applications/Scribe.app`을 바로 실행하세요.
+<div align="center">
+<h3>일출과 일몰을 따라 물드는 시간의 빛</h3>
+<p>바탕화면 상시 창은 현재 계절의 일출·일몰 시각에 맞춰 새벽·아침·한낮·노을·밤하늘의 색조로 서서히 물들며, 구석의 해와 달(실제 위상), 그리고 비·안개·눈·폭풍 등 오늘의 날씨 효과가 함께 반영됩니다.</p>
+<img src="assets/hours.png" width="720" alt="시간대별 상시 창 색조 변화">
+</div>
 
-### 직접 설치 (`Scribe.zip` 다운로드)
+### 이 밖에도
 
-Homebrew를 쓰지 않는다면 GitHub Releases에서 압축 파일을 바로 내려받을 수 있습니다.
-
-1. **[📦 Scribe.zip 최신 버전 바로 다운로드](https://github.com/sangeui/Scribe/releases/latest/download/Scribe.zip)** (또는 [최신 릴리스 페이지](https://github.com/sangeui/Scribe/releases/latest) 방문)
-2. 압축을 풀고 **`Scribe.app`**을 **`/Applications` (응용 프로그램)** 폴더로 옮깁니다.
-3. 이 앱은 유료 Apple 개발자 계정 공증 없이 배포되므로 첫 실행 시 Gatekeeper가 *"확인되지 않은 개발자"* 또는 *"손상되었기 때문에 열 수 없습니다"* 경고를 띄울 수 있습니다. 아래 둘 중 하나로 **최초 한 번만** 해제하면 됩니다.
-   - **터미널 (권장):**
-     ```bash
-     xattr -dr com.apple.quarantine /Applications/Scribe.app
-     open -a Scribe
-     ```
-   - **Finder:** `/Applications/Scribe.app`을 **우클릭(또는 Control+클릭) → 열기(Open)** → 대화상자에서 **열기**를 다시 클릭.
-
-### 앱 내 자동 업데이트
-
-한 번 설치한 뒤에는 새 릴리스가 나올 때 팝오버 하단에 **`v0.x.y 업데이트`** 단추가 나타납니다. 누르면 앱 안에서 새 버전을 내려받아 코드서명을 검증한 뒤 자동으로 다시 열립니다(**설정 → 기록 → 업데이트**에서 수동 확인 및 자동 확인 켜기/끄기도 가능).
-
-### 소스 빌드
-
-```bash
-swift build                      # 디버그 빌드
-./scripts/test-gate.sh           # 회귀 검증 테스트 실행
-./scripts/create-signing-cert.sh # (선택) 로컬 자체 서명 인증서 생성
-./scripts/build-app.sh           # Universal 릴리스 → build/Scribe.app & build/Scribe.zip
-```
+- **출판사 주간 마감** — 매주 출판사에서 목표 글자 수나 토큰 마감을 제안합니다. 기한까지 완수하면 보너스 아이템과 서점 판매량 부스트를 받습니다.
+- **집필 중 딜레마와 내기** — 편집자의 제목 변경 요청, 연재 제안, 길고양이 입양 같은 선택지(`Dilemma`)와 손님 작가의 제한 시간 집필 내기(`Bet`)가 찾아옵니다.
+- **영감 게이지와 점화** — 입력·캐시 읽기 토큰이 쌓이면 영감 게이지가 차오르고, **영감 켜기**를 누르면 일정 시간 동안 집필 속도가 크게 오릅니다.
+- **방해 금지 시간대** — 집중하고 싶은 시간대를 설정하면 알림을 보류했다가 팝오버에 모아 보여줍니다.
 
 ---
 
@@ -201,13 +193,46 @@ swift build                      # 디버그 빌드
 | `~/Library/Application Support/Scribe/writing.json` | 집필 진행률, 서재, 서점, 가방, 성과 로컬 저장 | 온디바이스 JSON 파일; 설정에서 언제든 초기화 가능 |
 | Keychain (`Claude Code-credentials`) / `~/.claude/.credentials.json` → `api.anthropic.com` | Claude Code 공식 세션/주간 한도 % | `Claude Code` 또는 `통합` 소스 사용 시에만 조회; `Antigravity` 단독 모드에서는 호출하지 않음 |
 
----
-
-## 프라이버시 & 권한
+### 프라이버시 & 권한
 
 - **온디바이스 우선 (On-device first).** 토큰 사용량은 로컬 Antigravity, Gemini CLI, Claude Code 로그 파일에서 **숫자(`usage` / `tokens`)와 시각, 모델 이름만** 읽습니다. 사용자가 작성한 프롬프트 본문이나 코드는 파싱하지 않으며, 어떤 데이터도 외부 서버로 업로드하지 않습니다.
 - **외부 네트워크 요청 최소화.** `Antigravity` 데이터 소스 모드에서는 외부 네트워크 요청을 전혀 하지 않는 **100% 오프라인**으로 동작합니다. `Claude Code` 모드에서만 공식 세션/주간 한도 퍼센트를 표시하기 위해 `api.anthropic.com/api/oauth/usage`를 조회합니다.
 - **Keychain (선택).** Claude Code 한도 조회 시 `~/.claude/.credentials.json` 파일이 있으면 우선 읽고, 없을 때만 Keychain 자격증명을 참조합니다.
+
+---
+
+## FAQ
+
+<details>
+<summary><b>앱을 설치하기 전에 이미 사용한 토큰도 소급되어 집필되나요?</b></summary>
+<br>
+대시보드 통계(오늘 토큰, 일별 차트 등)에는 기존 로컬 로그가 모두 표시되지만, <b>문학 작품 집필</b>은 앱을 처음 실행한 시점의 누적 토큰을 기준선(Baseline)으로 삼고 그 이후 새로 태운 토큰부터 한 글자씩 집필합니다. 덕분에 처음부터 작가와 함께 작품을 써 내려가는 재미를 온전히 느낄 수 있습니다.
+</details>
+
+<details>
+<summary><b>데이터 소스를 Antigravity에서 Claude Code나 통합 모드로 바꾸면 집필 중인 원고가 초기화되나요?</b></summary>
+<br>
+초기화되지 않습니다. 데이터 소스를 전환하면 새 소스의 현재 토큰을 새로운 기준선으로 자동 보정하므로, 지금까지 집필한 글자 수와 탈고한 책·서점·아이템·성과는 모두 그대로 유지됩니다.
+</details>
+
+<details>
+<summary><b>메뉴바에 아이콘이 보이지 않을 때는 어떻게 하나요?</b></summary>
+<br>
+MacBook 노치(Notch)나 메뉴바 아이콘 과밀로 가려진 경우, <kbd>⌘</kbd>(Command) 키를 누른 채 다른 메뉴바 아이콘을 드래그해 순서를 조정하거나 팝오버 상단에서 <b>상시 창(알약 / 미니)</b>을 켜 바탕화면에 직접 띄워 둘 수 있습니다.
+</details>
+
+---
+
+## 소스 빌드 (Development)
+
+외부 패키지 의존성이 없는 순수 Swift Package 프로젝트입니다(`Swift 6.0`, `macOS 14.0+`).
+
+```bash
+swift build                      # 디버그 빌드
+./scripts/test-gate.sh           # 회귀 셀프테스트 게이트(--selftest) 실행
+./scripts/create-signing-cert.sh # (선택) 로컬 자체 서명 인증서 생성
+./scripts/build-app.sh           # Universal 릴리스 → build/Scribe.app & build/Scribe.zip
+```
 
 ---
 
