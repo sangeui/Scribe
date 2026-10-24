@@ -11,10 +11,17 @@
   ```bash
   ./scripts/test-gate.sh
   ```
+- **수정 완료 후 즉시 앱 재실행 (필수)**:
+  - 앱 코드(`Sources/Scribe/**`) 수정을 마치고 `./scripts/test-gate.sh` 통과를 확인한 직후에는, 사용자가 별도로 요청하지 않아도 즉시 `Scribe Local` 서명 적용 및 `/Applications/Scribe.app` 교체·재실행을 수행해 화면에서 바로 확인할 수 있게 한다.
+  ```bash
+  codesign --force -s "Scribe Local" build/Scribe.app 2>/dev/null || true
+  pkill -x Scribe 2>/dev/null || true
+  rm -rf /Applications/Scribe.app && cp -R build/Scribe.app /Applications/ && open /Applications/Scribe.app
+  ```
 - **로컬 개발 빌드**:
   ```bash
-  # 현재 아키텍처만 빠르게 빌드할 때
-  SCRIBE_NATIVE_ARCH_ONLY=1 ./scripts/build-app.sh
+  # 현재 아키텍처만 빠르게 빌드하고 /Applications/Scribe.app 설치·재실행까지 한 번에 수행할 때
+  SCRIBE_NATIVE_ARCH_ONLY=1 SCRIBE_INSTALL_APPLICATIONS=1 ./scripts/build-app.sh
   ```
 
 ---

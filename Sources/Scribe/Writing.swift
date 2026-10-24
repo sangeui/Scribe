@@ -2178,8 +2178,9 @@ struct WritingProgress {
     let luck: ActiveLuck?
     /// 책마다 팔린 부수(`Book.file` → 부수).
     let sales: [String: Int]
-    /// 아직 닫지 않은 탈고 카드(하루 동안)와 지난주 돌아보기(그 주 동안).
+    /// 아직 닫지 않은 탈고 카드(하루 동안), 전체 탈고 기록, 지난주 돌아보기(그 주 동안).
     let finishCards: [FinishNote]
+    let allFinishNotes: [FinishNote]
     let weeklyCard: WeeklyReview?
     /// 답을 기다리는 사건과 답한 기록(최근 것이 앞).
     let dilemma: ActiveDilemma?
@@ -2273,9 +2274,12 @@ struct WritingProgress {
     let expression: Expression
     /// 지금 작가의 능력치·체력과 그 배수, 다음 능력치까지 남은 토큰, 지쳤는지(체력이 `Balance.staminaTiredBelow` 아래).
     let sheet: AuthorSheet
+    let sheets: [String: AuthorSheet]
     let statPerks: StatPerks
     let tokensToNextStat: Int
     let tired: Bool
+    func sheet(for author: String) -> AuthorSheet { sheets[author] ?? AuthorSheet() }
+    func finishNote(for book: Book) -> FinishNote? { allFinishNotes.last { $0.book == book.file } }
     /// 그 역할의 아이템을 모두 센다.
     func count(role: ItemRole) -> Int { role.kinds.reduce(0) { $0 + count($1) } }
     /// 그 역할로 쓸 아이템. 기본 아이템부터, 없으면 다음 것.
@@ -2378,6 +2382,7 @@ struct WritingProgress {
         if Library.books.indices.contains(bookIndex), let saved = state.sheets[Library.books[bookIndex].authorShort] { currentSheet = saved }
         let currentPerks = StatPerks(currentSheet)
         sheet = currentSheet
+        sheets = state.sheets
         statPerks = currentPerks
         tokensToNextStat = max(0, Balance.statTokens - currentSheet.tokensTowardStat)
         tired = currentSheet.stamina < currentPerks.staminaMax * Balance.staminaTiredBelow
@@ -2396,6 +2401,7 @@ struct WritingProgress {
         luck = state.luck.flatMap { $0.endsAt > now ? $0 : nil }
         sales = state.sales.mapValues { Int($0) }
         finishCards = state.finishNotes.filter { $0.dismissed != true && now.timeIntervalSince($0.date) < 86_400 }
+        allFinishNotes = state.finishNotes
         weeklyCard = state.weekly.flatMap { $0.dismissed != true && $0.weekStart == WritingStore.weekStart(of: now) ? $0 : nil }
         dilemma = state.dilemma.flatMap { $0.expiresAt > now ? $0 : nil }
         decisions = state.dilemmaLog.reversed()

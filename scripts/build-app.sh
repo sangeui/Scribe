@@ -120,11 +120,12 @@ else
 fi
 
 if [[ "${SCRIBE_INSTALL_APPLICATIONS:-0}" == "1" ]]; then
-    echo "==> 기존 인스턴스 종료 + /Applications 설치"
+    echo "==> 기존 인스턴스 종료 + /Applications 설치 및 재실행"
     pkill -x "$APP_NAME" 2>/dev/null || true
     rm -rf "/Applications/$APP_NAME.app"
     cp -R "$APP" /Applications/
-    echo "완료: open /Applications/$APP_NAME.app"
+    open "/Applications/$APP_NAME.app"
+    echo "완료: /Applications/$APP_NAME.app 재실행됨 (v$VERSION)"
 else
     echo "완료: $APP (v$VERSION)"
 fi
