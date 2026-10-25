@@ -195,24 +195,6 @@ struct WritingView: View {
             if let deadline = progress.deadline {
                 DeadlineRow(deadline: deadline, progress: progress.deadlineProgress, bookFraction: progress.fraction)
             }
-            let expanded = RenderMode.offscreen ? (statusExpanded || progress.inspirationReady) : statusExpanded
-            VStack(alignment: .leading, spacing: 0) {
-                statusLine(book, expanded: expanded)
-                Collapsible(progress: expanded ? 1 : 0, topSpacing: 10) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 8) {
-                            InspirationRow(fraction: progress.inspirationFraction, ready: progress.inspirationReady, onIgnite: onIgnite)
-                            StaminaRow(stamina: progress.sheet.stamina, max: progress.statPerks.staminaMax, tired: progress.tired)
-                        }
-                        StatsRow(sheet: progress.sheet, tokensToNext: progress.tokensToNextStat, authorName: book.displayAuthorShort)
-                        if !progress.boosts.isEmpty {
-                            FlowLayout(spacing: 4) {
-                                ForEach(progress.boosts) { boost in BoostChip(boost: boost) }
-                            }
-                        }
-                    }
-                }
-            }
             footer
         }
         .onChange(of: progress.inspirationReady) { old, ready in
@@ -226,23 +208,68 @@ struct WritingView: View {
         .animation(.snappy(duration: 0.26, extraBounce: 0), value: statusExpanded)
     }
 
-    /// 아래쪽 상태 한 줄. 영감·체력·능력치·보정을 요약하고, 누르면 펼치거나 접는다. 손댈 일이 있는 항목(영감 찼음, 지침)은 색이 붙는다.
+    /// 집필 카드 안쪽 하단의 문호 컨디션·능력치 서랍. 평소에는 한 줄로 요약하고, 누르면 카드 안에서 게이지와 능력치 칩을 펼친다.
+    private func authorConditionDrawer(_ book: Book) -> some View {
+        let expanded = RenderMode.offscreen ? (statusExpanded || progress.inspirationReady) : statusExpanded
+        return VStack(alignment: .leading, spacing: 0) {
+            Rectangle()
+                .fill(book.spineColor.opacity(scheme == .dark ? 0.20 : 0.13))
+                .frame(height: 1)
+                .padding(.bottom, 7)
+            statusLine(book, expanded: expanded)
+            Collapsible(progress: expanded ? 1 : 0, topSpacing: 8) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        InspirationRow(fraction: progress.inspirationFraction, ready: progress.inspirationReady, onIgnite: onIgnite)
+                        StaminaRow(stamina: progress.sheet.stamina, max: progress.statPerks.staminaMax, tired: progress.tired)
+                    }
+                    StatsRow(sheet: progress.sheet, tokensToNext: progress.tokensToNextStat, authorName: book.displayAuthorShort)
+                    if !progress.boosts.isEmpty {
+                        FlowLayout(spacing: 4) {
+                            ForEach(progress.boosts) { boost in BoostChip(boost: boost) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// 집필 카드 안쪽 하단 상태 한 줄. 영감·체력·능력치·보정을 요약하고, 누르면 카드 안에서 펼치거나 접는다.
     private func statusLine(_ book: Book, expanded: Bool) -> some View {
         let gold = BadgeTier.gold.color
         let heart: Color = progress.sheet.stamina <= progress.statPerks.staminaMax * 0.1 ? ChartPalette.critical : progress.tired ? ChartPalette.warning : .secondary
         let boosts = progress.boosts.count
         return Button { statusExpanded.toggle() } label: {
-            HStack(spacing: 10) {
-                statusItem("sparkles", progress.inspirationReady ? "영감 찼음" : "영감 \(Format.percent(progress.inspirationFraction * 100))", progress.inspirationReady ? gold : .secondary)
+            HStack(spacing: 6) {
+                if progress.inspirationReady {
+                    HStack(spacing: 3) {
+                        Symbol(name: "sparkles", size: 10, color: gold)
+                        Text(L10n.tr("영감 찼음")).font(.caption2.weight(.semibold).monospacedDigit()).foregroundStyle(gold)
+                    }
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .background(gold.opacity(scheme == .dark ? 0.22 : 0.15), in: Capsule())
+                    .fixedSize()
+                } else {
+                    statusItem("sparkles", "영감 \(Format.percent(progress.inspirationFraction * 100))", .secondary)
+                }
+                Text("·").font(.caption2).foregroundStyle(.tertiary)
                 statusItem(progress.tired ? "heart.slash" : "heart", "체력 \(Int(progress.sheet.stamina.rounded()))", heart)
+                Text("·").font(.caption2).foregroundStyle(.tertiary)
                 statusItem("person", "능력치 \(progress.sheet.total)", .secondary)
-                if boosts > 0 { statusItem("arrow.up.right", "보정 \(boosts)", .secondary) }
-                Spacer(minLength: 0)
-                Symbol(name: "chevron.down", size: 9)
-                    .rotationEffect(.degrees(expanded ? 180 : 0))
+                if boosts > 0 {
+                    Text("·").font(.caption2).foregroundStyle(.tertiary)
+                    statusItem("arrow.up.right", "보정 \(boosts)", book.spineColor)
+                }
+                Spacer(minLength: 4)
+                HStack(spacing: 3) {
+                    Text(L10n.tr(expanded ? "접기" : "펼치기"))
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(.secondary)
+                    Symbol(name: "chevron.down", size: 8.5, color: .secondary)
+                        .rotationEffect(.degrees(expanded ? 180 : 0))
+                }
             }
-            .padding(.horizontal, 10).padding(.vertical, 6)
-            .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .padding(.horizontal, 2).padding(.vertical, 1)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -318,6 +345,7 @@ struct WritingView: View {
             }
             progressBar(book)
             manuscriptStrip(book, event: event)
+            authorConditionDrawer(book)
         }
         .padding(10)
         // 작가 색이 머리에 옅게 깔린다. 작가가 바뀌면 색도 천천히 바뀐다.
@@ -383,41 +411,66 @@ struct WritingView: View {
         .opacity(event == nil ? 1 : 0.55)
     }
 
-    /// 가방·성과·서재로 가는 버튼 셋. 숫자는 하나씩만(아이템 수, 받은 뱃지, 이번 회차 탈고).
+    /// 마을·창고·성과·서재·서점으로 이동하는 5열 공간·보조 창 네비게이션 도크.
     private var footer: some View {
         let items = ItemKind.allCases.reduce(0) { $0 + progress.count($1) }
         let earned = Achievements.all.filter { !$0.daily && (progress.badges[$0.id] != nil || $0.isMet(progress.facts)) }.count
         return HStack(spacing: 6) {
-            Button(action: onVillage) {
-                Symbol(name: "map", size: 12)
-                    .frame(width: 34)
-                    .padding(.vertical, 6)
-                    .background(Color.secondary.opacity(0.08), in: Capsule())
-                    .contentShape(Capsule())
-            }
-            .buttonStyle(.plain)
-            .hint("마을", ["작업실, 창고, 서점, 살롱이 있는 작은 맵입니다."], symbol: "map")
-            footerButton(symbol: "shippingbox", title: "창고", detail: "\(items)", action: onBag)
-            footerButton(symbol: "rosette", title: "성과", detail: "\(earned)", action: onBadges)
-            footerButton(symbol: "books.vertical", title: "서재", detail: "\(progress.finishedInRound)권", action: onShelf)
-            footerButton(symbol: "storefront", title: "서점", detail: Format.short(progress.totalSales), action: onBookstore)
+            FooterNavTile(symbol: "map", title: "마을", detail: nil, action: onVillage)
+                .hint("마을", ["작업실, 창고, 서점, 살롱이 있는 작은 맵입니다."], symbol: "map")
+            FooterNavTile(symbol: "shippingbox", title: "창고", detail: "\(items)", action: onBag)
+            FooterNavTile(symbol: "rosette", title: "성과", detail: "\(earned)", action: onBadges)
+            FooterNavTile(symbol: "books.vertical", title: "서재", detail: "\(progress.finishedInRound)권", action: onShelf)
+            FooterNavTile(symbol: "storefront", title: "서점", detail: Format.short(progress.totalSales), action: onBookstore)
         }
     }
+}
 
-    private func footerButton(symbol: String, title: String, detail: String, action: @escaping @MainActor () -> Void) -> some View {
+/// 집필 화면 하단 네비게이션 도크의 개별 공간·패널 이동 타일.
+private struct FooterNavTile: View {
+    let symbol: String
+    let title: String
+    let detail: String?
+    let action: @MainActor () -> Void
+    @Environment(\.colorScheme) private var scheme
+    @State private var hovering = false
+
+    var body: some View {
         Button(action: action) {
-            HStack(spacing: 4) {
-                Symbol(name: symbol, size: 11)
-                Text(L10n.tr(title)).font(.caption.weight(.semibold))
-                Text(L10n.tr(detail)).font(.system(size: 9).monospacedDigit()).foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 3) {
+                    Symbol(name: symbol, size: 11, color: hovering ? .primary : .secondary)
+                    Spacer(minLength: 2)
+                    if let detail {
+                        Text(L10n.tr(detail))
+                            .font(.system(size: 9.5, weight: .medium).monospacedDigit())
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    } else {
+                        Symbol(name: "arrow.up.right", size: 8.5, color: .secondary.opacity(0.8))
+                    }
+                }
+                Text(L10n.tr(title))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
             }
-            .lineLimit(1).minimumScaleFactor(0.85)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 6)
-            .background(Color.secondary.opacity(0.08), in: Capsule())
-            .contentShape(Capsule())
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 8).padding(.vertical, 6)
+            .background(
+                Color.secondary.opacity(hovering ? (scheme == .dark ? 0.17 : 0.11) : (scheme == .dark ? 0.10 : 0.06)),
+                in: RoundedRectangle(cornerRadius: 9, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(hovering ? (scheme == .dark ? 0.18 : 0.13) : (scheme == .dark ? 0.10 : 0.07)), lineWidth: 1)
+            )
+            .contentShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
         }
         .buttonStyle(.plain)
+        .onHover { hovering = $0 }
     }
 }
 
