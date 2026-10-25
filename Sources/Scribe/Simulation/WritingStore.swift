@@ -255,11 +255,11 @@ final class WritingStore {
         state.counters[Counter.invites.rawValue, default: 0] += 1
         if random() < chance {
             grant(Lucks.guest, now: now, author: current, invited: author)
-            return (true, "\(name)(이|가) 외투를 집어 듭니다. \"그럼 가 볼까요\" 작업실로 같이 갑니다".resolvedParticles)
+            return (true, L10n.tr("\(name)(이|가) 외투를 집어 듭니다. \"그럼 가 볼까요\" 작업실로 같이 갑니다").resolvedParticles)
         }
         save(now: now)
         let excuses = ["오늘은 여기가 좋소. 내일 다시 물어보시오", "지금 쓰는 게 있어서. 다음에", "커피를 다 마시고 나면 생각해 보지", "\(name)(은|는) 고개만 젓습니다"]
-        return (false, excuses[min(excuses.count - 1, Int(random() * Double(excuses.count)))].resolvedParticles)
+        return (false, L10n.tr(excuses[min(excuses.count - 1, Int(random() * Double(excuses.count)))]).resolvedParticles)
     }
 
     // MARK: 체력과 능력치
@@ -1052,7 +1052,7 @@ final class WritingStore {
             }
         case .none: break
         }
-        var text = event.texts[min(event.texts.count - 1, Int(random() * Double(event.texts.count)))]
+        var text = L10n.tr(event.texts[min(event.texts.count - 1, Int(random() * Double(event.texts.count)))])
         text = text.replacingOccurrences(of: "{T}", with: book?.displayTitle ?? "").replacingOccurrences(of: "{A}", with: book?.displayAuthorShort ?? "")
             .replacingOccurrences(of: "{N}", with: Format.integer(abs(copies ?? 0)))
         text = Format.resolve(text)

@@ -180,13 +180,13 @@ struct VillageView: View {
     private var helpFooter: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(help.line).font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                Text(L10n.tr(help.line)).font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 if let more = help.more {
-                    Text(more).font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    Text(L10n.tr(more)).font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
             }
             Spacer(minLength: 8)
-            Text(help.close).font(.caption2).foregroundStyle(.tertiary).fixedSize()
+            Text(L10n.tr(help.close)).font(.caption2).foregroundStyle(.tertiary).fixedSize()
         }
     }
 
@@ -205,7 +205,7 @@ struct VillageView: View {
         case .woodpile: state.dialogue = fuel.map { VillageTalk.woodpile($0, now: date) }
         case .pickup:
             let name = onPickup()
-            state.dialogue = Dialogue(name: "풀밭", pages: [name.map { "\($0)(을|를) 주웠습니다".resolvedParticles } ?? "아무것도 없습니다"])
+            state.dialogue = Dialogue(name: "풀밭", pages: [name.map { L10n.tr("\($0)(을|를) 주웠습니다").resolvedParticles } ?? L10n.tr("아무것도 없습니다")])
         }
     }
 
@@ -365,7 +365,7 @@ struct ActionPrompt: View {
                 if tailUp { Triangle().fill(ink).frame(width: 7, height: 4).rotationEffect(.degrees(180)) }
                 HStack(spacing: 4) {
                     Symbol(name: symbol, size: 9, color: .white)
-                    Text(label).font(.system(size: 9, weight: .bold, design: .rounded)).foregroundStyle(.white)
+                    Text(L10n.tr(label)).font(.system(size: 9, weight: .bold, design: .rounded)).foregroundStyle(.white)
                     Text("⏎").font(.system(size: 8, weight: .bold)).foregroundStyle(.white.opacity(0.7))
                 }
                 .padding(.horizontal, 6).padding(.vertical, 3)

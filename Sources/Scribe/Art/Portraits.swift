@@ -438,14 +438,14 @@ enum DayPart: String, CaseIterable, Sendable {
     }
 
     var title: String {
-        switch self {
+        L10n.tr({ switch self {
         case .dawn: "새벽"
         case .morning: "아침"
         case .day: "낮"
         case .dusk: "해 질 녘"
         case .evening: "저녁"
         case .night: "밤"
-        }
+        } }())
     }
 
     /// 바탕에 입히는 색. 불투명도까지 넣었다.

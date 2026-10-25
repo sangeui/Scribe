@@ -5,7 +5,8 @@ import SwiftUI
 
 struct Accessory: Identifiable, Sendable, Equatable {
     let id: String
-    let title: String
+    private let rawTitle: String
+    var title: String { L10n.tr(rawTitle) }
     /// 여는 성과(`Achievement.id`). nil 이면 처음부터.
     let unlock: String?
     /// 그림 조각. `.` 은 비워 둔다.
@@ -13,6 +14,15 @@ struct Accessory: Identifiable, Sendable, Equatable {
     let x: Int
     /// 눈이 있는 줄(보통 4, 괴테 5)을 기준으로 한 세로 위치.
     let yFromEyes: Int
+
+    init(id: String, title: String, unlock: String?, art: [String], x: Int, yFromEyes: Int) {
+        self.id = id
+        self.rawTitle = title
+        self.unlock = unlock
+        self.art = art
+        self.x = x
+        self.yFromEyes = yFromEyes
+    }
 
     static func == (a: Accessory, b: Accessory) -> Bool { a.id == b.id }
 }

@@ -23,7 +23,7 @@ mkdir -p "$BUILD_DIR"
 SLICES=()
 export CLANG_MODULE_CACHE_PATH="${CLANG_MODULE_CACHE_PATH:-/tmp/clang-module-cache}"
 export SWIFTPM_MODULECACHE_OVERRIDE="${SWIFTPM_MODULECACHE_OVERRIDE:-/tmp/swift-module-cache}"
-EXTRA_FLAGS=(--disable-sandbox -Xswiftc -module-cache-path -Xswiftc "$SWIFTPM_MODULECACHE_OVERRIDE" -Xcc -fmodules-cache-path="$CLANG_MODULE_CACHE_PATH")
+EXTRA_FLAGS=(--disable-sandbox -Xswiftc -disable-sandbox -Xswiftc -module-cache-path -Xswiftc "$SWIFTPM_MODULECACHE_OVERRIDE" -Xcc -fmodules-cache-path="$CLANG_MODULE_CACHE_PATH")
 for arch in "${ARCHS[@]}"; do
     echo "==> swift build -c release --arch $arch"
     swift build -c release --arch "$arch" "${EXTRA_FLAGS[@]}"
@@ -58,6 +58,11 @@ if [ ! -f "$BUILD_DIR/Books/books.pak" ] || [ "Books/manifest.json" -nt "$BUILD_
 fi
 cp -R "$BUILD_DIR/Books" "$APP/Contents/Resources/Books"
 
+# Apple 권장 String Catalog (Resources/Localizable.xcstrings) 컴파일 → Contents/Resources/{ko,en}.lproj/Localizable.strings
+if [ -f "Resources/Localizable.xcstrings" ]; then
+    xcrun xcstringstool compile "Resources/Localizable.xcstrings" --output-directory "$APP/Contents/Resources"
+fi
+
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -70,6 +75,12 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>$VERSION</string>
     <key>CFBundleVersion</key><string>$VERSION</string>
+    <key>CFBundleDevelopmentRegion</key><string>ko</string>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>ko</string>
+        <string>en</string>
+    </array>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>LSUIElement</key><true/>

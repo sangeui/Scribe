@@ -67,4 +67,11 @@ enum Pricing {
             + Double(e.cacheRead) * r.cacheRead
         return perMillion / 1_000_000
     }
+
+    /// 캐시 읽기(`cacheRead`)를 일반 입력(`input`) 단가로 냈을 때보다 아낀 추정 비용(USD).
+    static func cacheSavings(of e: UsageEntry) -> Double? {
+        guard e.cacheRead > 0, let r = rate(for: e.model) else { return nil }
+        let savedPerMillion = Double(e.cacheRead) * max(0, r.input - r.cacheRead)
+        return savedPerMillion / 1_000_000
+    }
 }

@@ -85,10 +85,10 @@ struct HintCard: View {
                 if let symbol = hint.symbol {
                     Image(systemName: symbol).font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
                 }
-                Text(hint.title).font(.caption.weight(.semibold))
+                Text(L10n.tr(hint.title)).font(.caption.weight(.semibold))
             }
             ForEach(Array(hint.lines.enumerated()), id: \.offset) { _, line in
-                Text(line).font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                Text(L10n.tr(line)).font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(.horizontal, 10).padding(.vertical, 8)
@@ -122,7 +122,7 @@ struct ChipLabel: View {
     var prominent = false
 
     var body: some View {
-        Text(title).font(.caption.weight(.medium))
+        Text(L10n.tr(title)).font(.caption.weight(.medium))
             .padding(.horizontal, 9).padding(.vertical, 4)
             .foregroundStyle(prominent ? Color.white : Color.primary)
             .background(prominent ? ChartPalette.series[0] : Color.secondary.opacity(0.12), in: Capsule())
@@ -156,13 +156,14 @@ struct MarqueeText: View {
     private static let pause: Double = 2
 
     var body: some View {
+        let localized = L10n.tr(text)
         let font = NSFont.systemFont(ofSize: size)
-        let textWidth = ceil(NSAttributedString(string: text, attributes: [.font: font]).size().width) + 1
+        let textWidth = ceil(NSAttributedString(string: localized, attributes: [.font: font]).size().width) + 1
         GeometryReader { geo in
             let overflow = max(0, textWidth - geo.size.width)
             TimelineView(.animation(minimumInterval: 1.0 / 20, paused: !animated || overflow <= 0)) { context in
                 let shift = offset(at: context.date.timeIntervalSinceReferenceDate, overflow: overflow)
-                Text(text).font(.system(size: size)).foregroundStyle(color).lineLimit(1).fixedSize()
+                Text(localized).font(.system(size: size)).foregroundStyle(color).lineLimit(1).fixedSize()
                     .offset(x: -shift)
                     .frame(width: geo.size.width, height: geo.size.height, alignment: .leading)
                     .clipped()

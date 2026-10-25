@@ -62,6 +62,8 @@ final class SidePanel {
         case .settings: AnyView(SettingsPanel(store: store))
         }
         let hosting = NSHostingView(rootView: content
+            .environment(\.locale, store.languageLocale)
+            .id(store.language)
             .frame(width: size.width, height: size.height)
             .hintHost()
             .background(.regularMaterial)

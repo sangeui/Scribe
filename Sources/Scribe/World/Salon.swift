@@ -240,8 +240,8 @@ enum SalonTalk {
             "오늘 \(progress.weather.title)(이|가)군. 글 쓰기엔 \(progress.weather == .rain ? "좋은" : "그런") 날씨요",
             "살롱이 조용한 날은 다들 쓰고 있다는 뜻이오",
         ])
-        let line = pool[(turn + author.count) % pool.count]
-        var dialogue = Dialogue(name: name(author), pages: VillageTalk.split(line.resolvedParticles))
+        let line = L10n.tr(pool[(turn + author.count) % pool.count]).resolvedParticles
+        var dialogue = Dialogue(name: name(author), pages: VillageTalk.split(line))
         if progress.canInvite {
             dialogue.options = [Dialogue.Option(label: "같이 쓰자고 청하기", action: .invite), Dialogue.Option(label: "그냥 듣기", action: .close)]
         }
@@ -351,9 +351,9 @@ struct SalonView: View {
             }
             HStack(spacing: 10) {
                 Symbol(name: "arrow.left.arrow.right", size: 10)
-                Text(help).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                Text(L10n.tr(help)).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                 Spacer(minLength: 0)
-                Text(state.dialogue == nil ? "Esc 나가기" : "Esc 대화 닫기").font(.caption2).foregroundStyle(.tertiary)
+                Text(L10n.tr(state.dialogue == nil ? "Esc 나가기" : "Esc 대화 닫기")).font(.caption2).foregroundStyle(.tertiary)
             }
         }
     }

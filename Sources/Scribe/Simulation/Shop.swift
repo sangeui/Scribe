@@ -11,12 +11,13 @@ enum ShopSlot: String, Codable, Sendable, CaseIterable {
     case window, counter, shelf, storage
 
     var title: String {
-        switch self {
+        let raw: String = switch self {
         case .window: "진열창"
         case .counter: "매대"
         case .shelf: "서가"
         case .storage: "창고"
         }
+        return L10n.tr(raw)
     }
 
     var symbol: String {
@@ -58,13 +59,14 @@ enum TrustLevel: Int, CaseIterable, Sendable, Comparable {
     }
 
     var title: String {
-        switch self {
+        let raw: String = switch self {
         case .distant: "서먹함"
         case .acquainted: "안면"
         case .usual: "보통"
         case .friendly: "친근함"
         case .regular: "단골 작가"
         }
+        return L10n.tr(raw)
     }
 
     /// 매대 칸 수.
@@ -92,16 +94,28 @@ enum TrustLevel: Int, CaseIterable, Sendable, Comparable {
     }
 
     var detail: String {
-        "매대 \(counterSlots)칸 · " + (hasWindow ? "진열창 있음" : "진열창 없음") + (reprintSpeed < 1 ? " · 재판 \(Int((1 - reprintSpeed) * 100))% 빠름" : reprintSpeed > 1 ? " · 재판 \(Int((reprintSpeed - 1) * 100))% 느림" : "")
+        let raw = "매대 \(counterSlots)칸 · " + (hasWindow ? "진열창 있음" : "진열창 없음") + (reprintSpeed < 1 ? " · 재판 \(Int((1 - reprintSpeed) * 100))% 빠름" : reprintSpeed > 1 ? " · 재판 \(Int((reprintSpeed - 1) * 100))% 느림" : "")
+        return L10n.tr(raw)
     }
 }
 
 /// 신뢰가 오르내린 사유.
 struct TrustRecord: Codable, Sendable, Equatable, Identifiable {
     let delta: Double
-    let reason: String
+    let rawReason: String
     let date: Date
-    var id: String { "\(reason)-\(date.timeIntervalSince1970)" }
+    var reason: String { L10n.tr(rawReason) }
+    var id: String { "\(rawReason)-\(date.timeIntervalSince1970)" }
+
+    init(delta: Double, reason: String, date: Date) {
+        self.delta = delta
+        self.rawReason = reason
+        self.date = date
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case delta, rawReason = "reason", date
+    }
 }
 
 // MARK: - 재고 소식
@@ -141,11 +155,43 @@ struct Statement: Codable, Sendable, Equatable, Identifiable {
     let missed: Int
     let trustBefore: Double
     let trustAfter: Double
-    let reasons: [String]
-    let keeperLine: String
+    let rawReasons: [String]
+    let rawKeeperLine: String
     var notified: Bool?
     var dismissed: Bool?
+    var reasons: [String] { rawReasons.map(L10n.tr) }
+    var keeperLine: String { L10n.tr(rawKeeperLine) }
     var id: String { "statement-\(weekStart.timeIntervalSince1970)" }
+
+    init(
+        weekStart: Date,
+        lines: [StatementLine],
+        sold: Int,
+        returned: Int,
+        missed: Int,
+        trustBefore: Double,
+        trustAfter: Double,
+        reasons: [String],
+        keeperLine: String,
+        notified: Bool? = nil,
+        dismissed: Bool? = nil
+    ) {
+        self.weekStart = weekStart
+        self.lines = lines
+        self.sold = sold
+        self.returned = returned
+        self.missed = missed
+        self.trustBefore = trustBefore
+        self.trustAfter = trustAfter
+        self.rawReasons = reasons
+        self.rawKeeperLine = keeperLine
+        self.notified = notified
+        self.dismissed = dismissed
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case weekStart, lines, sold, returned, missed, trustBefore, trustAfter, rawReasons = "reasons", rawKeeperLine = "keeperLine", notified, dismissed
+    }
 }
 
 // MARK: - 상태
@@ -288,13 +334,15 @@ enum Shopkeeper {
 
     /// 지난주 정산서에 붙는 주인의 한마디.
     static func line(sold: Int, missed: Int, returned: Int, trustDelta: Double) -> String {
-        if sold == 0 && missed == 0 { return "지난주엔 발길이 뜸했습니다. 신간 소식이 있으면 알려 주십시오" }
-        if missed > sold / 3 { return "품절로 돌려보낸 손님이 많았습니다. 재판을 미리 청했으면 더 팔았을 겁니다" }
-        if returned > sold / 4 { return "반품이 많았습니다. 큰 주문은 받기 전에 저와 한 번 상의합시다" }
-        if trustDelta >= 4 { return "이번 주는 손님이 끊이지 않았습니다. 앞자리를 더 내드리지요" }
-        if trustDelta <= -4 { return "손님이 줄었습니다. 매대는 잘 팔리는 책 차지입니다" }
-        if missed > 0 { return "몇 분은 빈손으로 갔습니다. 재고를 조금 넉넉히 두는 게 어떻겠습니까" }
-        return "별일 없이 한 주가 갔습니다. 다음 주도 부탁드립니다"
+        let raw: String
+        if sold == 0 && missed == 0 { raw = "지난주엔 발길이 뜸했습니다. 신간 소식이 있으면 알려 주십시오" }
+        else if missed > sold / 3 { raw = "품절로 돌려보낸 손님이 많았습니다. 재판을 미리 청했으면 더 팔았을 겁니다" }
+        else if returned > sold / 4 { raw = "반품이 많았습니다. 큰 주문은 받기 전에 저와 한 번 상의합시다" }
+        else if trustDelta >= 4 { raw = "이번 주는 손님이 끊이지 않았습니다. 앞자리를 더 내드리지요" }
+        else if trustDelta <= -4 { raw = "손님이 줄었습니다. 매대는 잘 팔리는 책 차지입니다" }
+        else if missed > 0 { raw = "몇 분은 빈손으로 갔습니다. 재고를 조금 넉넉히 두는 게 어떻겠습니까" }
+        else { raw = "별일 없이 한 주가 갔습니다. 다음 주도 부탁드립니다" }
+        return L10n.tr(raw)
     }
 }
 

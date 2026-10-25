@@ -83,10 +83,19 @@ enum Balance {
 /// 행운. 돌발 상황의 반대편으로, 가끔 좋은 일이 생긴다.
 struct LuckEvent: Equatable, Sendable {
     let id: String
-    let title: String
+    let rawTitle: String
     let icon: [String]
     /// 0이면 그 자리에서 끝나는 일(선금).
     let minutes: Int
+
+    var title: String { L10n.tr(rawTitle) }
+
+    init(id: String, title: String, icon: [String], minutes: Int) {
+        self.id = id
+        self.rawTitle = title
+        self.icon = icon
+        self.minutes = minutes
+    }
 }
 
 enum Lucks {
@@ -102,20 +111,25 @@ enum Lucks {
     @MainActor
     static func text(_ luck: LuckEvent, guest: String?, items: String?) -> String {
         switch luck.id {
-        case inspiration.id: return "영감이 쏟아집니다. \(Balance.inspirationMinutes)분 동안 글자가 \(Int(Balance.inspirationMultiplier))배로 늘어납니다"
-        case advance.id: return "출판사에서 선금이 왔습니다" + (items.map { $0.hasSuffix("습니다") ? ". \($0)" : ". \($0)을 받았습니다" } ?? "")
+        case inspiration.id:
+            return L10n.tr("영감이 쏟아집니다. \(Balance.inspirationMinutes)분 동안 글자가 \(Int(Balance.inspirationMultiplier))배로 늘어납니다")
+        case advance.id:
+            if L10n.isEnglish {
+                return "An advance arrived from the publisher" + (items.map { ". Received \($0)" } ?? "")
+            }
+            return "출판사에서 선금이 왔습니다" + (items.map { $0.hasSuffix("습니다") ? ". \($0)" : ". \($0)을 받았습니다" } ?? "")
         default:
-            let name = guest.flatMap { g in Library.books.first { $0.authorShort == g }?.displayAuthorShort } ?? "다른 작가"
-            return "\(Format.particle(name, "이", "가")) 찾아와 함께 씁니다. \(Balance.guestMinutes / 60)시간 동안 돌발 상황이 없습니다"
+            let name = guest.flatMap { g in Library.books.first { $0.authorShort == g }?.displayAuthorShort } ?? L10n.tr("다른 작가")
+            return L10n.tr("\(Format.particle(name, "이", "가")) 찾아와 함께 씁니다. \(Balance.guestMinutes / 60)시간 동안 돌발 상황이 없습니다")
         }
     }
 
     /// 끝날 때 보여 주는 말.
     static func endText(_ luck: LuckEvent) -> String {
-        switch luck.id {
+        L10n.tr({ switch luck.id {
         case inspiration.id: "영감의 날이 저물었습니다. 평소 속도로 돌아갑니다"
         default: "손님 작가가 돌아갔습니다"
-        }
+        } }())
     }
 }
 
@@ -123,20 +137,46 @@ enum Lucks {
 struct Disaster: Equatable, Sendable {
     let id: String
     /// 화재, 홍수처럼 짧은 이름. 좁은 자리에서 쓴다.
-    let name: String
+    let rawName: String
     /// "원고 n자를" 앞에 오는 말과 뒤에 오는 말.
-    let cause: String
-    let effect: String
+    let rawCause: String
+    let rawEffect: String
     let icon: [String]
 
+    var name: String { L10n.tr(rawName) }
+    var cause: String { L10n.tr(rawCause) }
+    var effect: String { L10n.tr(rawEffect) }
+
+    init(id: String, name: String, cause: String, effect: String, icon: [String]) {
+        self.id = id
+        self.rawName = name
+        self.rawCause = cause
+        self.rawEffect = effect
+        self.icon = icon
+    }
+
     /// "난로 불똥이 튀어 원고 2,300자가 탔습니다"
-    func text(lost: Int) -> String { "\(cause) 원고 \(Format.integer(lost))자\(effect)" }
+    func text(lost: Int) -> String {
+        if L10n.isEnglish {
+            return "\(cause) — \(Format.integer(lost)) chars of manuscript \(effect)"
+        }
+        return L10n.tr("\(rawCause) 원고 \(Format.integer(lost))자\(rawEffect)")
+    }
     /// "화재로 원고 2,300자를 잃었습니다"
-    func shortText(lost: Int) -> String { "\(Format.particle(name, "으로", "로")) 원고 \(Format.integer(lost))자를 잃었습니다" }
+    func shortText(lost: Int) -> String {
+        if L10n.isEnglish {
+            return "Lost \(Format.integer(lost)) chars to \(name.lowercased())"
+        }
+        return L10n.tr("\(Format.particle(rawName, "으로", "로")) 원고 \(Format.integer(lost))자를 잃었습니다")
+    }
     /// 방재 아이템이 막았을 때. "난로 불똥이 튀었지만 금고 덕에 원고는 무사했습니다"
-    func shieldedText(_ item: ItemKind) -> String { "\(name)가 났지만 \(item.title) 덕에 원고는 무사했습니다" }
+    func shieldedText(_ item: ItemKind) -> String {
+        L10n.tr("\(name)가 났지만 \(item.title) 덕에 원고는 무사했습니다")
+    }
     /// 상시 창용. "화재 · 금고 덕에 원고 무사"
-    func shortShieldedText(_ item: ItemKind) -> String { "\(name) · \(item.shortTitle) 덕에 원고 무사" }
+    func shortShieldedText(_ item: ItemKind) -> String {
+        L10n.tr("\(name) · \(item.shortTitle) 덕에 원고 무사")
+    }
 }
 
 enum Disasters {
@@ -160,26 +200,26 @@ enum ItemRole: String, CaseIterable, Codable, Sendable {
     case wake, ink, call, muse, light, shield
 
     var title: String {
-        switch self {
+        L10n.tr({ switch self {
         case .wake: "깨우기"
         case .ink: "잉크"
         case .call: "불러오기"
         case .muse: "영감"
         case .light: "불빛"
         case .shield: "방재"
-        }
+        } }())
     }
 
     /// 어떤 상황을 끝내는지.
     var cures: String {
-        switch self {
+        L10n.tr({ switch self {
         case .wake: "졸고 있을 때 깨웁니다"
         case .ink: "잉크가 떨어졌을 때 다시 쓰게 합니다"
         case .call: "자리를 비우거나 산책·편지·외출 중일 때 불러옵니다"
         case .muse: "글이 막히거나 멍하니 바라볼 때 영감을 줍니다"
         case .light: "촛불이 꺼졌을 때 불을 밝힙니다"
         case .shield: "자연재해가 나면 저절로 쓰여 원고를 지킵니다"
-        }
+        } }())
     }
 
     /// 이 역할의 아이템. 앞엣것이 기본(돌발 상황 문구가 가리키는 것).
@@ -204,7 +244,7 @@ enum ItemKind: String, CaseIterable, Codable, Sendable {
     var isPrimary: Bool { role.kinds.first == self }
 
     var title: String {
-        switch self {
+        L10n.tr({ switch self {
         case .coffee: "커피"
         case .tea: "홍차"
         case .ink: "잉크병"
@@ -217,7 +257,7 @@ enum ItemKind: String, CaseIterable, Codable, Sendable {
         case .lamp: "등잔"
         case .safe: "금고"
         case .copy: "사본"
-        }
+        } }())
     }
 
     /// 어떤 상황을 끝내는지.
@@ -225,7 +265,7 @@ enum ItemKind: String, CaseIterable, Codable, Sendable {
 
     /// 버튼처럼 좁은 자리에 쓰는 이름.
     var shortTitle: String {
-        switch self {
+        L10n.tr({ switch self {
         case .coffee: "커피"
         case .tea: "홍차"
         case .ink: "잉크"
@@ -238,7 +278,7 @@ enum ItemKind: String, CaseIterable, Codable, Sendable {
         case .lamp: "등잔"
         case .safe: "금고"
         case .copy: "사본"
-        }
+        } }())
     }
 
     var icon: [String] {
@@ -364,7 +404,7 @@ enum ItemKind: String, CaseIterable, Codable, Sendable {
 struct AuthorEvent: Equatable, Sendable {
     /// 저장용 이름. 바꾸면 저장된 상황을 못 읽는다.
     let id: String
-    let text: String
+    let rawText: String
     let icon: [String]
     /// 책상을 떠난 일이면 초상화를 흐리게.
     let leavesDesk: Bool
@@ -378,9 +418,33 @@ struct AuthorEvent: Equatable, Sendable {
     /// 아이템을 거절할 때. 비어 있으면 거절하지 않는다.
     var refusals: [String] = []
 
+    var text: String { L10n.tr(rawText) }
+
+    init(
+        id: String,
+        text: String,
+        icon: [String],
+        leavesDesk: Bool,
+        cure: ItemKind,
+        causes: [String] = [],
+        returns: [String] = [],
+        cured: [String] = [],
+        refusals: [String] = []
+    ) {
+        self.id = id
+        self.rawText = text
+        self.icon = icon
+        self.leavesDesk = leavesDesk
+        self.cure = cure
+        self.causes = causes
+        self.returns = returns
+        self.cured = cured
+        self.refusals = refusals
+    }
+
     func pick(_ lines: [String], _ roll: Double) -> String? {
         guard !lines.isEmpty else { return nil }
-        return lines[min(lines.count - 1, Int(roll * Double(lines.count)))]
+        return L10n.tr(lines[min(lines.count - 1, Int(roll * Double(lines.count)))])
     }
 }
 
@@ -915,7 +979,7 @@ struct AuthorStatusLine: View {
     var body: some View {
         HStack(spacing: 4) {
             PixelIconView(rows: event?.icon ?? PixelIcon.quill, color: color, scale: fontSize / 9)
-            Text(event?.text ?? "쓰는 중").font(.system(size: fontSize)).foregroundStyle(color)
+            Text(event?.text ?? L10n.tr("쓰는 중")).font(.system(size: fontSize)).foregroundStyle(color)
                 .lineLimit(1).minimumScaleFactor(0.8)
         }
     }

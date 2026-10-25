@@ -251,7 +251,7 @@ struct WritingView: View {
     private func statusItem(_ symbol: String, _ text: String, _ color: Color) -> some View {
         HStack(spacing: 3) {
             Symbol(name: symbol, size: 10, color: color)
-            Text(text).font(.caption2.monospacedDigit()).foregroundStyle(color == .secondary ? Color.secondary : color)
+            Text(L10n.tr(text)).font(.caption2.monospacedDigit()).foregroundStyle(color == .secondary ? Color.secondary : color)
         }
         .fixedSize()
     }
@@ -408,8 +408,8 @@ struct WritingView: View {
         Button(action: action) {
             HStack(spacing: 4) {
                 Symbol(name: symbol, size: 11)
-                Text(title).font(.caption.weight(.semibold))
-                Text(detail).font(.system(size: 9).monospacedDigit()).foregroundStyle(.secondary)
+                Text(L10n.tr(title)).font(.caption.weight(.semibold))
+                Text(L10n.tr(detail)).font(.system(size: 9).monospacedDigit()).foregroundStyle(.secondary)
             }
             .lineLimit(1).minimumScaleFactor(0.85)
             .frame(maxWidth: .infinity)
@@ -454,7 +454,8 @@ struct DilemmaBanner: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(kind.title).font(.callout.weight(.semibold))
                         Text(active.text).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                        Text((minutes >= 60 ? "\(minutes / 60)시간" + (minutes % 60 > 0 ? " \(minutes % 60)분" : "") : "\(minutes)분") + " 안에 답이 없으면 작가가 알아서 고릅니다")
+                        let span = minutes >= 60 ? L10n.tr("\(minutes / 60)시간") + (minutes % 60 > 0 ? " " + L10n.tr("\(minutes % 60)분") : "") : L10n.tr("\(minutes)분")
+                        Text(L10n.tr("\(span) 안에 답이 없으면 작가가 알아서 고릅니다"))
                             .font(.caption2).foregroundStyle(.tertiary)
                     }
                 }
@@ -481,12 +482,12 @@ struct DilemmaBanner: View {
         var parts = option.boosts.map { kind, value, seconds -> String in
             let hours = Int(seconds / 3600)
             let probe = ActiveBoost(kind: kind, value: value, endsAt: Date(), source: "")
-            return "\(probe.text), \(hours)시간 동안"
+            return L10n.tr("\(probe.text), \(hours)시간 동안")
         }
-        if option.items > 0 { parts.append("아이템 \(option.items)개를 받습니다") }
-        if option.items < 0 { parts.append("아이템 \(-option.items)개가 나갑니다") }
-        if parts.isEmpty { parts.append("숫자 효과는 없습니다.") }
-        parts.append("결과 문장은 골라 봐야 압니다.")
+        if option.items > 0 { parts.append(L10n.tr("아이템 \(option.items)개를 받습니다")) }
+        if option.items < 0 { parts.append(L10n.tr("아이템 \(-option.items)개가 나갑니다")) }
+        if parts.isEmpty { parts.append(L10n.tr("숫자 효과는 없습니다.")) }
+        parts.append(L10n.tr("결과 문장은 골라 봐야 압니다."))
         return parts
     }
 }
@@ -513,8 +514,8 @@ struct DeadlineRow: View {
                     Text(deadline.title).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                     Spacer(minLength: 0)
                     Text(met ? (deadline.metAt.map { $0.formatted(.dateTime.weekday(.abbreviated)) } ?? "")
-                         : deadline.kind == .finish ? (daysLeft == 0 ? "오늘까지" : "\(daysLeft)일 남음")
-                         : "목표 \(Format.short(deadline.target)) 중 \(Format.short(progress))")
+                         : deadline.kind == .finish ? (daysLeft == 0 ? L10n.tr("오늘까지") : L10n.tr("\(daysLeft)일 남음"))
+                         : L10n.tr("목표 \(Format.short(deadline.target)) 중 \(Format.short(progress))"))
                         .font(.caption2.monospacedDigit()).foregroundStyle(color)
                 }
                 ZStack(alignment: .leading) {
@@ -627,7 +628,7 @@ struct EventBanner: View {
                     if let cause {
                         Text(cause).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     }
-                    Text("집필 멈춤 · \(minutes)분 뒤 재개" + (wait.map { " · 아이템은 \($0)분 뒤" } ?? ""))
+                    Text(L10n.tr("집필 멈춤 · \(minutes)분 뒤 재개") + (wait.map { L10n.tr(" · 아이템은 \($0)분 뒤") } ?? ""))
                         .font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
                 .layoutPriority(1)
@@ -637,7 +638,7 @@ struct EventBanner: View {
                 Button(action: onUse) {
                     HStack(spacing: 4) {
                         PixelIconView(rows: shown.icon, color: usable ? .white : .secondary, scale: 1.1)
-                        Text(count == 0 ? "\(event.cure.role.title) 없음" : wait.map { "\($0)분 뒤" } ?? "\(shown.shortTitle) ×\(count)")
+                        Text(count == 0 ? L10n.tr("\(event.cure.role.title) 없음") : wait.map { L10n.tr("\($0)분 뒤") } ?? "\(shown.shortTitle) ×\(count)")
                     }
                     .font(.caption.weight(.semibold))
                     .fixedSize()
@@ -721,8 +722,8 @@ struct LuckBanner: View {
                 PixelIconView(rows: kind.icon, color: BadgeTier.gold.color, scale: 2)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(kind.title).font(.callout.weight(.semibold))
-                    Text(kind.id == Lucks.inspiration.id ? "글자 \(Int(Balance.inspirationMultiplier))배 · \(minutes)분 남음"
-                         : "돌발 상황 없음 · \(minutes)분 남음")
+                    Text(kind.id == Lucks.inspiration.id ? L10n.tr("글자 \(Int(Balance.inspirationMultiplier))배 · \(minutes)분 남음")
+                         : L10n.tr("돌발 상황 없음 · \(minutes)분 남음"))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)
@@ -818,7 +819,8 @@ struct BetBanner: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text("\(name)의 내기").font(.callout.weight(.semibold))
-                        Text("\(Format.integer(bet.target))자 · \(minutes >= 60 ? "\(minutes / 60)시간 \(minutes % 60)분" : "\(minutes)분") 안에")
+                        let span = minutes >= 60 ? L10n.tr("\(minutes / 60)시간 \(minutes % 60)분") : L10n.tr("\(minutes)분")
+                        Text(L10n.tr("\(Format.integer(bet.target))자 · \(span) 안에"))
                             .font(.caption).foregroundStyle(.secondary)
                     }
                     if bet.running {
@@ -874,8 +876,8 @@ struct WeeklyCard: View {
                 Spacer(minLength: 0)
             }
             if let best = review.bestDay {
-                Text("가장 많이 쓴 날 · \(best.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated))) \(Format.integer(review.bestDayCharacters))자"
-                     + (review.deadlineMet.map { $0 ? " · 마감 지킴" : " · 마감 펑크" } ?? ""))
+                Text(L10n.tr("가장 많이 쓴 날 · \(best.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated))) \(Format.integer(review.bestDayCharacters))자")
+                     + (review.deadlineMet.map { L10n.tr($0 ? " · 마감 지킴" : " · 마감 펑크") } ?? ""))
                     .font(.caption2).foregroundStyle(.secondary)
             }
         }
@@ -886,7 +888,7 @@ struct WeeklyCard: View {
     private func stat(_ value: String, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(value).font(.callout.weight(.semibold).monospacedDigit())
-            Text(label).font(.caption2).foregroundStyle(.secondary)
+            Text(L10n.tr(label)).font(.caption2).foregroundStyle(.secondary)
         }
     }
 }

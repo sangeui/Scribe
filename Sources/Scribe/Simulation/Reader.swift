@@ -10,13 +10,15 @@ final class ReaderWindow {
     func show(book: Book, count: Int) {
         let text = Library.prefix(of: book, count: count)
         let view = ReaderView(book: book, count: count, text: text)
+            .environment(\.locale, L10n.locale)
+        let windowTitle = L10n.tr("\(book.displayTitle) · 원고")
         if let window {
             window.contentView = NSHostingView(rootView: view)
-            window.title = "\(book.displayTitle) · 원고"
+            window.title = windowTitle
         } else {
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 720),
                                   styleMask: [.titled, .closable, .resizable, .miniaturizable], backing: .buffered, defer: false)
-            window.title = "\(book.displayTitle) · 원고"
+            window.title = windowTitle
             window.isReleasedWhenClosed = false
             window.contentView = NSHostingView(rootView: view)
             window.center()

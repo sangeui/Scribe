@@ -7,6 +7,13 @@ import Observation
 final class UsageStore {
     private(set) var snapshot: UsageSnapshot?
     private(set) var agentSource: AgentSource = UserDefaults.standard.string(forKey: AgentSource.key).flatMap(AgentSource.init(rawValue:)) ?? .antigravity
+    private(set) var language: AppLanguage = L10n.preference
+    var languageLocale: Locale { _ = language; return L10n.locale }
+    private(set) var exchangeRate: Double = ExchangeRate.currentRate
+    private(set) var exchangeRateDate: String = ExchangeRate.currentDateString
+    private(set) var isRefreshingExchangeRate = false
+    private(set) var isExchangeRateOfflineFallback = false
+    @ObservationIgnored private var exchangeRateNotBefore = Date.distantPast
     private(set) var limits: [LimitRow] = []
     private(set) var limitsUpdatedAt: Date?
     private(set) var limitsMessage: String?
@@ -15,6 +22,7 @@ final class UsageStore {
     private(set) var plan: String?
     private(set) var isRefreshing = false
     private(set) var floatingVisible = UserDefaults.standard.bool(forKey: FloatingWindowController.visibleKey)
+    var isFloatingHovered = false
     private(set) var writing: WritingProgress?
     @ObservationIgnored private var lastEntries: [UsageEntry] = []
     @ObservationIgnored private var lastScannedFiles = 0
@@ -110,9 +118,33 @@ final class UsageStore {
                 if Date() >= self.limitsNotBefore {
                     await self.refreshLimits(userInitiated: false)
                 }
+                if Date() >= self.exchangeRateNotBefore {
+                    await self.refreshExchangeRate(userInitiated: false)
+                }
                 await self.updater.checkIfNeeded()
                 try? await Task.sleep(for: Self.usageInterval)
             }
+        }
+    }
+
+    /// 일별 기준 환율(USD → KRW)을 백그라운드에서 갱신한다. 오프라인이거나 실패하면 저장된 이전날 환율을 유지한다.
+    func refreshExchangeRate(userInitiated: Bool = false) async {
+        if !userInitiated, let last = ExchangeRate.lastFetchedAt, Date().timeIntervalSince(last) < 12 * 3600 {
+            exchangeRateNotBefore = last.addingTimeInterval(12 * 3600)
+            return
+        }
+        isRefreshingExchangeRate = true
+        defer { isRefreshingExchangeRate = false }
+        if let fetched = await ExchangeRate.fetchLatest() {
+            exchangeRate = fetched.rate
+            exchangeRateDate = fetched.date
+            isExchangeRateOfflineFallback = false
+            exchangeRateNotBefore = Date().addingTimeInterval(12 * 3600)
+        } else {
+            exchangeRate = ExchangeRate.currentRate
+            exchangeRateDate = ExchangeRate.currentDateString
+            isExchangeRateOfflineFallback = true
+            exchangeRateNotBefore = Date().addingTimeInterval(1800)
         }
     }
 
@@ -132,6 +164,14 @@ final class UsageStore {
         lastScannedFiles = files
         lastFilesByProvider = filesByProvider
         show(UsageAggregator.snapshot(entries: entries, scannedFiles: files, filesByProvider: filesByProvider, source: agentSource))
+    }
+
+    /// 앱 표시 언어를 바꾼다. 열려 있는 화면들이 즉시 새 로케일과 번역 문자열로 다시 그려진다.
+    func setLanguage(_ newLanguage: AppLanguage) {
+        guard newLanguage != language else { return }
+        L10n.setPreference(newLanguage)
+        language = newLanguage
+        writing = writingStore.progress
     }
 
     /// 토큰 공급 에이전트 소스를 바꾼다. 지금까지 쓴 글자 수는 보존하고 날짜별 토큰 기준선만 새 소스에 맞춘다.

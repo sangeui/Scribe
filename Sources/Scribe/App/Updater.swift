@@ -98,7 +98,7 @@ final class AppUpdater {
         lastCheckedAt = Date()
 
         guard let url = URL(string: "https://api.github.com/repos/\(Self.repo)/releases/latest") else {
-            if userInitiated { state = .failed("릴리스 주소를 만들지 못했습니다.") }
+            if userInitiated { state = .failed(L10n.tr("릴리스 주소를 만들지 못했습니다.")) }
             return
         }
         var request = URLRequest(url: url)
@@ -109,7 +109,7 @@ final class AppUpdater {
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-                if userInitiated { state = .failed("GitHub 릴리스 정보를 읽지 못했습니다.") }
+                if userInitiated { state = .failed(L10n.tr("GitHub 릴리스 정보를 읽지 못했습니다.")) }
                 return
             }
             let current = Self.currentVersion
@@ -120,7 +120,7 @@ final class AppUpdater {
             }
         } catch {
             if userInitiated {
-                state = .failed("네트워크 연결을 확인해 주세요.")
+                state = .failed(L10n.tr("네트워크 연결을 확인해 주세요."))
             }
         }
     }
@@ -135,7 +135,7 @@ final class AppUpdater {
         }
         let parentDir = bundleURL.deletingLastPathComponent()
         guard FileManager.default.isWritableFile(atPath: parentDir.path) else {
-            state = .failed("\(parentDir.path) 폴더에 쓰기 권한이 없습니다. 릴리스 페이지에서 받아 주세요.")
+            state = .failed(L10n.tr("\(parentDir.path) 폴더에 쓰기 권한이 없습니다. 릴리스 페이지에서 받아 주세요."))
             NSWorkspace.shared.open(release.pageURL)
             return
         }
@@ -146,30 +146,30 @@ final class AppUpdater {
 
         do {
             try FileManager.default.createDirectory(at: extractDir, withIntermediateDirectories: true)
-            state = .installing("v\(release.version) 내려받는 중…")
+            state = .installing(L10n.tr("v\(release.version) 내려받는 중…"))
 
             var request = URLRequest(url: release.downloadURL)
             request.timeoutInterval = 120
             request.setValue("Scribe/\(Self.currentVersion)", forHTTPHeaderField: "User-Agent")
             let (tempFile, response) = try await URLSession.shared.download(for: request)
             guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-                throw UpdateError("압축 파일을 내려받지 못했습니다.")
+                throw UpdateError(L10n.tr("압축 파일을 내려받지 못했습니다."))
             }
             try FileManager.default.moveItem(at: tempFile, to: zipURL)
 
-            state = .installing("압축 해제 및 서명 검증 중…")
+            state = .installing(L10n.tr("압축 해제 및 서명 검증 중…"))
             try Self.runProcess("/usr/bin/ditto", args: ["-x", "-k", zipURL.path, extractDir.path])
 
             let stagedApp = extractDir.appendingPathComponent("Scribe.app")
             guard FileManager.default.fileExists(atPath: stagedApp.path) else {
-                throw UpdateError("압축 파일 안에 Scribe.app 이 없습니다.")
+                throw UpdateError(L10n.tr("압축 파일 안에 Scribe.app 이 없습니다."))
             }
 
             // 격리 속성 제거 후 코드서명 무결성 검증
             _ = try? Self.runProcess("/usr/bin/xattr", args: ["-cr", stagedApp.path])
             try Self.runProcess("/usr/bin/codesign", args: ["--verify", "--deep", "--strict", stagedApp.path])
 
-            state = .installing("다시 여는 중…")
+            state = .installing(L10n.tr("다시 여는 중…"))
             let pid = ProcessInfo.processInfo.processIdentifier
             let script = """
             PID="$1"; SRC="$2"; DST="$3"; WORK="$4"
@@ -190,7 +190,7 @@ final class AppUpdater {
             NSApplication.shared.terminate(nil)
         } catch {
             try? FileManager.default.removeItem(at: workDir)
-            let msg = (error as? UpdateError)?.message ?? "업데이트 설치 중 오류가 났습니다."
+            let msg = (error as? UpdateError)?.message ?? L10n.tr("업데이트 설치 중 오류가 났습니다.")
             state = .failed(msg)
         }
     }
@@ -210,7 +210,7 @@ final class AppUpdater {
         try proc.run()
         proc.waitUntilExit()
         guard proc.terminationStatus == 0 else {
-            throw UpdateError("\(URL(fileURLWithPath: launchPath).lastPathComponent) 검증 실패 (코드 \(proc.terminationStatus))")
+            throw UpdateError(L10n.tr("\(URL(fileURLWithPath: launchPath).lastPathComponent) 검증 실패 (코드 \(proc.terminationStatus))"))
         }
         return proc.terminationStatus
     }

@@ -8,7 +8,7 @@ enum Weather: String, CaseIterable, Sendable {
     case clear, cloudy, rain, storm, snow, fog, heat
 
     var title: String {
-        switch self {
+        let raw: String = switch self {
         case .clear: "맑음"
         case .cloudy: "흐림"
         case .rain: "비"
@@ -17,11 +17,12 @@ enum Weather: String, CaseIterable, Sendable {
         case .fog: "안개"
         case .heat: "더위"
         }
+        return L10n.tr(raw)
     }
 
     /// 팝오버와 상시 창 툴팁에 쓰는 한 줄.
     var line: String {
-        switch self {
+        let raw: String = switch self {
         case .clear: "맑습니다. 창문을 열어 두었습니다"
         case .cloudy: "흐립니다. 등잔을 일찍 켭니다"
         case .rain: "비가 옵니다. 글이 조금 잘 됩니다"
@@ -30,6 +31,7 @@ enum Weather: String, CaseIterable, Sendable {
         case .fog: "안개가 짙습니다. 서점에 손님이 적습니다"
         case .heat: "덥습니다. 작가가 자주 졸립니다"
         }
+        return L10n.tr(raw)
     }
 
     /// 효과. 글자 배수, 자연재해 확률 배수, 돌발 상황 확률 배수, 판매 배수.
@@ -54,7 +56,7 @@ enum Weather: String, CaseIterable, Sendable {
 
     /// 효과를 짧게. 없으면 nil.
     var effectText: String? {
-        switch self {
+        let raw: String? = switch self {
         case .clear: "판매 +5%"
         case .cloudy: nil
         case .rain: "글자 +5% · 돌발 상황 -10%"
@@ -63,6 +65,7 @@ enum Weather: String, CaseIterable, Sendable {
         case .fog: "판매 -15%"
         case .heat: "돌발 상황 +20%"
         }
+        return raw.map(L10n.tr)
     }
 
     /// SF Symbol 이름.
@@ -238,7 +241,7 @@ enum Celestial {
         var illumination: Double { 0.5 * (1 - cos(phase * 2 * .pi)) }
 
         var phaseTitle: String {
-            switch phase {
+            let raw: String = switch phase {
             case ..<0.04, 0.96...: "합삭"
             case 0.04..<0.21: "초승달"
             case 0.21..<0.29: "상현달"
@@ -248,6 +251,7 @@ enum Celestial {
             case 0.71..<0.79: "하현달"
             default: "그믐달"
             }
+            return L10n.tr(raw)
         }
     }
 
@@ -273,13 +277,13 @@ enum Celestial {
         var summaryLine: String {
             var parts: [String] = []
             if sun.altitude >= -0.833 {
-                parts.append("해 \(Celestial.compass(sun.azimuth)) \(Int(sun.altitude.rounded()))°")
+                parts.append(L10n.tr("해 \(Celestial.compass(sun.azimuth)) \(Int(sun.altitude.rounded()))°"))
             }
             if moon.body.altitude >= 0, moon.illumination >= 0.02 {
-                parts.append("\(moon.phaseTitle) \(Celestial.compass(moon.body.azimuth)) \(Int(moon.body.altitude.rounded()))°")
+                parts.append(L10n.tr("\(moon.phaseTitle) \(Celestial.compass(moon.body.azimuth)) \(Int(moon.body.altitude.rounded()))°"))
             } else if parts.isEmpty {
-                let edge = moon.body.progress < 0.5 ? "월출 전" : "월몰 후"
-                parts.append("밤하늘 · \(moon.phaseTitle)(\(edge))")
+                let edge = L10n.tr(moon.body.progress < 0.5 ? "월출 전" : "월몰 후")
+                parts.append(L10n.tr("밤하늘 · \(moon.phaseTitle)(\(edge))"))
             }
             return parts.joined(separator: " · ")
         }
@@ -347,9 +351,11 @@ enum Celestial {
         return Coordinate(latitude: 37.55, longitude: lon)
     }
 
-    /// 방위각(0° ... 360°)을 8방위 한글 이름으로 바꾼다.
+    /// 방위각(0° ... 360°)을 8방위 이름으로 바꾼다.
     static func compass(_ azimuth: Double) -> String {
-        let dirs = ["북", "북동", "동", "남동", "남", "남서", "서", "북서"]
+        let dirs = L10n.isEnglish
+            ? ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+            : ["북", "북동", "동", "남동", "남", "남서", "서", "북서"]
         let normalized = ((azimuth.truncatingRemainder(dividingBy: 360)) + 360).truncatingRemainder(dividingBy: 360)
         let idx = Int(((normalized + 22.5) / 45.0).rounded(.down)) % 8
         return dirs[idx]

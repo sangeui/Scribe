@@ -29,11 +29,12 @@ struct Deadline: Codable, Sendable, Equatable {
 
     @MainActor
     var title: String {
-        switch kind {
+        let raw: String = switch kind {
         case .characters: "이번 주 \(Format.short(target))자"
         case .finish: bookTitle.map { "\($0) 탈고" } ?? "이번 주 안에 탈고"
         case .sales: "이번 주 \(Format.short(target))부"
         }
+        return L10n.tr(raw)
     }
 
     @MainActor
@@ -42,11 +43,12 @@ struct Deadline: Codable, Sendable, Equatable {
     /// 출판사가 과제를 줄 때 하는 말.
     @MainActor
     var letter: String {
-        switch kind {
+        let raw: String = switch kind {
         case .characters: "출판사에서 편지가 왔습니다. 이번 주에 \(Format.integer(target))자를 보내 달랍니다"
         case .finish: "출판사에서 편지가 왔습니다. 이번 주 안에 \(bookTitle.map { "「\($0)」" } ?? "원고")을 끝내 달랍니다"
         case .sales: "출판사에서 편지가 왔습니다. 이번 주에 \(Format.integer(target))부는 팔려야 한답니다"
         }
+        return L10n.tr(raw)
     }
 
     var id: String { "\(weekStart.timeIntervalSince1970)-\(kind.rawValue)" }

@@ -17,13 +17,13 @@ enum Mood: String, Sendable, Equatable {
     case slacking
 
     var title: String {
-        switch self {
+        L10n.tr({ switch self {
         case .paused: "멈춤"
         case .focused: "집중"
         case .waiting: "눈치"
         case .alone: "혼자"
         case .slacking: "농땡이"
-        }
+        } }())
     }
 }
 
@@ -194,6 +194,6 @@ final class MoodLines {
         let picked = fresh[min(fresh.count - 1, Int(roll * Double(fresh.count)))]
         let previous = uses[picked].flatMap { $0.day == today ? $0.count : nil } ?? 0
         uses[picked] = (today, previous + 1)
-        return picked
+        return L10n.tr(picked)
     }
 }

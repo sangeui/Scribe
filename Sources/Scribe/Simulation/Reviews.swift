@@ -8,10 +8,10 @@ struct Review: Codable, Sendable, Equatable, Identifiable {
     /// `Book.file`
     let book: String
     let round: Int
-    let critic: String
+    let rawCritic: String
     /// 1~5. 실릴 때 정한다(출판사에 따라 달라서). 그 전엔 0.
     var stars: Int
-    var text: String
+    var rawText: String
     /// 실리는 시각. 그 전에는 화면에 나오지 않는다.
     let date: Date
     /// 별점을 정할 때 쓰는 집필 사정. 탈고 기록에서 옮겨 둔다.
@@ -23,6 +23,44 @@ struct Review: Codable, Sendable, Equatable, Identifiable {
     var affected: Bool?
     var notified: Bool?
     var id: String { "\(round)-\(book)" }
+
+    var critic: String { L10n.tr(rawCritic) }
+    var text: String {
+        get { L10n.isEnglish ? Critics.translateReviewText(rawText, bookFile: book) : rawText }
+        set { rawText = newValue }
+    }
+
+    init(
+        book: String,
+        round: Int,
+        critic: String,
+        stars: Int,
+        text: String,
+        date: Date,
+        days: Int? = nil,
+        events: Int? = nil,
+        lost: Int? = nil,
+        published: Bool? = nil,
+        affected: Bool? = nil,
+        notified: Bool? = nil
+    ) {
+        self.book = book
+        self.round = round
+        self.rawCritic = critic
+        self.stars = stars
+        self.rawText = text
+        self.date = date
+        self.days = days
+        self.events = events
+        self.lost = lost
+        self.published = published
+        self.affected = affected
+        self.notified = notified
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case book, round, rawCritic = "critic", stars, rawText = "text", date, days, events, lost, published, affected, notified
+    }
 
     var starText: String { String(repeating: "★", count: stars) + String(repeating: "☆", count: 5 - stars) }
 }
@@ -192,6 +230,82 @@ enum Critics {
         case 2: pool = ["작가가 신문을 난로에 넣으려다 말았습니다", "작가가 비평가 이름을 적어 두었습니다", "작가가 '편집자 탓'이라고 중얼거립니다"]
         default: pool = ["작가가 신문을 찢었습니다", "작가가 '그 사람은 책을 안 읽는다'고 합니다", "작가가 창밖을 오래 봅니다", "작가가 오늘은 아무와도 말을 안 합니다"]
         }
-        return pool[min(pool.count - 1, Int(roll * Double(pool.count)))]
+        return L10n.tr(pool[min(pool.count - 1, Int(roll * Double(pool.count)))])
+    }
+
+    /// 한국어로 생성·저장된 서평 본문을 영어 문장으로 변환한다.
+    static func translateReviewText(_ raw: String, bookFile: String) -> String {
+        guard !raw.isEmpty else { return raw }
+        let trimmed = raw.hasSuffix(".") ? String(raw.dropLast()) : raw
+        let parts = trimmed.components(separatedBy: ". ")
+        let translated = parts.map { translateSentence($0, bookFile: bookFile) }
+        let joined = translated.joined(separator: ". ")
+        return joined.hasSuffix(".") ? joined : joined + "."
+    }
+
+    private static func translateSentence(_ sentence: String, bookFile: String) -> String {
+        let direct = L10n.tr(sentence)
+        if direct != sentence { return replaceBookNames(in: direct, bookFile: bookFile) }
+
+        let adverbs: [(String, String)] = [
+            ("특히 ", "Especially, the "),
+            ("뜻밖에 ", "Surprisingly, the "),
+            ("끝까지 ", "To the very end, the "),
+            ("무엇보다 ", "Above all, the "),
+            ("다만 ", "However, the "),
+            ("그래도 ", "Still, the "),
+        ]
+        var rest = sentence
+        var prefix = "The "
+        for (koAdv, enAdv) in adverbs {
+            if rest.hasPrefix(koAdv) {
+                rest = String(rest.dropFirst(koAdv.count))
+                prefix = enAdv
+                break
+            }
+        }
+        for aspect in aspects {
+            for particle in ["은 ", "는 ", "만은 ", "도 ", "까지 "] {
+                let head = aspect + particle
+                guard rest.hasPrefix(head) else { continue }
+                let predicate = String(rest.dropFirst(head.count))
+                let enAspect = L10n.tr(aspect).lowercased()
+                if predicate == "그렇다" {
+                    return "So is the \(enAspect)"
+                }
+                if predicate == "말할 것도 없다" {
+                    return "The \(enAspect) goes without saying"
+                }
+                if predicate == "더하다" {
+                    return "The \(enAspect) is even worse"
+                }
+                let enPred = L10n.tr(predicate)
+                if particle == "도 " {
+                    return "The \(enAspect) too \(enPred)"
+                }
+                if particle == "까지 " {
+                    return "Even the \(enAspect) \(enPred)"
+                }
+                if particle == "만은 " {
+                    return "At least the \(enAspect) \(enPred)"
+                }
+                return "\(prefix)\(enAspect) \(enPred)"
+            }
+        }
+        return replaceBookNames(in: direct, bookFile: bookFile)
+    }
+
+    private static func replaceBookNames(in text: String, bookFile: String) -> String {
+        guard let book = Library.books.first(where: { $0.file == bookFile }) else { return text }
+        var out = text
+        if let koTitle = book.titleKo {
+            out = out.replacingOccurrences(of: koTitle, with: book.title)
+        }
+        if let koAuthor = book.authorKo {
+            let koShort = koAuthor.split(separator: " ").last.map(String.init) ?? koAuthor
+            out = out.replacingOccurrences(of: koAuthor, with: book.author)
+            out = out.replacingOccurrences(of: koShort, with: book.authorShort)
+        }
+        return out
     }
 }

@@ -11,12 +11,12 @@ enum VillageBuilding: String, CaseIterable, Sendable {
     case workshop, storage, bookstore, salon
 
     var title: String {
-        switch self {
+        L10n.tr({ switch self {
         case .workshop: "작업실"
         case .storage: "창고"
         case .bookstore: "서점"
         case .salon: "살롱"
-        }
+        } }())
     }
 
     /// 건물 윗줄. 위 셋은 1행, 살롱은 아래 7행.

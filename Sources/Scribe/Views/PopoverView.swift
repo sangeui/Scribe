@@ -16,19 +16,23 @@ struct PopoverView: View {
     @State private var showsSalon = false
 
     var body: some View {
-        if scrollable {
-            let height = min(contentHeight, Self.maxHeight)
-            ScrollView {
-                content
-                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
+        Group {
+            if scrollable {
+                let height = min(contentHeight, Self.maxHeight)
+                ScrollView {
+                    content
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
+                }
+                .frame(width: 380)
+                .frame(height: height)
+                // 메뉴바 창은 내용이 커지면 따라 커지지만 작아질 때는 그대로 남아 위아래가 빈다. 직접 맞춘다.
+                .background(WindowSizer(contentSize: CGSize(width: 380, height: height)))
+            } else {
+                content.frame(width: 380)
             }
-            .frame(width: 380)
-            .frame(height: height)
-            // 메뉴바 창은 내용이 커지면 따라 커지지만 작아질 때는 그대로 남아 위아래가 빈다. 직접 맞춘다.
-            .background(WindowSizer(contentSize: CGSize(width: 380, height: height)))
-        } else {
-            content.frame(width: 380)
         }
+        .environment(\.locale, store.languageLocale)
+        .id(store.language)
     }
 
     private var content: some View {
@@ -156,7 +160,7 @@ struct PopoverView: View {
             HStack {
                 sectionTitle("집필")
                 Spacer()
-                let badge = store.agentSource == .antigravity ? "Antigravity" : (store.plan ?? (store.agentSource == .all ? "통합" : nil))
+                let badge = store.agentSource == .antigravity ? "Antigravity" : (store.plan ?? (store.agentSource == .all ? L10n.tr("통합") : nil))
                 if let badge {
                     Text(badge)
                         .font(.caption2.weight(.medium))
@@ -250,7 +254,7 @@ struct PopoverView: View {
     }
 
     private func sectionTitle(_ text: String) -> some View {
-        Text(text).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+        Text(L10n.tr(text)).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
     }
 }
 
@@ -259,22 +263,22 @@ private struct NoLogsNote: View {
     var source: AgentSource = .all
 
     private var title: String {
-        switch source {
+        L10n.tr({ switch source {
         case .antigravity: "Antigravity 기록이 없습니다"
         case .claude: "Claude Code 기록이 없습니다"
         case .all: "에이전트 대화 기록이 없습니다"
-        }
+        } }())
     }
 
     private var bodyText: String {
-        switch source {
+        L10n.tr({ switch source {
         case .antigravity:
             "Antigravity 또는 Gemini CLI 를 한 번 쓰면 기록이 생기고, 그때부터 집필이 시작됩니다. 별도 로그인이나 연결은 필요 없습니다."
         case .claude:
             "Claude Code 를 한 번 쓰면 기록이 생기고, 그때부터 집필이 시작됩니다. 로그인이나 연결은 필요 없습니다."
         case .all:
             "Antigravity 나 Claude Code 를 한 번 쓰면 기록이 생기고, 그때부터 집필이 시작됩니다. 아래에서 다른 데이터 소스를 골라 볼 수도 있습니다."
-        }
+        } }())
     }
 
     var body: some View {

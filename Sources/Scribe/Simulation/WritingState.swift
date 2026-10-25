@@ -95,35 +95,38 @@ enum SalesTier: Int, CaseIterable, Codable, Sendable, Comparable {
     }
 
     var title: String {
-        switch self {
+        let raw: String = switch self {
         case .none: "미출간"
         case .firstPrint: "초판 완판"
         case .reprint: "재판"
         case .bestseller: "베스트셀러"
         case .million: "밀리언셀러"
         }
+        return L10n.tr(raw)
     }
 
     /// 무슨 뜻인지. 단계 이름에 마우스를 올리면 보인다.
     var meaning: String {
-        switch self {
+        let raw: String = switch self {
         case .none: "아직 1,000부가 안 팔렸습니다"
         case .firstPrint: "1,000부를 넘겼습니다. 처음 찍은 책이 다 팔렸다는 뜻입니다"
         case .reprint: "1만 부를 넘겼습니다. 다시 찍을 만큼 팔렸다는 뜻입니다"
         case .bestseller: "10만 부를 넘겼습니다. 서점 맨 앞에 놓이는 책입니다"
         case .million: "100만 부를 넘겼습니다. 가장 높은 단계입니다"
         }
+        return L10n.tr(raw)
     }
 
     /// 단계를 넘었을 때 한마디.
     var line: String {
-        switch self {
+        let raw: String = switch self {
         case .none: ""
         case .firstPrint: "초판이 다 나갔습니다"
         case .reprint: "재판을 찍습니다"
         case .bestseller: "서점 진열대 맨 앞에 놓였습니다"
         case .million: "집집마다 한 권씩 있습니다"
         }
+        return L10n.tr(raw)
     }
 
     static func of(copies: Double) -> SalesTier {
@@ -145,12 +148,26 @@ struct SalesNews: Codable, Sendable, Equatable, Identifiable {
 /// 상황이 끝나거나 아이템을 거절당했을 때 보여 주는 한 줄. 몇 분 동안 팝오버와 상시 창에 나온다.
 struct EventNote: Codable, Sendable, Equatable {
     enum Kind: String, Codable, Sendable { case returned, cured, refused, luck, dilemma, review, deadline, bet, publisher, order, shop, stat }
-    let text: String
+    let rawText: String
     let date: Date
     /// `AuthorEvent.id`
     let event: String
     let kind: Kind
     var notified: Bool?
+
+    var text: String { L10n.tr(rawText) }
+
+    init(text: String, date: Date, event: String, kind: Kind, notified: Bool? = nil) {
+        self.rawText = text
+        self.date = date
+        self.event = event
+        self.kind = kind
+        self.notified = notified
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case rawText = "text", date, event, kind, notified
+    }
 }
 
 /// 지나간 돌발 상황 한 줄. 가방 화면의 "최근 돌발 상황"에 쓴다.
@@ -170,12 +187,50 @@ struct EventRecord: Codable, Sendable, Equatable, Identifiable {
     /// 자연재해 알림을 보냈는지.
     var notified: Bool?
     /// 상황의 원인과 끝난 모습.
-    var cause: String?
-    var outcome: String?
+    var rawCause: String?
+    var rawOutcome: String?
+    var cause: String? {
+        get { rawCause.map(L10n.tr) }
+        set { rawCause = newValue }
+    }
+    var outcome: String? {
+        get { rawOutcome.map(L10n.tr) }
+        set { rawOutcome = newValue }
+    }
     /// 고유 번호. 한 갱신에서 여러 기록이 같은 시각으로 생겨도 구분한다. 옛 기록에는 없다.
     var uid: String? = UUID().uuidString
 
     var id: String { uid ?? "\(startedAt.timeIntervalSince1970)-\(event)" }
+
+    init(
+        event: String,
+        book: String?,
+        startedAt: Date,
+        endedAt: Date? = nil,
+        endedBy: String? = nil,
+        pausedTokens: Int = 0,
+        lostCharacters: Int? = nil,
+        notified: Bool? = nil,
+        cause: String? = nil,
+        outcome: String? = nil,
+        uid: String? = UUID().uuidString
+    ) {
+        self.event = event
+        self.book = book
+        self.startedAt = startedAt
+        self.endedAt = endedAt
+        self.endedBy = endedBy
+        self.pausedTokens = pausedTokens
+        self.lostCharacters = lostCharacters
+        self.notified = notified
+        self.rawCause = cause
+        self.rawOutcome = outcome
+        self.uid = uid
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case event, book, startedAt, endedAt, endedBy, pausedTokens, lostCharacters, notified, rawCause = "cause", rawOutcome = "outcome", uid
+    }
 }
 
 /// 원소 하나가 깨져도 나머지는 살리는 디코딩.
@@ -521,7 +576,7 @@ struct WritingProgress {
     /// 지금 상황의 원인 한 줄.
     var cause: String? {
         guard let event, let i = activeEvent?.cause, event.causes.indices.contains(i) else { return nil }
-        return event.causes[i]
+        return L10n.tr(event.causes[i])
     }
     /// 아이템을 거절당해 다시 쓸 수 있는 시각(아직 안 지났으면).
     func refusedUntil(now: Date = Date()) -> Date? {

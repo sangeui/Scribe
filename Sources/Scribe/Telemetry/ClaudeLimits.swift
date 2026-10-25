@@ -27,14 +27,16 @@ enum LimitsError: Error {
     }
 
     var message: String {
+        let raw: String
         switch self {
-        case .tokenExpired: return "Claude Code 로그인이 만료됐습니다. Claude Code 를 한 번 쓰면 저절로 이어집니다."
-        case .unauthorized: return "Claude Code 로그인이 거절됐습니다. 터미널에서 claude auth login 을 실행하세요."
-        case .notLoggedIn: return "Claude Code 로그인 정보가 없습니다. 터미널에서 claude auth login 을 실행하세요."
-        case .keychain(let status): return "Keychain 을 읽지 못했습니다 (\(status))."
-        case .http(let code): return "한도 API 오류 (HTTP \(code))."
-        case .rateLimited: return "요청이 많아 잠시 쉽니다."
+        case .tokenExpired: raw = "Claude Code 로그인이 만료됐습니다. Claude Code 를 한 번 쓰면 저절로 이어집니다."
+        case .unauthorized: raw = "Claude Code 로그인이 거절됐습니다. 터미널에서 claude auth login 을 실행하세요."
+        case .notLoggedIn: raw = "Claude Code 로그인 정보가 없습니다. 터미널에서 claude auth login 을 실행하세요."
+        case .keychain(let status): raw = "Keychain 을 읽지 못했습니다 (\(status))."
+        case .http(let code): raw = "한도 API 오류 (HTTP \(code))."
+        case .rateLimited: raw = "요청이 많아 잠시 쉽니다."
         }
+        return L10n.tr(raw)
     }
 }
 
@@ -172,6 +174,8 @@ struct LimitRow: Sendable, Identifiable {
     /// 0...100
     let percent: Double
     let resetsAt: Date?
+
+    var displayName: String { L10n.tr(name) }
 }
 
 /// `/api/oauth/usage` 응답. 예전 필드(`five_hour`, `seven_day`)와 새 `limits[]` 가 함께 온다.

@@ -8,13 +8,14 @@ enum Stat: String, CaseIterable, Codable, Sendable {
     case pen, grit, charm, sense, luck
 
     var title: String {
-        switch self {
+        let raw: String = switch self {
         case .pen: "필력"
         case .grit: "끈기"
         case .charm: "매력"
         case .sense: "감각"
         case .luck: "운"
         }
+        return L10n.tr(raw)
     }
 
     var symbol: String {
@@ -29,24 +30,26 @@ enum Stat: String, CaseIterable, Codable, Sendable {
 
     /// 이 단계에서 주는 효과를 한 줄로.
     func effectText(level: Int) -> String {
-        switch self {
+        let raw: String = switch self {
         case .pen: "글자 +\(Int(Double(level) * Balance.penCharacters * 100))%"
         case .grit: "최대 체력 \(Int(Balance.staminaMax + Double(level) * Balance.gritStamina)) · 체력 소모 -\(Int(Double(level) * Balance.gritDrain * 100))%"
         case .charm: "판매 +\(Int(Double(level) * Balance.charmSales * 100))%"
         case .sense: "서평 별 +\(String(format: "%.1f", Double(level) * Balance.senseStars)) · 영감 +\(Int(Double(level) * Balance.senseInspiration * 100))%"
         case .luck: "아이템 \(Int(Double(level) * Balance.luckItems * 100))% 빨리 · 행운 +\(Int(Double(level) * Balance.luckLuck * 100))%"
         }
+        return L10n.tr(raw)
     }
 
     /// 오를 때 하는 말.
     var raisedLine: String {
-        switch self {
+        let raw: String = switch self {
         case .pen: "문장이 전보다 빨리 나옵니다"
         case .grit: "오래 앉아 있어도 덜 지칩니다"
         case .charm: "독자들이 이 작가 책을 먼저 집습니다"
         case .sense: "비평가가 좋아할 대목을 압니다"
         case .luck: "좋은 일이 조금 더 자주 생깁니다"
         }
+        return L10n.tr(raw)
     }
 }
 

@@ -7,11 +7,21 @@ import Foundation
 /// 가구 하나. 아이템 몇 개로 사고, 한 번 사면 계속 효과가 붙으며 책상 장면에 그려진다.
 struct Furniture: Identifiable, Sendable, Equatable {
     let id: String
-    let title: String
+    private let rawTitle: String
+    var title: String { L10n.tr(rawTitle) }
     /// 효과를 짧게.
-    let effect: String
+    private let rawEffect: String
+    var effect: String { L10n.tr(rawEffect) }
     let cost: [(ItemKind, Int)]
     let symbol: String
+
+    init(id: String, title: String, effect: String, cost: [(ItemKind, Int)], symbol: String) {
+        self.id = id
+        self.rawTitle = title
+        self.rawEffect = effect
+        self.cost = cost
+        self.symbol = symbol
+    }
 
     static func == (a: Furniture, b: Furniture) -> Bool { a.id == b.id }
 
@@ -70,19 +80,21 @@ enum Publisher: String, Codable, CaseIterable, Sendable {
     case major, literary, indie
 
     var title: String {
-        switch self {
+        let raw: String = switch self {
         case .major: "대형 출판사"
         case .literary: "문예 출판사"
         case .indie: "독립 출판"
         }
+        return L10n.tr(raw)
     }
 
     var detail: String {
-        switch self {
+        let raw: String = switch self {
         case .major: "선금 아이템 \(Balance.publisherAdvance)개 · 판매 보통"
         case .literary: "선금 없음 · 비평 별점 +0.5 · 신간 판매 느림"
         case .indie: "선금 없음 · 신간 기간 두 배 · 첫 달 판매 절반"
         }
+        return L10n.tr(raw)
     }
 
     var symbol: String {
@@ -104,11 +116,12 @@ enum Publisher: String, Codable, CaseIterable, Sendable {
 
     /// 고른 뒤 한 줄.
     var line: String {
-        switch self {
+        let raw: String = switch self {
         case .major: "원고를 대형 출판사에 보냈습니다. 선금이 바로 왔습니다"
         case .literary: "원고를 문예 출판사에 보냈습니다. 비평가들이 먼저 읽을 겁니다"
         case .indie: "원고를 독립 출판으로 냈습니다. 천천히, 오래 팔릴 겁니다"
         }
+        return L10n.tr(raw)
     }
 }
 
@@ -142,7 +155,7 @@ enum Bets {
     @MainActor
     static func text(_ pool: [String], guest: String, target: Int, roll: Double) -> String {
         let name = Library.books.first { $0.authorShort == guest }?.displayAuthorShort ?? guest
-        let line = pool[min(pool.count - 1, Int(roll * Double(pool.count)))]
+        let line = L10n.tr(pool[min(pool.count - 1, Int(roll * Double(pool.count)))])
         return Format.resolve(line.replacingOccurrences(of: "{B}", with: name).replacingOccurrences(of: "{T}", with: Format.integer(target)))
     }
 
@@ -162,9 +175,24 @@ struct ReaderOrder: Codable, Sendable, Equatable {
     let offeredAt: Date
     let expiresAt: Date
     /// 독자가 한 말.
-    let text: String
+    let rawText: String
     var fulfilled: Bool?
     var notified: Bool?
+
+    var text: String { L10n.tr(rawText) }
+
+    init(book: String, offeredAt: Date, expiresAt: Date, text: String, fulfilled: Bool? = nil, notified: Bool? = nil) {
+        self.book = book
+        self.offeredAt = offeredAt
+        self.expiresAt = expiresAt
+        self.rawText = text
+        self.fulfilled = fulfilled
+        self.notified = notified
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case book, offeredAt, expiresAt, rawText = "text", fulfilled, notified
+    }
 }
 
 enum ReaderOrders {
@@ -174,8 +202,9 @@ enum ReaderOrders {
 
     @MainActor
     static func text(_ pool: [String], book: Book, roll: Double) -> String {
-        let line = pool[min(pool.count - 1, Int(roll * Double(pool.count)))]
-        return Format.resolve(line.replacingOccurrences(of: "{T}", with: "「\(book.displayTitle)」"))
+        let line = L10n.tr(pool[min(pool.count - 1, Int(roll * Double(pool.count)))])
+        let quotedTitle = L10n.isEnglish ? "\"\(book.displayTitle)\"" : "「\(book.displayTitle)」"
+        return Format.resolve(line.replacingOccurrences(of: "{T}", with: quotedTitle))
     }
 }
 
@@ -204,7 +233,7 @@ struct ShopEvent: Identifiable, Sendable {
     }
 
     let id: String
-    let title: String
+    let rawTitle: String
     /// 상황 글. {T} 책 제목, {A} 작가, {N} 부수. 여럿이면 무작위.
     let texts: [String]
     let scope: Scope
@@ -223,6 +252,38 @@ struct ShopEvent: Identifiable, Sendable {
     /// 탈고한 책이 이만큼은 있어야.
     var minBooks = 1
     var symbol = "storefront"
+
+    var title: String { L10n.tr(rawTitle) }
+
+    init(
+        id: String,
+        title: String,
+        texts: [String],
+        scope: Scope,
+        effect: Effect,
+        weight: Int = 3,
+        weekendOnly: Bool = false,
+        praisedOnly: Bool = false,
+        weather: [Weather]? = nil,
+        months: [Int]? = nil,
+        nightOnly: Bool = false,
+        minBooks: Int = 1,
+        symbol: String = "storefront"
+    ) {
+        self.id = id
+        self.rawTitle = title
+        self.texts = texts
+        self.scope = scope
+        self.effect = effect
+        self.weight = weight
+        self.weekendOnly = weekendOnly
+        self.praisedOnly = praisedOnly
+        self.weather = weather
+        self.months = months
+        self.nightOnly = nightOnly
+        self.minBooks = minBooks
+        self.symbol = symbol
+    }
 
     var good: Bool {
         switch effect {
@@ -431,17 +492,42 @@ struct ShopBoost: Codable, Sendable, Equatable, Identifiable {
     let book: String?
     let value: Double
     let endsAt: Date
-    let source: String
-    var id: String { "\(source)-\(book ?? "all")-\(endsAt.timeIntervalSince1970)" }
+    let rawSource: String
+    var source: String { L10n.tr(rawSource) }
+    var id: String { "\(rawSource)-\(book ?? "all")-\(endsAt.timeIntervalSince1970)" }
+
+    init(book: String?, value: Double, endsAt: Date, source: String) {
+        self.book = book
+        self.value = value
+        self.endsAt = endsAt
+        self.rawSource = source
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case book, value, endsAt, rawSource = "source"
+    }
 }
 
 /// 서점 사건 기록.
 struct ShopRecord: Codable, Sendable, Equatable, Identifiable {
     let event: String
     let book: String?
-    let text: String
+    let rawText: String
     let date: Date
     /// 한 번에 늘어난 부수.
     var copies: Int?
+    var text: String { L10n.tr(rawText) }
     var id: String { "\(event)-\(date.timeIntervalSince1970)" }
+
+    init(event: String, book: String?, text: String, date: Date, copies: Int? = nil) {
+        self.event = event
+        self.book = book
+        self.rawText = text
+        self.date = date
+        self.copies = copies
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case event, book, rawText = "text", date, copies
+    }
 }

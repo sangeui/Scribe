@@ -1,25 +1,27 @@
 import AppKit
 import SwiftUI
 
-/// 설정의 네 탭. 상시 창(모양·초상화), 집필(규칙·작가 기분), 알림, 기록(파일·서재·정보).
+/// 설정의 다섯 탭. 일반(언어·통화·데이터 소스·업데이트), 화면(상시 창·초상화), 집필(규칙·작가 태도), 알림, 정보(기록 백업·서재 출처·면책 안내).
 enum SettingsTab: Int, CaseIterable {
-    case floating, writing, notifications, records
+    case general, floating, writing, notifications, records
 
     var title: String {
-        switch self {
-        case .floating: "상시 창"
+        L10n.tr({ switch self {
+        case .general: "일반"
+        case .floating: "화면"
         case .writing: "집필"
         case .notifications: "알림"
-        case .records: "기록"
-        }
+        case .records: "정보"
+        } }())
     }
 
     var symbol: String {
         switch self {
+        case .general: "slider.horizontal.3"
         case .floating: "macwindow"
-        case .writing: "book"
+        case .writing: "book.closed"
         case .notifications: "bell"
-        case .records: "folder"
+        case .records: "info.circle"
         }
     }
 
@@ -29,6 +31,7 @@ enum SettingsTab: Int, CaseIterable {
     @MainActor @ViewBuilder
     func content(store: UsageStore) -> some View {
         switch self {
+        case .general: GeneralSettings(store: store)
         case .floating: FloatingSettings(store: store)
         case .writing: WritingSettings(store: store)
         case .notifications: NotificationSettings(store: store)
@@ -58,15 +61,17 @@ struct SettingsView: View {
             }
         }
         .frame(width: 480, height: 560)
+        .environment(\.locale, store.languageLocale)
+        .id(store.language)
     }
 }
 
-/// 팝오버 옆에 뜨는 설정. 다른 패널처럼 위에 제목과 탭 넷, 아래에 그 탭의 내용. 힌트 카드는 패널이 그린다.
+/// 팝오버 옆에 뜨는 설정. 다른 패널처럼 위에 제목과 탭 다섯, 아래에 그 탭의 내용. 힌트 카드는 패널이 그린다.
 struct SettingsPanel: View {
     @Bindable var store: UsageStore
-    @AppStorage(SettingsTab.key) private var tabRaw = SettingsTab.floating.rawValue
+    @AppStorage(SettingsTab.key) private var tabRaw = SettingsTab.general.rawValue
 
-    private var tab: SettingsTab { SettingsTab(rawValue: tabRaw) ?? .floating }
+    private var tab: SettingsTab { SettingsTab(rawValue: tabRaw) ?? .general }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -88,6 +93,8 @@ struct SettingsPanel: View {
                 .transition(.opacity)
         }
         .animation(.easeOut(duration: 0.15), value: tabRaw)
+        .environment(\.locale, store.languageLocale)
+        .id(store.language)
     }
 
     private func tabButton(_ candidate: SettingsTab) -> some View {
@@ -133,12 +140,132 @@ private struct HourStepper: View {
 /// 설정 공통: 한 줄 설명.
 private struct Note: View {
     let text: String
-    var body: some View { Text(text).font(.caption).foregroundStyle(.secondary) }
+    var body: some View { Text(L10n.tr(text)).font(.caption).foregroundStyle(.secondary) }
 }
 
-// MARK: - 상시 창
+// MARK: - 일반
 
-/// 상시 창: 켜기와 모양·투명도, 초상화(대표 작가·꾸미기).
+/// 일반: 언어 및 통화(일별 환율 기준), 데이터 소스(Antigravity / Claude Code / 통합), 앱 업데이트.
+struct GeneralSettings: View {
+    @Bindable var store: UsageStore
+    @AppStorage(AppUpdater.autoCheckKey) private var autoCheckUpdates = true
+
+    var body: some View {
+        Form {
+            Section {
+                Picker("언어", selection: Binding(get: { store.language }, set: { store.setLanguage($0) })) {
+                    ForEach(AppLanguage.allCases) { lang in
+                        Text(lang.title).tag(lang)
+                    }
+                }
+                LabeledContent("환율 기준") {
+                    if store.language == .ko {
+                        HStack(spacing: 8) {
+                            let rateInt = Format.integer(Int(store.exchangeRate.rounded()))
+                            let dateDesc = store.isExchangeRateOfflineFallback
+                                ? "\(L10n.tr(store.exchangeRateDate)) · \(L10n.tr("이전 환율 유지"))"
+                                : L10n.tr(store.exchangeRateDate)
+                            Text("$1 = \(rateInt)원 (\(dateDesc))")
+                                .font(.callout.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                            if store.isRefreshingExchangeRate {
+                                ProgressView().controlSize(.mini)
+                            } else {
+                                Button("환율 갱신") {
+                                    Task { await store.refreshExchangeRate(userInitiated: true) }
+                                }
+                                .controlSize(.small)
+                            }
+                        }
+                    } else {
+                        Text("USD ($ · API 표준 단가)")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            } header: {
+                Text("언어 및 통화")
+            }
+            AgentSourceSection(store: store)
+            Section {
+                LabeledContent("현재 버전") {
+                    HStack(spacing: 10) {
+                        versionBadge
+                        updateActionButton
+                    }
+                }
+                Toggle("자동으로 업데이트 확인", isOn: $autoCheckUpdates)
+                if case .failed(let message) = store.updater.state {
+                    Note(text: message)
+                }
+            } header: {
+                Text("업데이트")
+            }
+        }
+        .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
+    }
+
+    @ViewBuilder
+    private var versionBadge: some View {
+        HStack(spacing: 6) {
+            Text(versionText)
+                .font(.callout.monospacedDigit())
+                .foregroundStyle(.secondary)
+            switch store.updater.state {
+            case .upToDate:
+                Text("최신")
+                    .font(.caption2.weight(.semibold))
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .foregroundStyle(ChartPalette.good)
+                    .background(ChartPalette.good.opacity(0.14), in: Capsule())
+            case .available(let release):
+                Text("새 버전 v\(release.version)")
+                    .font(.caption2.weight(.semibold))
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .foregroundStyle(BadgeTier.gold.color)
+                    .background(BadgeTier.gold.color.opacity(0.16), in: Capsule())
+                    .hint("새 버전 v\(release.version)", release.summaryLines.isEmpty ? ["설치 및 재시작을 누르면 바로 업데이트됩니다."] : release.summaryLines, symbol: "sparkles")
+            default:
+                EmptyView()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var updateActionButton: some View {
+        switch store.updater.state {
+        case .idle, .upToDate, .failed:
+            Button("업데이트 확인") { Task { await store.updater.check(userInitiated: true) } }
+                .controlSize(.small)
+        case .checking:
+            HStack(spacing: 5) {
+                ProgressView().controlSize(.mini)
+                Text("확인 중").font(.caption).foregroundStyle(.secondary)
+            }
+        case .available(let release):
+            Button("설치 및 재시작") {
+                Task { await store.updater.install(release) }
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+        case .installing(let status):
+            HStack(spacing: 5) {
+                ProgressView().controlSize(.mini)
+                Text(status).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var versionText: String {
+        guard let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String else { return L10n.tr("개발 빌드") }
+        return "v" + short
+    }
+}
+
+// MARK: - 화면
+
+/// 화면: 데스크톱 상시 창(켜기와 모양·투명도)과 초상화(대표 작가·꾸미기).
 struct FloatingSettings: View {
     @Bindable var store: UsageStore
     @AppStorage(FloatingWindowController.opacityKey) private var opacity = 1.0
@@ -166,6 +293,9 @@ struct FloatingSettings: View {
                     Text("\(Int((opacity * 100).rounded()))%").font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                         .frame(width: 36, alignment: .trailing)
                 }
+                Note(text: "상시 창에 마우스를 올리면 나타나는 전환 버튼이나 더블클릭·우클릭 메뉴로도 모양을 바로 바꿀 수 있습니다.")
+            } header: {
+                Text("바탕화면 상시 창")
             }
             Section {
                 LabeledContent("대표 작가") {
@@ -245,7 +375,7 @@ struct FloatingSettings: View {
                 PortraitFrame(author: author, scale: 2)
                     .overlay(RoundedRectangle(cornerRadius: 32 * 0.22, style: .continuous)
                         .stroke(selected ? Color.accentColor : .clear, lineWidth: 2))
-                Text(title).font(.system(size: 9, weight: selected ? .semibold : .regular))
+                Text(L10n.tr(title)).font(.system(size: 9, weight: selected ? .semibold : .regular))
                     .foregroundStyle(selected ? .primary : .secondary).lineLimit(1)
             }
             .frame(width: 44)
@@ -284,14 +414,14 @@ struct FloatingSettings: View {
                         .stroke(selected ? Color.accentColor : Color.white.opacity(0.12), lineWidth: selected ? 2 : 1))
                     .saturation(unlocked ? 1 : 0)
                     .opacity(unlocked ? 1 : 0.4)
-                Text(accessory?.title ?? "없음").font(.system(size: 9, weight: selected ? .semibold : .regular))
+                Text(accessory?.title ?? L10n.tr("없음")).font(.system(size: 9, weight: selected ? .semibold : .regular))
                     .foregroundStyle(unlocked ? (selected ? .primary : .secondary) : .tertiary)
             }
             .frame(width: 50)
         }
         .buttonStyle(.plain)
         if !unlocked, let title = accessory?.title, let lockedBy {
-            return AnyView(button.hint(title, ["성과 \"\(lockedBy)\" 달성 시 열립니다."], symbol: "lock"))
+            return AnyView(button.hint(title, [L10n.tr("성과 \"\(lockedBy)\" 달성 시 열립니다.")], symbol: "lock"))
         }
         return AnyView(button)
     }
@@ -374,7 +504,7 @@ struct AgentSourceSection: View {
 
 // MARK: - 집필
 
-/// 집필: 데이터 소스 선택, 지금 적용되는 규칙(금 뱃지 효과 반영)과 작가 기분.
+/// 집필: 지금 적용되는 규칙(금 뱃지 효과 반영)과 작가 기분.
 struct WritingSettings: View {
     @Bindable var store: UsageStore
     @AppStorage(MoodJudge.enabledKey) private var moodEnabled = true
@@ -389,7 +519,6 @@ struct WritingSettings: View {
         let refusal = max(0, Balance.refusalChance - perks.refusalDelta)
         let wait = (Double(Balance.refusalMinutes.lowerBound) * perks.refusalWait, Double(Balance.refusalMinutes.upperBound) * perks.refusalWait)
         Form {
-            AgentSourceSection(store: store)
             Section {
                 rule("글자", "100만 토큰마다 \(Format.integer(Int(chars.rounded())))자", changed: perks.characterBonus > 0)
                 rule("아이템", "토큰 \(Format.tokens(Int(perItem)))개마다 하나", changed: perks.itemTokens < 1)
@@ -417,10 +546,10 @@ struct WritingSettings: View {
     }
 
     private func rule(_ title: String, _ value: String, changed: Bool) -> some View {
-        LabeledContent(title) {
+        LabeledContent(L10n.tr(title)) {
             HStack(spacing: 5) {
                 if changed { Circle().fill(BadgeTier.gold.color).frame(width: 6, height: 6) }
-                Text(value).foregroundStyle(.secondary)
+                Text(L10n.tr(value)).foregroundStyle(.secondary)
             }
         }
     }
@@ -496,16 +625,14 @@ struct NotificationSettings: View {
     }
 }
 
-// MARK: - 기록
+// MARK: - 정보
 
-/// 기록: 데이터 소스 선택, 파일 위치와 내보내기·가져오기, 서재 통계, 앱 업데이트.
+/// 정보: 기록 파일 위치·백업 및 누적 진행 통계, 서재 출처, 면책 및 안내.
 struct RecordSettings: View {
     @Bindable var store: UsageStore
-    @AppStorage(AppUpdater.autoCheckKey) private var autoCheckUpdates = true
 
     var body: some View {
         Form {
-            AgentSourceSection(store: store)
             Section {
                 LabeledContent("파일") {
                     HStack(spacing: 8) {
@@ -521,6 +648,10 @@ struct RecordSettings: View {
                         if let message = store.transferMessage { Text(message).font(.caption).foregroundStyle(.secondary) }
                     }
                 }
+                if let w = store.writing {
+                    LabeledContent("진행") { Text("\(w.round + 1)회차 · \(w.finishedInRound)편 탈고 · 모두 \(Format.integer(Int(w.totalCharacters)))자").foregroundStyle(.secondary) }
+                    LabeledContent("성과") { Text("\(w.badges.count)개 · 아이템 \(ItemKind.allCases.reduce(0) { $0 + w.count($1) })개 · 판매 \(Format.integer(w.totalSales))부").foregroundStyle(.secondary) }
+                }
             } header: {
                 Text("기록")
             }
@@ -532,89 +663,39 @@ struct RecordSettings: View {
                             Text("Project Gutenberg 퍼블릭 도메인 텍스트").foregroundStyle(.secondary)
                             Button("gutenberg.org") { NSWorkspace.shared.open(URL(string: "https://www.gutenberg.org")!) }.controlSize(.small)
                         }
-                        Text("괴테는 19세기 영어 번역(보일런·베이어드 테일러·스완윅·프로싱엄·보링·칼라일). 앞뒤 안내문과 Project Gutenberg 표기는 뗐습니다.")
+                        Text("비영어권 원작은 퍼블릭 도메인 영어 번역본을 사용하며, 본문 외 앞뒤 안내문은 제외했습니다.")
                             .font(.caption).foregroundStyle(.tertiary).multilineTextAlignment(.trailing)
                     }
-                }
-                if let w = store.writing {
-                    LabeledContent("진행") { Text("\(w.round + 1)회차 · \(w.finishedInRound)편 탈고 · 모두 \(Format.integer(Int(w.totalCharacters)))자").foregroundStyle(.secondary) }
-                    LabeledContent("성과") { Text("\(w.badges.count)개 · 아이템 \(ItemKind.allCases.reduce(0) { $0 + w.count($1) })개 · 판매 \(Format.integer(w.totalSales))부").foregroundStyle(.secondary) }
                 }
             } header: {
                 Text("서재")
             }
             Section {
-                LabeledContent("현재 버전") {
-                    HStack(spacing: 10) {
-                        versionBadge
-                        updateActionButton
-                    }
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("비용 · 환율 산정 안내")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text("표시되는 비용은 로컬 로그의 토큰 수에 공개 API 표준 단가(USD)를 곱한 추정치이며, 실제 청구 금액이나 정액 구독 요금과 일치하지 않을 수 있습니다. 원화(KRW) 금액은 일별 기준 환율로 환산한 참고치이며 오프라인 시 마지막으로 확인된 이전날 환율을 유지합니다.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Toggle("자동으로 업데이트 확인", isOn: $autoCheckUpdates)
-                if case .failed(let message) = store.updater.state {
-                    Note(text: message)
+                .padding(.vertical, 2)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("로컬 데이터 · 비제휴 안내")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text("모든 에이전트 로그는 맥 내부에서만 읽기 전용으로 분석되며 대화 내용이나 코드가 외부 서버로 전송되지 않습니다. Scribe는 Anthropic·Google과 제휴 관계가 없는 독립 오픈소스 도구입니다.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                .padding(.vertical, 2)
             } header: {
-                Text("업데이트")
+                Text("면책 및 안내")
             }
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
-    }
-
-    @ViewBuilder
-    private var versionBadge: some View {
-        HStack(spacing: 6) {
-            Text(versionText)
-                .font(.callout.monospacedDigit())
-                .foregroundStyle(.secondary)
-            switch store.updater.state {
-            case .upToDate:
-                Text("최신")
-                    .font(.caption2.weight(.semibold))
-                    .padding(.horizontal, 6).padding(.vertical, 2)
-                    .foregroundStyle(ChartPalette.good)
-                    .background(ChartPalette.good.opacity(0.14), in: Capsule())
-            case .available(let release):
-                Text("새 버전 v\(release.version)")
-                    .font(.caption2.weight(.semibold))
-                    .padding(.horizontal, 6).padding(.vertical, 2)
-                    .foregroundStyle(BadgeTier.gold.color)
-                    .background(BadgeTier.gold.color.opacity(0.16), in: Capsule())
-                    .hint("새 버전 v\(release.version)", release.summaryLines.isEmpty ? ["설치 및 재시작을 누르면 바로 업데이트됩니다."] : release.summaryLines, symbol: "sparkles")
-            default:
-                EmptyView()
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var updateActionButton: some View {
-        switch store.updater.state {
-        case .idle, .upToDate, .failed:
-            Button("업데이트 확인") { Task { await store.updater.check(userInitiated: true) } }
-                .controlSize(.small)
-        case .checking:
-            HStack(spacing: 5) {
-                ProgressView().controlSize(.mini)
-                Text("확인 중").font(.caption).foregroundStyle(.secondary)
-            }
-        case .available(let release):
-            Button("설치 및 재시작") {
-                Task { await store.updater.install(release) }
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
-        case .installing(let status):
-            HStack(spacing: 5) {
-                ProgressView().controlSize(.mini)
-                Text(status).font(.caption).foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    private var versionText: String {
-        guard let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String else { return "개발 빌드" }
-        return "v" + short
     }
 }

@@ -99,8 +99,8 @@ struct ShelfPanel: View {
                     }
                 }
                 Text(progress.totalSales > 0
-                     ? "누적 \(Format.short(Int(progress.totalCharacters)))자 집필 · 총 \(Format.short(progress.totalSales))부 판매"
-                     : "누적 \(Format.short(Int(progress.totalCharacters)))자 집필")
+                     ? L10n.tr("누적 \(Format.short(Int(progress.totalCharacters)))자 집필 · 총 \(Format.short(progress.totalSales))부 판매")
+                     : L10n.tr("누적 \(Format.short(Int(progress.totalCharacters)))자 집필"))
                     .font(.caption.monospacedDigit()).foregroundStyle(.secondary).lineLimit(1)
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
@@ -338,18 +338,18 @@ private struct BookDetail: View {
     private func metaLine(book: Book, status: BookStatus, note: FinishNote?, sold: Int, isOrdered: Bool) -> String {
         switch status {
         case .done:
-            var parts = ["\(Format.integer(book.characters))자"]
-            if let days = note?.days, days > 0 { parts.append("\(days)일 소요") }
-            if sold > 0 { parts.append("\(Format.integer(sold))부 판매") }
+            var parts = [L10n.tr("\(Format.integer(book.characters))자")]
+            if let days = note?.days, days > 0 { parts.append(L10n.tr("\(days)일 소요")) }
+            if sold > 0 { parts.append(L10n.tr("\(Format.integer(sold))부 판매")) }
             return parts.joined(separator: " · ")
         case .current:
-            var parts = ["\(Format.integer(progress.charactersInBook)) / \(Format.integer(book.characters))자"]
-            if progress.todayCharacters > 0 { parts.append("오늘 +\(Format.integer(Int(progress.todayCharacters)))자") }
-            if let days = progress.daysToFinish { parts.append("탈고까지 약 \(days)일") }
+            var parts = [L10n.tr("\(Format.integer(progress.charactersInBook)) / \(Format.integer(book.characters))자")]
+            if progress.todayCharacters > 0 { parts.append(L10n.tr("오늘 +\(Format.integer(Int(progress.todayCharacters)))자")) }
+            if let days = progress.daysToFinish { parts.append(L10n.tr("탈고까지 약 \(days)일")) }
             return parts.joined(separator: " · ")
         case .pending:
-            var parts = ["분량 \(Format.integer(book.characters))자"]
-            if isOrdered { parts.append("독자 주문 도서") }
+            var parts = [L10n.tr("분량 \(Format.integer(book.characters))자")]
+            if isOrdered { parts.append(L10n.tr("독자 주문 도서")) }
             return parts.joined(separator: " · ")
         }
     }
@@ -410,7 +410,7 @@ private struct BookDetail: View {
             Button(action: run) {
                 HStack(spacing: 4) {
                     Symbol(name: symbol, size: 10, color: prominent ? .white : .primary)
-                    Text(title).font(.caption.weight(.semibold))
+                    Text(L10n.tr(title)).font(.caption.weight(.semibold))
                 }
                 .padding(.horizontal, 10).padding(.vertical, 5)
                 .foregroundStyle(prominent ? Color.white : Color.primary)
@@ -531,7 +531,7 @@ private struct AuthorRow: View {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack(alignment: .center, spacing: 5) {
                                 Text("초상화 장신구").font(.system(size: 9.5, weight: .semibold)).foregroundStyle(.secondary)
-                                Text("· \(chosenDecor?.title ?? "착용 없음")").font(.system(size: 9.5)).foregroundStyle(.tertiary)
+                                Text("· \(chosenDecor?.title ?? L10n.tr("착용 없음"))").font(.system(size: 9.5)).foregroundStyle(.tertiary)
                                 Spacer()
                                 if pendingCount >= 2 {
                                     focusAuthorButton(shortAuthor: shortAuthor, tint: tint)
@@ -562,7 +562,7 @@ private struct AuthorRow: View {
     }
 
     private func summaryText(done: Int, total: Int, sold: Int) -> String {
-        sold > 0 ? "\(done)/\(total)편 · \(Format.short(sold))부" : "\(done)/\(total)편"
+        L10n.tr(sold > 0 ? "\(done)/\(total)편 · \(Format.short(sold))부" : "\(done)/\(total)편")
     }
 
     private func shelfRows(for works: [(offset: Int, element: Book)], maxWidth: CGFloat) -> [[(offset: Int, element: Book)]] {
@@ -607,12 +607,12 @@ private struct AuthorRow: View {
         switch BookStatus(index: index, progress: progress) {
         case .done:
             let sold = progress.sales(of: book)
-            return sold > 0 ? "\(book.title) · 탈고 (\(Format.integer(sold))부 판매)" : "\(book.title) · 탈고 (\(Format.integer(book.characters))자)"
+            return L10n.tr(sold > 0 ? "\(book.title) · 탈고 (\(Format.integer(sold))부 판매)" : "\(book.title) · 탈고 (\(Format.integer(book.characters))자)")
         case .current(let f):
-            return "\(book.title) · 쓰는 중 \(Format.percent(f * 100))"
+            return L10n.tr("\(book.title) · 쓰는 중 \(Format.percent(f * 100))")
         case .pending:
             let ahead = max(1, (progress.position(of: index) ?? index) - progress.orderPosition)
-            return "\(book.title) · \(ahead)편 뒤 예정 (\(Format.integer(book.characters))자)"
+            return L10n.tr("\(book.title) · \(ahead)편 뒤 예정 (\(Format.integer(book.characters))자)")
         }
     }
 
@@ -697,7 +697,7 @@ private struct AuthorRow: View {
         let unlocked = accessory.map { Decor.isUnlocked($0, progress: progress) } ?? true
         let isChosen = Decor.chosen(for: author)?.id == accessory?.id
         let rows = accessory.map { Decor.apply(Portraits.rows(author), accessory: $0) } ?? Portraits.rows(author)
-        let title = accessory?.title ?? "착용 안 함"
+        let title = accessory?.title ?? L10n.tr("착용 안 함")
         let lockedBy = accessory?.unlock.flatMap { Achievements.byID($0)?.title }
         return Button {
             guard unlocked else { return }

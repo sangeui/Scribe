@@ -144,8 +144,8 @@ struct BagContent: View {
                                 .frame(width: 16, height: 16).padding(.top, 2)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(record.outcome).font(.callout).foregroundStyle(.secondary)
-                                Text("\(Self.when(record.date)) · 사건 · \(Dilemmas.byID(record.dilemma)?.title ?? record.dilemma) · \(record.option)"
-                                     + (record.auto == true ? " · 작가가 알아서" : "")).font(.caption2).foregroundStyle(.secondary)
+                                Text(L10n.tr("\(Self.when(record.date)) · 사건 · \(Dilemmas.byID(record.dilemma)?.title ?? record.dilemma) · \(record.option)")
+                                     + (record.auto == true ? L10n.tr(" · 작가가 알아서") : "")).font(.caption2).foregroundStyle(.secondary)
                             }
                             Spacer(minLength: 0)
                         }
@@ -183,14 +183,14 @@ struct BagContent: View {
         let disaster = Disasters.byID(record.event)
         let book = Library.books.first { $0.file == record.book }
         let shield = record.endedBy.flatMap(ItemKind.init(rawValue:))
-        var detail = [Self.when(record.startedAt), "자연재해 · 집필은 계속"]
+        var detail = [Self.when(record.startedAt), L10n.tr("자연재해 · 집필은 계속")]
         if let book { detail.insert(book.displayAuthorShort, at: 0) }
         return HStack(alignment: .top, spacing: 10) {
             PixelIconView(rows: disaster?.icon ?? PixelIcon.warning, color: ChartPalette.warning, scale: 1.6)
                 .frame(width: 16, height: 16).padding(.top, 2)
             VStack(alignment: .leading, spacing: 2) {
-                Text(shield.map { "\(disaster?.cause ?? "재해가 났지만") \($0.title) 덕에 원고는 무사했습니다" }
-                     ?? disaster?.text(lost: lost) ?? "원고 \(Format.integer(lost))자를 잃었습니다").font(.callout)
+                Text(shield.map { L10n.tr("\(disaster?.cause ?? L10n.tr("재해가 났지만")) \($0.title) 덕에 원고는 무사했습니다") }
+                     ?? disaster?.text(lost: lost) ?? L10n.tr("원고 \(Format.integer(lost))자를 잃었습니다")).font(.callout)
                     .foregroundStyle(.secondary)
                 Text(detail.joined(separator: " · ")).font(.caption2).foregroundStyle(.secondary)
             }
@@ -205,17 +205,17 @@ struct BagContent: View {
         let end = record.endedAt ?? Date()
         let minutes = max(1, Int((end.timeIntervalSince(record.startedAt) / 60).rounded()))
         let how: String = {
-            if record.endedAt == nil { return "진행 중" }
-            if let item = record.endedBy.flatMap(ItemKind.init(rawValue:)) { return "\(Format.particle(item.shortTitle, "으로", "로")) 끝냄" }
-            return "저절로 끝남"
+            if record.endedAt == nil { return L10n.tr("진행 중") }
+            if let item = record.endedBy.flatMap(ItemKind.init(rawValue:)) { return L10n.tr("\(Format.particle(item.shortTitle, "으로", "로")) 끝냄") }
+            return L10n.tr("저절로 끝남")
         }()
-        var detail = [Self.when(record.startedAt), "\(minutes)분", how]
+        var detail = [Self.when(record.startedAt), L10n.tr("\(minutes)분"), how]
         if let book { detail.insert(book.displayAuthorShort, at: 0) }
         return HStack(alignment: .top, spacing: 10) {
             PixelIconView(rows: event?.icon ?? PixelIcon.warning, color: .secondary, scale: 1.6)
                 .frame(width: 16, height: 16).padding(.top, 2)
             VStack(alignment: .leading, spacing: 2) {
-                Text(event?.text ?? "알 수 없는 상황").font(.callout)
+                Text(event?.text ?? L10n.tr("알 수 없는 상황")).font(.callout)
                     .foregroundStyle(record.endedAt == nil ? .primary : .secondary)
                 Text(detail.joined(separator: " · ")).font(.caption2).foregroundStyle(.secondary)
                 if record.cause != nil || record.outcome != nil {
@@ -241,9 +241,9 @@ struct BagContent: View {
     private static func when(_ date: Date) -> String {
         let time = timeFormatter.string(from: date)
         let calendar = Calendar.current
-        if calendar.isDateInToday(date) { return "오늘 \(time)" }
-        if calendar.isDateInYesterday(date) { return "어제 \(time)" }
-        return "\(date.formatted(.dateTime.month(.defaultDigits).day())) \(time)"
+        if calendar.isDateInToday(date) { return L10n.tr("오늘 \(time)") }
+        if calendar.isDateInYesterday(date) { return L10n.tr("어제 \(time)") }
+        return "\(date.formatted(.dateTime.month(.defaultDigits).day().locale(L10n.locale))) \(time)"
     }
 
     private func nextItem(_ progress: WritingProgress) -> some View {

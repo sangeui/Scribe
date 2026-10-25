@@ -179,25 +179,25 @@ struct BookstoreContent: View {
         var items: [(LiveItem, String, String, Color, Bool)] = []
         if let statement = progress.statementCard {
             let delta = Int((statement.trustAfter - statement.trustBefore).rounded())
-            items.append((.statement, "doc.text", "정산서 \(Format.short(statement.sold))부" + (delta != 0 ? " · 신뢰 \(delta > 0 ? "+" : "")\(delta)" : ""), .secondary, true))
+            items.append((.statement, "doc.text", L10n.tr("정산서 \(Format.short(statement.sold))부") + (delta != 0 ? L10n.tr(" · 신뢰 \(delta > 0 ? "+" : "")\(delta)") : ""), .secondary, true))
         }
         if let order = progress.order {
             let days = max(0, Int(ceil(order.expiresAt.timeIntervalSince(now) / 86_400)))
             let index = Library.books.firstIndex { $0.file == order.book }
             let canPull = index.map { progress.pendingInRound.dropFirst().contains($0) } ?? false
-            items.append((.order, "envelope.open", "독자 주문 \(days)일", BadgeTier.gold.color, canPull))
+            items.append((.order, "envelope.open", L10n.tr("독자 주문 \(days)일"), BadgeTier.gold.color, canPull))
         }
         for (book, reprint) in reprinting {
             let hours = max(1, Int((reprint.due.timeIntervalSince(now) / 3600).rounded(.up)))
-            items.append((.reprint(book.file), "printer", "\(book.displayTitle) 품절 · \(hours)시간", ChartPalette.warning, false))
+            items.append((.reprint(book.file), "printer", L10n.tr("\(book.displayTitle) 품절 · \(hours)시간"), ChartPalette.warning, false))
         }
         for (book, ends) in activeAds {
-            items.append((.ad(book.file), "megaphone.fill", "\(book.displayTitle) 광고 · \(max(1, Int(ends.timeIntervalSince(now) / 3600)))시간", ChartPalette.warning, false))
+            items.append((.ad(book.file), "megaphone.fill", L10n.tr("\(book.displayTitle) 광고 · \(max(1, Int(ends.timeIntervalSince(now) / 3600)))시간"), ChartPalette.warning, false))
         }
         for boost in progress.shopBoosts {
             let good = boost.value >= 1
             let delta = Int(((boost.value - 1) * 100).rounded())
-            let event = ShopEvents.all.first { $0.title == boost.source }
+            let event = ShopEvents.all.first { $0.title == boost.source || $0.rawTitle == boost.rawSource }
             items.append((.boost(boost.id), event?.symbol ?? "storefront", "\(boost.source) \(delta >= 0 ? "+" : "")\(delta)%", good ? ChartPalette.good : ChartPalette.warning, false))
         }
         return items.map { (item: $0.0, symbol: $0.1, text: $0.2, color: $0.3, attention: $0.4) }
@@ -259,14 +259,14 @@ struct BookstoreContent: View {
                     if RenderMode.offscreen {
                         ChipLabel(title: "펼치기", prominent: false)
                     } else {
-                        Button(statementExpanded ? "접기" : "펼치기") { statementExpanded.toggle() }
+                        Button(statementExpanded ? L10n.tr("접기") : L10n.tr("펼치기")) { statementExpanded.toggle() }
                             .buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
                         Button("닫기") { onDismissStatement(statement.id) }.buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
                     }
                 }
-                Text("\(Format.integer(statement.sold))부 팔림" + (statement.returned > 0 ? " · 반품 \(Format.integer(statement.returned))" : "")
-                     + (statement.missed > 0 ? " · 놓친 손님 \(Format.integer(statement.missed))" : "")
-                     + " · 신뢰 \(TrustLevel.of(statement.trustAfter).title)" + (delta != 0 ? "(\(delta > 0 ? "+" : "")\(delta))" : ""))
+                Text(L10n.tr("\(Format.integer(statement.sold))부 팔림") + (statement.returned > 0 ? L10n.tr(" · 반품 \(Format.integer(statement.returned))") : "")
+                     + (statement.missed > 0 ? L10n.tr(" · 놓친 손님 \(Format.integer(statement.missed))") : "")
+                     + L10n.tr(" · 신뢰 \(TrustLevel.of(statement.trustAfter).title)") + (delta != 0 ? "(\(delta > 0 ? "+" : "")\(delta))" : ""))
                     .font(.caption).foregroundStyle(.secondary)
                 Collapsible(progress: statementExpanded ? 1 : 0, topSpacing: 6) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -275,10 +275,10 @@ struct BookstoreContent: View {
                                 Symbol(name: line.slot.symbol, size: 9)
                                 Text(Library.books.first { $0.file == line.book }?.displayTitle ?? line.book).font(.caption2).lineLimit(1)
                                 Spacer(minLength: 0)
-                                Text("\(Format.integer(line.sold))부"
-                                     + (line.returned > 0 ? " · 반품 \(line.returned)" : "")
-                                     + (line.missed > 0 ? " · 놓침 \(Format.integer(line.missed))" : "")
-                                     + " · 재고 \(Format.short(line.stock))")
+                                Text(L10n.tr("\(Format.integer(line.sold))부")
+                                     + (line.returned > 0 ? L10n.tr(" · 반품 \(line.returned)") : "")
+                                     + (line.missed > 0 ? L10n.tr(" · 놓침 \(Format.integer(line.missed))") : "")
+                                     + L10n.tr(" · 재고 \(Format.short(line.stock))"))
                                     .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
                             }
                         }
@@ -324,14 +324,14 @@ struct BookstoreContent: View {
 
     private func boostBanner(_ boost: ShopBoost) -> some View {
         let book = boost.book.flatMap { f in Library.books.first { $0.file == f } }
-        let event = ShopEvents.all.first { $0.title == boost.source }
+        let event = ShopEvents.all.first { $0.title == boost.source || $0.rawTitle == boost.rawSource }
         let good = boost.value >= 1
         let delta = Int(((boost.value - 1) * 100).rounded())
         return HStack(spacing: 10) {
             Symbol(name: event?.symbol ?? "storefront", size: 16, color: good ? ChartPalette.good : ChartPalette.warning)
             VStack(alignment: .leading, spacing: 2) {
                 Text(boost.source).font(.callout.weight(.semibold))
-                Text("\(book?.displayTitle ?? "모든 책") 판매 \(delta >= 0 ? "+" : "")\(delta)% · \(max(1, Int(boost.endsAt.timeIntervalSince(now) / 3600)))시간 남음")
+                Text(L10n.tr("\(book?.displayTitle ?? L10n.tr("모든 책")) 판매 \(delta >= 0 ? "+" : "")\(delta)% · \(max(1, Int(boost.endsAt.timeIntervalSince(now) / 3600)))시간 남음"))
                     .font(.caption).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer(minLength: 0)
@@ -361,7 +361,7 @@ struct BookstoreContent: View {
                                     Group {
                                         ForEach(books, id: \.file) { book in chip(book) }
                                         if books.isEmpty {
-                                            Text(slot == .window ? "비어 있음" : "빈 칸").font(.caption2).foregroundStyle(.tertiary).padding(.vertical, 5)
+                                            Text(slot == .window ? L10n.tr("비어 있음") : L10n.tr("빈 칸")).font(.caption2).foregroundStyle(.tertiary).padding(.vertical, 5)
                                         }
                                     }
                                 }
@@ -375,7 +375,7 @@ struct BookstoreContent: View {
 
     private func slotLabel(_ slot: ShopSlot, count: Int) -> some View {
         let slots = progress.trustLevel.counterSlots
-        let text = slot == .counter ? "매대 \(count)/\(slots)" : slot.title
+        let text = slot == .counter ? L10n.tr("매대 \(count)/\(slots)") : slot.title
         let hint: [String] = switch slot {
         case .window: ["진열창에 걸린 책은 \(Int((Balance.windowSales - 1) * 100))% 더 팔립니다. 신뢰가 '안면' 이상이어야 쓸 수 있고 하루에 한 번 바꿉니다."]
         case .counter: ["매대 책은 제값에 팔립니다. 칸 수는 주인의 신뢰에 달렸습니다(\(slots)칸). 비면 주인이 잘 팔릴 책으로 채우고, 아침마다 다시 정리합니다."]
@@ -432,7 +432,7 @@ struct BookstoreContent: View {
         return Button { drawer = drawer == .news ? nil : .news } label: {
             HStack(spacing: 6) {
                 Symbol(name: event?.symbol ?? "storefront", size: 11, color: (event?.good ?? true) ? .secondary : ChartPalette.warning)
-                Text(latest?.text ?? "아직 소식이 없습니다").font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                Text(latest?.text ?? L10n.tr("아직 소식이 없습니다")).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
             }
             .padding(.horizontal, 8).padding(.vertical, 6)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -458,7 +458,7 @@ struct BookstoreContent: View {
         return Button { drawer = on ? nil : target } label: {
             HStack(spacing: 5) {
                 Symbol(name: symbol, size: 11, color: on ? .primary : .secondary)
-                Text(title).font(.caption.weight(.semibold))
+                Text(L10n.tr(title)).font(.caption.weight(.semibold))
                 if !detail.isEmpty { Text(detail).font(.caption2.monospacedDigit()).foregroundStyle(.secondary) }
             }
             .frame(maxWidth: .infinity)
@@ -530,14 +530,14 @@ struct BookstoreContent: View {
         switch event.effect {
         case .sales(let m, let h):
             let delta = Int(((m - 1) * 100).rounded())
-            return "\(event.scope == .all ? "모든 책" : "그 책") 판매 \(delta >= 0 ? "+" : "")\(delta)% · \(h)시간"
-        case .copies: return copies.map { "+\(Format.integer($0))부" }
-        case .returned: return copies.map { "\(Format.integer($0))부" }
-        case .restock: return copies.map { "재고 +\(Format.integer($0))부" }
-        case .items(let n): return n > 0 ? "아이템 +\(n)" : "아이템 \(n)"
-        case .inspiration(let f): return "영감 +\(Int(f * 100))%"
-        case .feature: return "이달의 책"
-        case .order: return "독자 주문"
+            return L10n.tr("\(event.scope == .all ? L10n.tr("모든 책") : L10n.tr("그 책")) 판매 \(delta >= 0 ? "+" : "")\(delta)% · \(h)시간")
+        case .copies: return copies.map { L10n.tr("+\(Format.integer($0))부") }
+        case .returned: return copies.map { L10n.tr("\(Format.integer($0))부") }
+        case .restock: return copies.map { L10n.tr("재고 +\(Format.integer($0))부") }
+        case .items(let n): return L10n.tr(n > 0 ? "아이템 +\(n)" : "아이템 \(n)")
+        case .inspiration(let f): return L10n.tr("영감 +\(Int(f * 100))%")
+        case .feature: return L10n.tr("이달의 책")
+        case .order: return L10n.tr("독자 주문")
         case .none: return nil
         }
     }
@@ -593,11 +593,11 @@ struct BookstoreContent: View {
         let pinned = progress.isPinned(book), benched = progress.isBenched(book)
         var parts: [String] = []
         if let reprint = progress.reprint(for: book) {
-            parts.append("품절 · 재판 \(Format.integer(reprint.copies))부 \(max(1, Int((reprint.due.timeIntervalSince(now) / 3600).rounded(.up))))시간 뒤")
+            parts.append(L10n.tr("품절 · 재판 \(Format.integer(reprint.copies))부 \(max(1, Int((reprint.due.timeIntervalSince(now) / 3600).rounded(.up))))시간 뒤"))
         } else {
-            parts.append("재고 \(Format.integer(progress.stock(of: book)))부")
+            parts.append(L10n.tr("재고 \(Format.integer(progress.stock(of: book)))부"))
         }
-        if let slot, slot != .storage { parts.append(slot.title + (pinned ? " · 직접 고름" : benched ? " · 직접 내림" : " · 주인이 정함")) }
+        if let slot, slot != .storage { parts.append(slot.title + L10n.tr(pinned ? " · 직접 고름" : benched ? " · 직접 내림" : " · 주인이 정함")) }
         return HStack(spacing: 6) {
             Symbol(name: slot?.symbol ?? "shippingbox", size: 10)
             Text(parts.joined(separator: " · ")).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
@@ -756,7 +756,7 @@ struct BookstoreContent: View {
                                 }
                             }
                         }
-                        Button(showsAllReviews ? "최근 둘만" : "서평 \(progress.reviews.count - 2)편 더") { showsAllReviews.toggle() }
+                        Button(showsAllReviews ? L10n.tr("최근 둘만") : L10n.tr("서평 \(progress.reviews.count - 2)편 더")) { showsAllReviews.toggle() }
                             .buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
                             .padding(.top, 8)
                     }
@@ -804,7 +804,7 @@ struct BookChip: View {
                 .overlay(alignment: .bottom) { if let band { Rectangle().fill(band).frame(height: 3) } }
             Text(book.displayTitle).font(.caption.weight(selected ? .semibold : .regular)).lineLimit(1)
                 .foregroundStyle(soldOut ? .secondary : .primary)
-            Text(soldOut ? "품절" : Format.short(sales)).font(.caption2.monospacedDigit()).foregroundStyle(soldOut ? ChartPalette.warning : .secondary)
+            Text(soldOut ? L10n.tr("품절") : Format.short(sales)).font(.caption2.monospacedDigit()).foregroundStyle(soldOut ? ChartPalette.warning : .secondary)
             if featured { Symbol(name: "star.fill", size: 8, color: BadgeTier.gold.color) }
             if advertised { Symbol(name: "megaphone.fill", size: 8, color: ChartPalette.warning) }
             if pinned { Symbol(name: "pin.fill", size: 7, color: .secondary) }
@@ -832,10 +832,10 @@ struct TierLadder: View {
                             .overlay(Circle().stroke(step == tier ? Color.primary : .clear, lineWidth: 1.5))
                         Text(step.title).font(.system(size: 9, weight: reached ? .semibold : .regular))
                             .foregroundStyle(reached ? .primary : .secondary)
-                        Text(Format.short(step.copies) + "부").font(.system(size: 8).monospacedDigit()).foregroundStyle(.tertiary)
+                        Text(L10n.tr("\(Format.short(step.copies))부")).font(.system(size: 8).monospacedDigit()).foregroundStyle(.tertiary)
                     }
                     .frame(maxWidth: .infinity)
-                    .hint(step.title + " · " + Format.short(step.copies) + "부", [step.meaning + "."], symbol: "chart.line.uptrend.xyaxis")
+                    .hint(L10n.tr("\(step.title) · \(Format.short(step.copies))부"), [step.meaning + "."], symbol: "chart.line.uptrend.xyaxis")
                 }
             }
             if let next {
@@ -888,12 +888,12 @@ struct BoostChip: View {
     var now = Date()
 
     static func explain(_ kind: ActiveBoost.Kind) -> String {
-        switch kind {
+        L10n.tr({ switch kind {
         case .sales: "탈고한 책이 팔리는 부수에 곱합니다."
         case .characters: "새 토큰이 글자가 되는 비율에 곱합니다."
         case .eventChance: "돌발 상황이 생길 확률에 곱합니다."
         case .refusal: "아이템을 권했을 때 거절할 확률에 더합니다."
-        }
+        } }())
     }
 
     var body: some View {
@@ -904,13 +904,13 @@ struct BoostChip: View {
         }
         let color: Color = good ? ChartPalette.good : ChartPalette.warning
         let left = max(0, boost.endsAt.timeIntervalSince(now))
-        let remain = left >= 3600 ? "\(Int(left / 3600))시간" : "\(max(1, Int(left / 60)))분"
+        let remain = left >= 3600 ? L10n.tr("\(Int(left / 3600))시간") : L10n.tr("\(max(1, Int(left / 60)))분")
         Text(boost.text + " · " + remain)
             .font(.caption2.weight(.medium))
             .padding(.horizontal, 7).padding(.vertical, 2)
             .foregroundStyle(color)
             .background(color.opacity(0.12), in: Capsule())
-            .hint(boost.source, ["\(boost.text), \(remain) 남았습니다.", Self.explain(boost.kind)], symbol: "clock")
+            .hint(boost.source, [L10n.tr("\(boost.text), \(remain) 남았습니다."), Self.explain(boost.kind)], symbol: "clock")
     }
 }
 
@@ -939,9 +939,9 @@ struct StatementCard: View {
         let delta = Int((statement.trustAfter - statement.trustBefore).rounded())
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(statement.weekStart.formatted(.dateTime.month(.defaultDigits).day()) + " 주").font(.caption.weight(.semibold))
+                Text(L10n.tr("\(statement.weekStart.formatted(.dateTime.month(.defaultDigits).day().locale(L10n.locale))) 주")).font(.caption.weight(.semibold))
                 Spacer(minLength: 0)
-                Text("\(Format.integer(statement.sold))부 · 신뢰 \(TrustLevel.of(statement.trustAfter).title)" + (delta != 0 ? "(\(delta > 0 ? "+" : "")\(delta))" : ""))
+                Text(L10n.tr("\(Format.integer(statement.sold))부 · 신뢰 \(TrustLevel.of(statement.trustAfter).title)") + (delta != 0 ? "(\(delta > 0 ? "+" : "")\(delta))" : ""))
                     .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
             }
             ForEach(statement.lines.filter { $0.sold + $0.missed + $0.returned > 0 || $0.slot == .window || $0.slot == .counter }.prefix(6)) { line in
@@ -949,10 +949,10 @@ struct StatementCard: View {
                     Symbol(name: line.slot.symbol, size: 9)
                     Text(Library.books.first { $0.file == line.book }?.displayTitle ?? line.book).font(.caption2).lineLimit(1)
                     Spacer(minLength: 0)
-                    Text("\(Format.integer(line.sold))부"
-                         + (line.returned > 0 ? " · 반품 \(line.returned)" : "")
-                         + (line.missed > 0 ? " · 놓침 \(Format.integer(line.missed))" : "")
-                         + " · 재고 \(Format.short(line.stock))")
+                    Text(L10n.tr("\(Format.integer(line.sold))부")
+                         + (line.returned > 0 ? L10n.tr(" · 반품 \(line.returned)") : "")
+                         + (line.missed > 0 ? L10n.tr(" · 놓침 \(Format.integer(line.missed))") : "")
+                         + L10n.tr(" · 재고 \(Format.short(line.stock))"))
                         .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
                 }
             }

@@ -959,6 +959,125 @@ extension Dump {
         check(parsedNew?.version == "0.2.0" && parsedNew?.summaryLines.count == 2 && parsedSame == nil,
               "업데이터: 최신 릴리스 감지 (\(parsedNew?.version ?? "-"), 요약 \(parsedNew?.summaryLines.count ?? 0)줄, 같은 버전이면 무시)")
 
+        // 75. 국제화(한국어·영어 String Catalog 및 L10n 런타임 전환) 검증
+        func containsHangul(_ s: String) -> Bool {
+            s.unicodeScalars.contains { (0xAC00...0xD7A3).contains($0.value) || (0x3131...0x318E).contains($0.value) }
+        }
+        L10n.overrideLanguage = .en
+        let enBook = Library.books.first
+        let enBookTitle = enBook?.displayTitle
+        let enBookAuthor = enBook?.displayAuthor
+        let enShort12k = Format.short(12_500)
+        let enShort2m = Format.short(2_000_000)
+        let enPattern = L10n.tr("전체 1,000자 중 500자")
+        let allAuthorEvents = AuthorEvents.common + Array(AuthorEvents.byAuthor.values)
+        let allBadgesTranslated = Achievements.all.allSatisfy { !containsHangul($0.title) && !containsHangul($0.detail) && !containsHangul($0.patronTitle ?? "") }
+        let allItemsTranslated = ItemKind.allCases.allSatisfy { !containsHangul($0.title) && !containsHangul($0.shortTitle) }
+        let allDecorTranslated = Decor.all.allSatisfy { !containsHangul($0.title) }
+        let allStudioTranslated = Studio.all.allSatisfy { !containsHangul($0.title) && !containsHangul($0.effect) }
+        let allEventsTranslated = allAuthorEvents.allSatisfy { !containsHangul($0.text) && $0.causes.allSatisfy { !containsHangul(L10n.tr($0)) } }
+        let allDilemmasTranslated = Dilemmas.all.allSatisfy { !containsHangul($0.title) && $0.options.allSatisfy { !containsHangul($0.label) } }
+        L10n.overrideLanguage = nil
+        check(enBookTitle == enBook?.title && enBookAuthor == enBook?.author && enShort12k == "12.5K" && enShort2m == "2M" && !containsHangul(enPattern),
+              "국제화(en): 작품 제목(\(enBookTitle ?? "-"))·숫자(\(enShort12k), \(enShort2m))·동적 문장(\"\(enPattern)\") 영어 변환")
+        check(allBadgesTranslated && allItemsTranslated && allDecorTranslated && allStudioTranslated && allEventsTranslated && allDilemmasTranslated && !L10n.isEnglish,
+              "국제화(en): 업적(\(Achievements.all.count))·아이템(\(ItemKind.allCases.count))·장신구(\(Decor.all.count))·가구(\(Studio.all.count))·돌발상황(\(allAuthorEvents.count))·사건(\(Dilemmas.all.count)) 한글 잔존 0건 및 기본 로케일 복원")
+
+        // 76. 토큰 단위 국제화(만·억 vs K·M·B) 및 토큰 인사이트(캐시 절감·문맥 밀도·몰입 시간대) 검증
+        let koTok1 = Format.tokens(1_250)
+        let koTok25m = Format.tokens(25_000_000)
+        let koTok150m = Format.tokens(150_000_000)
+        L10n.overrideLanguage = .en
+        let enTok25m = Format.tokens(25_000_000)
+        let enTok150m = Format.tokens(150_000_000)
+        L10n.overrideLanguage = nil
+        check(koTok1 == "1,250" && koTok25m == "2,500만" && koTok150m == "1.5억" && enTok25m == "25M" && enTok150m == "150M",
+              "토큰 단위 국제화: 한국어(\(koTok1), \(koTok25m), \(koTok150m)) vs 영어(\(enTok25m), \(enTok150m))")
+
+        let insightCal = Calendar.current
+        let insightToday = insightCal.startOfDay(for: now)
+        let insightAfternoon = insightCal.date(bySettingHour: 15, minute: 0, second: 0, of: insightToday)!
+        let insightLastWeek = insightCal.date(byAdding: .day, value: -8, to: insightAfternoon)!
+        let insightEntries = [
+            UsageEntry(id: "i1", provider: .claude, date: insightLastWeek, model: "claude-sonnet-4-6",
+                       input: 100_000, output: 20_000, cacheWrite5m: 0, cacheWrite1h: 0, cacheRead: 880_000),
+            UsageEntry(id: "i2", provider: .claude, date: insightAfternoon, model: "claude-sonnet-4-6",
+                       input: 50_000, output: 10_000, cacheWrite5m: 0, cacheWrite1h: 0, cacheRead: 940_000),
+            UsageEntry(id: "i3", provider: .claude, date: insightAfternoon.addingTimeInterval(600), model: "claude-sonnet-4-6",
+                       input: 50_000, output: 10_000, cacheWrite5m: 0, cacheWrite1h: 0, cacheRead: 940_000),
+        ]
+        let insightSnap = UsageAggregator.snapshot(entries: insightEntries, scannedFiles: 1, source: .claude, now: insightAfternoon.addingTimeInterval(1200), calendar: insightCal)
+        // claude-sonnet-4-6: input $3/M, cacheRead $0.3/M -> 1.88M cacheRead saves 1.88 * $2.7 = $5.076
+        check(insightSnap.todayTurns == 2
+              && insightSnap.todayAvgTokensPerTurn == 1_000_000
+              && abs(insightSnap.todayCacheSavedCost - 5.076) < 0.01
+              && insightSnap.focusWindow?.blockIndex == 2
+              && insightSnap.focusWindow?.peakHour == 15
+              && insightSnap.weekOverWeekPercent == 100,
+              "토큰 인사이트: 오늘 \(insightSnap.todayTurns)턴(평균 \(Format.tokens(insightSnap.todayAvgTokensPerTurn))) · 캐시 절감 \(Format.cost(insightSnap.todayCacheSavedCost)) · \(insightSnap.focusWindow?.title ?? "-") · 주간 +\(Int(insightSnap.weekOverWeekPercent ?? 0))%")
+
+        // 77. 화폐 단위 국제화(원화 한글 단위형 vs USD) · 환율 파서 · 오프라인 이전날 환율 폴백 · 설정 5탭 검증
+        ExchangeRate.overrideRate = 1_400.0
+        let koCostZero = Format.cost(0)
+        let koCost450 = Format.cost(450.0 / 1_400.0)
+        let koCost14k = Format.cost(14_200.0 / 1_400.0)
+        let koCost142k = Format.cost(142_000.0 / 1_400.0)
+        let koCost140m = Format.cost(140_000_000.0 / 1_400.0)
+        L10n.overrideLanguage = .en
+        let enCostZero = Format.cost(0)
+        let enCostSmall = Format.cost(0.45)
+        let enCostMid = Format.cost(12.34)
+        let enCostBig = Format.cost(120.4)
+        let enTabs = SettingsTab.allCases.map(\.title)
+        L10n.overrideLanguage = nil
+        ExchangeRate.overrideRate = nil
+        let koTabs = SettingsTab.allCases.map(\.title)
+        check(koCostZero == "0원"
+              && koCost450 == "450원"
+              && koCost14k == "14,200원"
+              && koCost142k == "14.2만 원"
+              && koCost140m == "1.4억 원"
+              && enCostZero == "$0.00"
+              && enCostSmall == "$0.45"
+              && enCostMid == "$12.34"
+              && enCostBig == "$120",
+              "화폐 단위 국제화: 한국어(\(koCostZero), \(koCost450), \(koCost14k), \(koCost142k), \(koCost140m)) vs 영어(\(enCostZero), \(enCostSmall), \(enCostMid), \(enCostBig))")
+
+        let frankfurterJSON = Data(#"{"amount":1.0,"base":"USD","date":"2026-10-23","rates":{"KRW":1388.45}}"#.utf8)
+        let openErJSON = Data(#"{"result":"success","rates":{"USD":1,"KRW":1389.12}}"#.utf8)
+        let parsed1 = ExchangeRate.parseResponse(data: frankfurterJSON, now: now)
+        let parsed2 = ExchangeRate.parseResponse(data: openErJSON, now: now)
+        let savedPrevRate = UserDefaults.standard.object(forKey: ExchangeRate.rateKey) as? Double
+        let savedPrevDate = UserDefaults.standard.string(forKey: ExchangeRate.dateKey)
+        let savedPrevFetchedAt = UserDefaults.standard.object(forKey: ExchangeRate.fetchedAtKey) as? Double
+        let yesterday = now.addingTimeInterval(-90_000)
+        ExchangeRate.save(rate: 1_392.5, dateString: "2026-10-24", now: yesterday)
+        let needsRefresh = ExchangeRate.needsDailyRefresh(now: now)
+        let cachedFallbackRate = UserDefaults.standard.double(forKey: ExchangeRate.rateKey)
+        if let savedPrevRate { UserDefaults.standard.set(savedPrevRate, forKey: ExchangeRate.rateKey) } else { UserDefaults.standard.removeObject(forKey: ExchangeRate.rateKey) }
+        if let savedPrevDate { UserDefaults.standard.set(savedPrevDate, forKey: ExchangeRate.dateKey) } else { UserDefaults.standard.removeObject(forKey: ExchangeRate.dateKey) }
+        if let savedPrevFetchedAt { UserDefaults.standard.set(savedPrevFetchedAt, forKey: ExchangeRate.fetchedAtKey) } else { UserDefaults.standard.removeObject(forKey: ExchangeRate.fetchedAtKey) }
+        let savedFloatingStyle = UserDefaults.standard.string(forKey: FloatingStyle.key)
+        UserDefaults.standard.set(FloatingStyle.pill.rawValue, forKey: FloatingStyle.key)
+        FloatingStyle.toggle()
+        let toggledToMini = (FloatingStyle.current == .mini)
+        FloatingStyle.toggle()
+        let toggledBackToPill = (FloatingStyle.current == .pill)
+        if let savedFloatingStyle {
+            UserDefaults.standard.set(savedFloatingStyle, forKey: FloatingStyle.key)
+        } else {
+            UserDefaults.standard.removeObject(forKey: FloatingStyle.key)
+        }
+        check(parsed1?.rate == 1388.45
+              && parsed1?.date == "2026-10-23"
+              && parsed2?.rate == 1389.12
+              && needsRefresh
+              && cachedFallbackRate == 1_392.5
+              && toggledToMini && toggledBackToPill
+              && koTabs == ["일반", "화면", "집필", "알림", "정보"]
+              && enTabs == ["General", "Display", "Writing", "Notifications", "About"],
+              "환율 파서·오프라인 이전날 환율 폴백(1,392.5원)·상시 창 모드 토글(알약↔미니)·설정 5탭(\(koTabs.joined(separator: "·")) / \(enTabs.joined(separator: "·"))) 검증")
+
         print(failures == 0 ? "PASS" : "FAILED \(failures)")
     }
 

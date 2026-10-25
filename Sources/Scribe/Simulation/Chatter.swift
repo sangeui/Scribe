@@ -174,9 +174,9 @@ enum Chatter {
 
     /// 상황에 맞는 말 하나. `pokes` 는 몇 초 안에 연달아 누른 횟수. `rolls` 는 0..<1 두 개.
     static func line(author: String, progress: WritingProgress, mood: Mood, now: Date, pokes: Int, rolls: (Double, Double)) -> String {
-        let title = progress.book?.displayTitle ?? "원고"
+        let title = progress.book?.displayTitle ?? L10n.tr("원고")
         func format(_ s: String) -> String {
-            Format.resolve(s.replacingOccurrences(of: "{T}", with: title))
+            Format.resolve(L10n.tr(s).replacingOccurrences(of: "{T}", with: title))
         }
         func pick(_ pool: [String], _ roll: Double) -> String {
             format(pool[min(pool.count - 1, Int(roll * Double(pool.count)))])
@@ -294,11 +294,11 @@ enum Quarrels {
         // 둘의 말이 있어도 가끔은 일반적인 말다툼을 한다.
         if !matched.isEmpty, rolls.1 < 0.6 {
             let e = matched[min(matched.count - 1, Int(rolls.0 * Double(matched.count)))]
-            return e.a == host ? (e.aLine, e.bLine) : (e.bLine, e.aLine)
+            return e.a == host ? (L10n.tr(e.aLine), L10n.tr(e.bLine)) : (L10n.tr(e.bLine), L10n.tr(e.aLine))
         }
         let g = generic[min(generic.count - 1, Int(rolls.0 * Double(generic.count)))]
         func fill(_ s: String) -> String {
-            Format.resolve(s.replacingOccurrences(of: "{A}", with: hostName).replacingOccurrences(of: "{B}", with: guestName))
+            Format.resolve(L10n.tr(s).replacingOccurrences(of: "{A}", with: hostName).replacingOccurrences(of: "{B}", with: guestName))
         }
         return (fill(g.0), fill(g.1))
     }
@@ -359,10 +359,10 @@ enum Handoffs {
         let matched = pairs.filter { $0.from == from && $0.to == to }
         if !matched.isEmpty, rolls.1 < 0.7 {
             let m = matched[min(matched.count - 1, Int(rolls.0 * Double(matched.count)))]
-            return (m.leaving, m.arriving)
+            return (L10n.tr(m.leaving), L10n.tr(m.arriving))
         }
         let g = generic[min(generic.count - 1, Int(rolls.0 * Double(generic.count)))]
-        func fill(_ s: String) -> String { Format.resolve(s.replacingOccurrences(of: "{A}", with: fromName).replacingOccurrences(of: "{B}", with: toName)) }
+        func fill(_ s: String) -> String { Format.resolve(L10n.tr(s).replacingOccurrences(of: "{A}", with: fromName).replacingOccurrences(of: "{B}", with: toName)) }
         return (fill(g.0), fill(g.1))
     }
 }
@@ -443,10 +443,10 @@ enum Gossip {
             for _ in 0..<(lines.count < 3 ? 2 : 1) {
                 let a = dice.pick(authors)
                 let b = dice.pick(authors.filter { $0 != a })
-                lines.append(dice.pick(rumors).replacingOccurrences(of: "{A}", with: name(a)).replacingOccurrences(of: "{B}", with: name(b)))
+                lines.append(L10n.tr(dice.pick(rumors)).replacingOccurrences(of: "{A}", with: name(a)).replacingOccurrences(of: "{B}", with: name(b)))
             }
         }
         if lines.isEmpty { lines.append(dice.pick(quiet)) }
-        return lines.prefix(6).map(Format.resolve)
+        return lines.prefix(6).map { Format.resolve(L10n.tr($0)) }
     }
 }

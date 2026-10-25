@@ -34,7 +34,7 @@ enum ChartPalette {
 
     /// 한도 %에 따른 상태 색과 이름. 색만으로 뜻을 전하지 않게 이름을 같이 쓴다.
     static func limitStatus(_ percent: Double) -> (Color, String) {
-        percent >= 90 ? (critical, "위험") : percent >= 70 ? (warning, "주의") : (good, "여유")
+        percent >= 90 ? (critical, L10n.tr("위험")) : percent >= 70 ? (warning, L10n.tr("주의")) : (good, L10n.tr("여유"))
     }
 }
 
@@ -89,12 +89,147 @@ struct UsageDashboard: View {
                 }
             }
             if let snapshot = store.snapshot {
+                UsageInsightsCard(snapshot: snapshot).dashboardCard()
                 HourlyChart(hours: snapshot.todayByHour, now: snapshot.generatedAt).dashboardCard()
                 DailyChart(days: Array(snapshot.days.suffix(14))).dashboardCard()
                 ModelBreakdown(models: snapshot.todayByModel)
             }
         }
         .padding(14)
+    }
+}
+
+/// 토큰 통계를 바탕으로 캐시 비용 절감액, 대화 문맥 밀도, 14일 작업 리듬·주간 추세 인사이트를 요약해 보여 주는 카드.
+private struct UsageInsightsCard: View {
+    let snapshot: UsageSnapshot
+
+    var body: some View {
+        let hasAnyTokens = snapshot.days.contains { $0.tokens > 0 }
+        VStack(alignment: .leading, spacing: 10) {
+            SectionTitle(text: "토큰 인사이트", detail: "최근 14일 분석")
+            if !hasAnyTokens {
+                Text("토큰 기록이 쌓이면 캐시 절감액·문맥 밀도·몰입 시간대 인사이트가 나타납니다.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                cacheInsightRow
+                Divider().opacity(0.4)
+                contextDensityRow
+                Divider().opacity(0.4)
+                rhythmAndTrendRow
+            }
+        }
+    }
+
+    private var cacheInsightRow: some View {
+        let badge: String = {
+            if snapshot.todayCacheSavedCost > 0 {
+                return L10n.tr("오늘 \(Format.cost(snapshot.todayCacheSavedCost)) 절약 · -\(Format.percent(snapshot.todayCacheSavingsPercent))")
+            }
+            if snapshot.twoWeekCacheSavedCost > 0 {
+                return L10n.tr("14일 \(Format.cost(snapshot.twoWeekCacheSavedCost)) 절약 · -\(Format.percent(snapshot.twoWeekCacheSavingsPercent))")
+            }
+            return L10n.tr("캐시 적중 \(Format.percent(snapshot.todayCacheHitPercent))")
+        }()
+        let subtitle: String = {
+            if snapshot.todayCacheHitPercent >= 75 {
+                return L10n.tr("캐시 적중률 \(Format.percent(snapshot.todayCacheHitPercent)) · 최근 14일 누적 \(Format.cost(snapshot.twoWeekCacheSavedCost)) 아낌")
+            }
+            if snapshot.today.tokens > 0 {
+                return L10n.tr("캐시 적중률 \(Format.percent(snapshot.todayCacheHitPercent)) · 한 대화 흐름을 이어 가면 캐시 재사용률이 높아집니다")
+            }
+            return L10n.tr("최근 14일 캐시 읽기로 추정 API 원가의 \(Format.percent(snapshot.twoWeekCacheSavingsPercent))(\(Format.cost(snapshot.twoWeekCacheSavedCost)))를 아꼈습니다")
+        }()
+        return insightRow(
+            symbol: "arrow.triangle.2.circlepath.circle",
+            color: ChartPalette.series[2],
+            title: L10n.tr("캐시 절감 효과"),
+            badge: badge,
+            subtitle: subtitle,
+            hintTitle: L10n.tr("프롬프트 캐시 절감 추정액"),
+            hintLines: [
+                L10n.tr("캐시에서 읽은 토큰을 일반 입력 단가로 냈을 때와 비교해 아낀 금액입니다."),
+                L10n.tr("오늘 절감: \(Format.cost(snapshot.todayCacheSavedCost)) · 최근 14일 절감: \(Format.cost(snapshot.twoWeekCacheSavedCost))")
+            ]
+        )
+    }
+
+    private var contextDensityRow: some View {
+        let avg = snapshot.todayAvgTokensPerTurn
+        let isHeavy = avg >= 150_000
+        let badge: String = snapshot.todayTurns > 0
+            ? L10n.tr("\(snapshot.todayTurns)턴 · 평균 \(Format.tokens(avg))")
+            : L10n.tr("오늘 응답 없음")
+        let subtitle: String = {
+            if isHeavy {
+                return L10n.tr("문맥 비대화 감지(최대 \(Format.tokens(snapshot.todayPeakTurnTokens))) · 새 대화나 /compact 로 문맥을 줄이면 유리합니다")
+            }
+            if snapshot.todayTurns > 0 {
+                return L10n.tr("적정 문맥 크기 유지 중 · 단일 응답 최대 \(Format.tokens(snapshot.todayPeakTurnTokens))")
+            }
+            return L10n.tr("대화가 시작되면 응답당 평균 문맥 크기와 비대화 여부를 진단합니다")
+        }()
+        return insightRow(
+            symbol: "text.bubble",
+            color: isHeavy ? ChartPalette.warning : ChartPalette.series[0],
+            title: L10n.tr("대화 문맥 밀도"),
+            badge: badge,
+            subtitle: subtitle,
+            hintTitle: L10n.tr("턴당 평균 문맥 크기"),
+            hintLines: [
+                L10n.tr("대화가 길어질수록 매 응답마다 이전 대화 전체를 다시 읽어들여 턴당 토큰 소모가 커집니다."),
+                L10n.tr("턴당 평균이 크게 치솟으면 주제가 바뀔 때 새 대화를 열거나 문맥을 압축하는 것이 효율적입니다.")
+            ]
+        )
+    }
+
+    private var rhythmAndTrendRow: some View {
+        let focus = snapshot.focusWindow
+        let badge = focus?.title ?? L10n.tr("집계 중")
+        let subtitle: String = {
+            if let focus, let wow = snapshot.weekOverWeekPercent {
+                let sign = wow >= 0 ? "+" : ""
+                return L10n.tr("주력 시간대 비중 \(Format.percent(focus.sharePercent))(피크 \(focus.peakHour)시) · 최근 7일 \(Format.tokens(snapshot.recentSevenDayTokens))(직전 주 \(sign)\(Int(wow.rounded()))%)")
+            }
+            if let focus {
+                return L10n.tr("주력 시간대 비중 \(Format.percent(focus.sharePercent))(피크 \(focus.peakHour)시) · 최근 7일 누적 \(Format.tokens(snapshot.recentSevenDayTokens)) (\(Format.cost(snapshot.recentSevenDayCost)))")
+            }
+            return L10n.tr("최근 7일 누적 \(Format.tokens(snapshot.recentSevenDayTokens)) · \(Format.cost(snapshot.recentSevenDayCost))")
+        }()
+        return insightRow(
+            symbol: "clock.arrow.2.circlepath",
+            color: ChartPalette.series[3],
+            title: L10n.tr("작업 리듬 · 추세"),
+            badge: badge,
+            subtitle: subtitle,
+            hintTitle: L10n.tr("14일 몰입 시간대 및 주간 추세"),
+            hintLines: [
+                L10n.tr("최근 14일 시간대별 토큰 분포에서 가장 비중이 높은 6시간 구간과 피크 시각을 분석합니다."),
+                L10n.tr("최근 7일 합계: \(Format.tokens(snapshot.recentSevenDayTokens)) (\(Format.cost(snapshot.recentSevenDayCost)))")
+            ]
+        )
+    }
+
+    private func insightRow(symbol: String, color: Color, title: String, badge: String, subtitle: String,
+                            hintTitle: String, hintLines: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 6) {
+                Symbol(name: symbol, size: 11, color: color)
+                Text(title).font(.caption.weight(.semibold))
+                Spacer(minLength: 6)
+                Text(badge)
+                    .font(.caption2.weight(.medium).monospacedDigit())
+                    .foregroundStyle(color)
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .background(color.opacity(0.12), in: Capsule())
+            }
+            Text(subtitle)
+                .font(.caption2.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+        }
+        .hint(hintTitle, hintLines, symbol: symbol)
     }
 }
 
@@ -157,8 +292,8 @@ private struct AntigravityStatusCard: View {
                     .font(.system(size: 14, weight: .semibold, design: .rounded).monospacedDigit())
             }
             .frame(width: 66, height: 66)
-            Text(title).font(.caption.weight(.medium)).lineLimit(1)
-            Text(subtitle).font(.system(size: 9)).foregroundStyle(.secondary).lineLimit(1)
+            Text(L10n.tr(title)).font(.caption.weight(.medium)).lineLimit(1)
+            Text(L10n.tr(subtitle)).font(.system(size: 9)).foregroundStyle(.secondary).lineLimit(1)
         }
     }
 }
@@ -194,8 +329,8 @@ private struct AgentShareCard: View {
             Text("로그 \(files)개").font(.caption2).foregroundStyle(.tertiary)
             Spacer()
             Text(pct).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
-            Text(Format.tokens(tokens)).font(.callout.monospacedDigit()).frame(width: 56, alignment: .trailing)
-            Text(Format.cost(cost)).font(.callout.monospacedDigit()).foregroundStyle(.secondary).frame(width: 54, alignment: .trailing)
+            Text(Format.tokens(tokens)).font(.callout.monospacedDigit()).frame(width: 64, alignment: .trailing)
+            Text(Format.cost(cost)).font(.callout.monospacedDigit()).foregroundStyle(.secondary).frame(width: 72, alignment: .trailing)
         }
     }
 }
@@ -219,10 +354,10 @@ private struct SectionTitle: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(text).font(.subheadline.weight(.semibold))
+            Text(L10n.tr(text)).font(.subheadline.weight(.semibold))
             Spacer()
             if let detail {
-                Text(detail).font(.caption.monospacedDigit())
+                Text(L10n.tr(detail)).font(.caption.monospacedDigit())
                     .foregroundStyle(highlighted ? .primary : .secondary)
             }
         }
@@ -263,6 +398,7 @@ private struct TodayHero: View {
                 }
                 .hint("API 단가로 환산한 값", ["구독 요금과는 다릅니다. 같은 양을 API 로 썼다면 얼마인지입니다.",
                                            "입력·출력·캐시 쓰기·캐시 읽기 단가를 모델마다 따로 곱했습니다."]
+                      + (L10n.isEnglish ? [] : ["기준 환율: $1 = \(Format.integer(Int(ExchangeRate.currentRate.rounded())))원 (\(ExchangeRate.currentDateString)) · 원본 \(Format.usd(today?.cost ?? 0))"])
                       + (today?.hasUnpriced == true ? ["단가표에 없는 모델이 섞여 있어 실제보다 작습니다."] : []), symbol: "dollarsign.circle")
             }
             HStack(spacing: 14) {
@@ -304,7 +440,7 @@ private struct LimitGauges: View {
                 HStack(spacing: 8) {
                     Symbol(name: needsLogin ? "person.crop.circle.badge.exclamationmark" : "exclamationmark.triangle", size: 12,
                            color: needsLogin ? .secondary : ChartPalette.warning)
-                    Text(needsLogin ? "로그인이 만료됐습니다. Claude Code 를 한 번 쓰면 이어집니다." : message)
+                    Text(needsLogin ? L10n.tr("로그인이 만료됐습니다. Claude Code 를 한 번 쓰면 이어집니다.") : L10n.tr(message))
                         .font(.caption).foregroundStyle(needsLogin ? Color.secondary : ChartPalette.warning).lineLimit(2)
                     Spacer(minLength: 0)
                     Button(action: onRefresh) {
@@ -334,13 +470,13 @@ private struct LimitGauges: View {
                 }
             }
             .frame(width: 70, height: 70)
-            Text(row.name).font(.caption.weight(.medium)).lineLimit(1).minimumScaleFactor(0.8)
+            Text(row.displayName).font(.caption.weight(.medium)).lineLimit(1).minimumScaleFactor(0.8)
             if let reset = row.resetsAt {
-                Text(Format.until(reset).replacingOccurrences(of: " 초기화", with: ""))
+                Text(Format.until(reset).replacingOccurrences(of: " 초기화", with: "").replacingOccurrences(of: "Resets in ", with: ""))
                     .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
             }
         }
-        .hint("\(row.name) · \(Format.percent(row.percent)) 씀", [status == "여유" ? "아직 여유가 있습니다." : status == "주의" ? "70%를 넘었습니다." : "90%를 넘었습니다. 곧 막힙니다."]
+        .hint("\(row.displayName) · \(Format.percent(row.percent)) 씀", [row.percent < 70 ? "아직 여유가 있습니다." : row.percent < 90 ? "70%를 넘었습니다." : "90%를 넘었습니다. 곧 막힙니다."]
               + (row.resetsAt.map { ["\($0.formatted(date: .abbreviated, time: .shortened))에 초기화됩니다."] } ?? []), symbol: "gauge.with.needle")
     }
 }
@@ -486,13 +622,13 @@ private struct ModelBreakdown: View {
         }
         let rest = models.dropFirst(3)
         let slices = top + (rest.isEmpty ? [] : [Slice(
-            id: "other", name: "기타 \(rest.count)개", tokens: rest.reduce(0) { $0 + $1.tokens }, color: ChartPalette.other,
+            id: "other", name: L10n.tr("기타 \(rest.count)개"), tokens: rest.reduce(0) { $0 + $1.tokens }, color: ChartPalette.other,
             cost: rest.reduce(0.0) { $0 + ($1.cost ?? 0) }, detail: rest.map(\.model).joined(separator: ", "))])
         let kinds = [
-            Slice(id: "input", name: "입력", tokens: models.reduce(0) { $0 + $1.input }, color: ChartPalette.series[0]),
-            Slice(id: "output", name: "출력", tokens: models.reduce(0) { $0 + $1.output }, color: ChartPalette.series[1]),
-            Slice(id: "write", name: "캐시 쓰기", tokens: models.reduce(0) { $0 + $1.cacheWrite }, color: ChartPalette.series[2]),
-            Slice(id: "read", name: "캐시 읽기", tokens: models.reduce(0) { $0 + $1.cacheRead }, color: ChartPalette.series[3]),
+            Slice(id: "input", name: L10n.tr("입력"), tokens: models.reduce(0) { $0 + $1.input }, color: ChartPalette.series[0]),
+            Slice(id: "output", name: L10n.tr("출력"), tokens: models.reduce(0) { $0 + $1.output }, color: ChartPalette.series[1]),
+            Slice(id: "write", name: L10n.tr("캐시 쓰기"), tokens: models.reduce(0) { $0 + $1.cacheWrite }, color: ChartPalette.series[2]),
+            Slice(id: "read", name: L10n.tr("캐시 읽기"), tokens: models.reduce(0) { $0 + $1.cacheRead }, color: ChartPalette.series[3]),
         ]
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 8) {
@@ -502,7 +638,7 @@ private struct ModelBreakdown: View {
                 } else {
                     StackedBar(slices: slices.map { ($0.tokens, $0.color) })
                     ForEach(slices) { slice in
-                        legendRow(slice, total: total, trailing: slice.cost.map(Format.cost) ?? "단가 없음")
+                        legendRow(slice, total: total, trailing: slice.cost.map(Format.cost) ?? L10n.tr("단가 없음"))
                             .hint(slice.name, [slice.detail ?? "", "토큰 \(Format.integer(slice.tokens))개 · \(Self.share(slice.tokens, of: total))"]
                                   + (slice.cost.map { ["API 단가로 \(Format.cost($0))"] } ?? ["단가표에 없는 모델이라 비용은 모릅니다."]), symbol: "cpu")
                     }
@@ -533,7 +669,7 @@ private struct ModelBreakdown: View {
     /// 0.1% 아래는 0% 대신 "0.1% 미만"으로.
     private static func share(_ part: Int, of total: Int) -> String {
         let p = Double(part) / Double(total) * 100
-        return part > 0 && p < 0.1 ? "0.1% 미만" : Format.percent((p * 10).rounded() / 10)
+        return part > 0 && p < 0.1 ? L10n.tr("0.1% 미만") : Format.percent((p * 10).rounded() / 10)
     }
 
     private func legendRow(_ slice: Slice, total: Int, trailing: String?) -> some View {
@@ -544,10 +680,10 @@ private struct ModelBreakdown: View {
             Text(Self.share(slice.tokens, of: total))
                 .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
             Text(Format.tokens(slice.tokens)).font(.callout.monospacedDigit())
-                .frame(width: 56, alignment: .trailing)
+                .frame(width: 64, alignment: .trailing)
             if let trailing {
                 Text(trailing).font(.callout.monospacedDigit()).foregroundStyle(.secondary)
-                    .frame(width: 58, alignment: .trailing)
+                    .frame(width: 72, alignment: .trailing)
             }
         }
     }
@@ -624,7 +760,7 @@ struct UsageSummaryRow: View {
     private func patronIdentityBar(_ writing: WritingProgress) -> some View {
         let equipped = writing.equippedBadges.compactMap { Achievements.byID($0) }
         let patron = writing.patronAchievement
-        let titleText = patron?.patronTitle ?? "익명의 후원인"
+        let titleText = patron?.patronTitle ?? L10n.tr("익명의 후원인")
         var hintLines: [String] = []
         if let patron {
             hintLines.append("\"\(patron.patronTitle ?? "")\" (\(patron.title) 달성 보상)")
@@ -691,6 +827,6 @@ struct UsageSummaryRow: View {
             Text("\(Int(row.percent.rounded()))").font(.system(size: 9, weight: .semibold).monospacedDigit())
         }
         .frame(width: 26, height: 26)
-        .hint("\(row.name) \(Format.percent(row.percent))", [status], symbol: "gauge.with.needle")
+        .hint("\(row.displayName) \(Format.percent(row.percent))", [status], symbol: "gauge.with.needle")
     }
 }

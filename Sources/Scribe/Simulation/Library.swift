@@ -35,10 +35,12 @@ struct Book: Codable, Sendable, Identifiable {
     var opening: String? = nil
 
     var id: String { file }
-    var displayTitle: String { titleKo ?? title }
-    var displayAuthor: String { authorKo ?? author }
-    /// "에드거 앨런 포" → "포"
-    var displayAuthorShort: String { displayAuthor.split(separator: " ").last.map(String.init) ?? displayAuthor }
+    var displayTitle: String { L10n.isEnglish ? title : (titleKo ?? title) }
+    var displayAuthor: String { L10n.isEnglish ? author : (authorKo ?? author) }
+    /// "에드거 앨런 포" → "포" (영어 모드에서는 "Poe")
+    var displayAuthorShort: String {
+        L10n.isEnglish ? authorShort : (displayAuthor.split(separator: " ").last.map(String.init) ?? displayAuthor)
+    }
 
     /// 작가 성. 좁은 자리에서 쓴다.
     var authorShort: String { author.split(separator: " ").last.map(String.init) ?? author }
@@ -63,7 +65,7 @@ struct Book: Codable, Sendable, Identifiable {
 @MainActor
 enum Library {
     /// 앱 번들의 `Resources/Books`, 없으면(`swift run`) 저장소의 `Books`.
-    static let directory: URL? = {
+    nonisolated static let directory: URL? = {
         if let url = Bundle.main.resourceURL?.appendingPathComponent("Books"),
            FileManager.default.fileExists(atPath: url.appendingPathComponent("manifest.json").path) {
             return url
@@ -76,7 +78,7 @@ enum Library {
         return FileManager.default.fileExists(atPath: repo.appendingPathComponent("manifest.json").path) ? repo : nil
     }()
 
-    static let books: [Book] = {
+    nonisolated static let books: [Book] = {
         guard let directory,
               let data = try? Data(contentsOf: directory.appendingPathComponent("manifest.json")),
               let books = try? JSONDecoder().decode([Book].self, from: data) else { return [] }
@@ -85,16 +87,16 @@ enum Library {
     }()
 
     /// 작가 순서(처음 나오는 순).
-    static let authors: [String] = {
+    nonisolated static let authors: [String] = {
         var seen = Set<String>()
         return books.map(\.authorShort).filter { seen.insert($0).inserted }
     }()
 
     /// 한 바퀴(모든 책) 글자 수.
-    static let roundCharacters: Int = books.reduce(0) { $0 + $1.characters }
+    nonisolated static let roundCharacters: Int = books.reduce(0) { $0 + $1.characters }
 
     /// `starts[i]` 는 한 바퀴 안에서 `books[i]` 가 시작하는 글자 위치. 마지막 원소는 한 바퀴 길이.
-    static let starts: [Int] = books.reduce(into: [0]) { $0.append($0.last! + $1.characters) }
+    nonisolated static let starts: [Int] = books.reduce(into: [0]) { $0.append($0.last! + $1.characters) }
 
     /// 읽어 둔 원문. 글자 배열 대신 문자열을 그대로 두고(글자당 1바이트쯤), 64글자마다 자리를 적어 둬 n번째 글자를 빨리 찾는다.
     struct BookText {

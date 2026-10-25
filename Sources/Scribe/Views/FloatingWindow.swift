@@ -75,6 +75,10 @@ final class FloatingWindowController {
             }
         }
         panel.setFrame(target, display: true)
+        let inside = NSMouseInRect(NSEvent.mouseLocation, target, false)
+        if store.isFloatingHovered != inside {
+            store.isFloatingHovered = inside
+        }
         // 창 그림자는 알약에만. 미니는 바탕이 없어서 그림자가 진행 고리 둘레에 줄 하나로 남는다.
         let shadow = rect.width >= 150
         if panel.hasShadow != shadow {
@@ -105,7 +109,12 @@ final class FloatingWindowController {
         panel.hidesOnDeactivate = false
         panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
 
-        let hosting = NSHostingView(rootView: FloatingView(store: store))
+        let hosting = FloatingHostingView(rootView: FloatingView(store: store))
+        hosting.onHoverChange = { [weak self] hovered in
+            MainActor.assumeIsolated {
+                self?.store.isFloatingHovered = hovered
+            }
+        }
         // 크기는 여기서 직접 맞춘다. 뷰 크기를 따라가게 두면 전환 중에 서로 끌어당긴다.
         hosting.sizingOptions = []
         panel.contentView = hosting
@@ -123,10 +132,11 @@ final class FloatingWindowController {
         }
         self.panel = panel
         apply(visible: visible)
-        // 초상화를 누르면 작가가 한마디 한다. `isMovableByWindowBackground` 를 살리려고 제스처 대신 이벤트를 본다.
+        // 초상화 클릭·모드 전환 버튼 클릭·더블클릭을 잡는다. `isMovableByWindowBackground` 를 살리려고 제스처 대신 이벤트를 본다.
         clickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseUp]) { [weak self, weak panel] event in
             let type = event.type
             let location = event.locationInWindow
+            let clickCount = event.clickCount
             let samePanel = event.window === panel
             MainActor.assumeIsolated {
                 guard let self, let panel, samePanel else { return }
@@ -134,7 +144,14 @@ final class FloatingWindowController {
                     self.mouseDownAt = location
                 } else if let down = self.mouseDownAt {
                     self.mouseDownAt = nil
-                    if hypot(location.x - down.x, location.y - down.y) < 3, self.isOnPortrait(location, in: panel) { self.store.tapPortrait() }
+                    guard hypot(location.x - down.x, location.y - down.y) < 3 else { return }
+                    if self.isOnModeSwitchButton(location, in: panel) {
+                        FloatingStyle.toggle()
+                    } else if clickCount == 2, !self.isOnCureButton(location, in: panel) {
+                        FloatingStyle.toggle()
+                    } else if clickCount == 1, self.isOnPortrait(location, in: panel) {
+                        self.store.tapPortrait()
+                    }
                 }
             }
             return event
@@ -160,6 +177,27 @@ final class FloatingWindowController {
         }
     }
 
+    /// 창 안의 점(왼쪽 아래 기준)이 초상화 왼쪽 위 모드 전환 버튼(지름 20pt) 안인지.
+    private func isOnModeSwitchButton(_ point: NSPoint, in panel: NSPanel) -> Bool {
+        let p = Self.padding
+        let isPill = visible.width >= 150
+        let r = (isPill ? FloatingPill.portraitSize : FloatingMini.portraitSize) / 2
+        let center = CGPoint(x: FloatingView.portraitCenter.x - r * 0.72,
+                             y: FloatingView.portraitCenter.y - r * 0.72)
+        let x = p - visible.minX + center.x
+        let y = panel.frame.height - (p - visible.minY + center.y)
+        return hypot(point.x - x, point.y - y) <= 12
+    }
+
+    /// 알약 모드에서 돌발 상황 치료 버튼 영역인지(더블클릭 전환이 치료 버튼 연타와 겹치지 않도록).
+    private func isOnCureButton(_ point: NSPoint, in panel: NSPanel) -> Bool {
+        guard visible.width >= 150, store.writing?.event != nil else { return false }
+        let p = Self.padding
+        let canvasX = point.x - (p - visible.minX)
+        let canvasY = (panel.frame.height - point.y) - (p - visible.minY)
+        return canvasX >= 190 && canvasY <= 44
+    }
+
     /// 창 안의 점(왼쪽 아래 기준)이 초상화 원 안인지. 캔버스는 창 안에서 `padding - visible.origin` 만큼 밀려 있다.
     private func isOnPortrait(_ point: NSPoint, in panel: NSPanel) -> Bool {
         let p = Self.padding
@@ -180,6 +218,30 @@ final class FloatingWindowController {
     }
 }
 
+/// 비활성 상태(`nonactivatingPanel`)에서도 마우스 진입·이탈과 첫 클릭을 즉시 전달하는 호스팅 뷰.
+private final class FloatingHostingView<Content: View>: NSHostingView<Content> {
+    var onHoverChange: ((Bool) -> Void)?
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        for area in trackingAreas { removeTrackingArea(area) }
+        let options: NSTrackingArea.Options = [.mouseEnteredAndExited, .activeAlways, .inVisibleRect]
+        addTrackingArea(NSTrackingArea(rect: .zero, options: options, owner: self, userInfo: nil))
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        super.mouseEntered(with: event)
+        onHoverChange?(true)
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        super.mouseExited(with: event)
+        onHoverChange?(false)
+    }
+}
+
 /// 상시 창 내용. 설정의 모양을 읽어 `FloatingMorph` 에 넘기고, 보이는 부분이 바뀌면 창 크기를 맞추게 한다.
 struct FloatingView: View {
     /// 알약(284×68, (12, 12)에 둔다)과 미니(92×92)를 다 담는 캔버스.
@@ -192,6 +254,7 @@ struct FloatingView: View {
     @Bindable var store: UsageStore
     @AppStorage(featuredKey) private var featured = ""
     @AppStorage(FloatingStyle.key) private var styleRaw = FloatingStyle.pill.rawValue
+    @AppStorage(FloatingWindowController.opacityKey) private var opacity = 1.0
 
     private var style: FloatingStyle { FloatingStyle(rawValue: styleRaw) ?? .pill }
 
@@ -201,7 +264,8 @@ struct FloatingView: View {
                 FloatingMorph(morph: style == .pill ? 1 : 0, progress: w, featured: featured.isEmpty ? nil : featured,
                               onUse: store.use, onVisibleRect: store.updateFloatingFrame,
                               mood: store.mood, moodLine: store.moodLine(within: 180),
-                              handoff: store.handoff.map { ($0.from, $0.date) })
+                              handoff: store.handoff.map { ($0.from, $0.date) },
+                              isHovered: store.isFloatingHovered)
             } else {
                 // 기록을 읽는 동안: 초상화가 올 자리에 같은 크기의 유리 원, 안에 깃펜이 숨 쉬듯 밝아졌다 어두워진다.
                 LoadingBadge()
@@ -211,14 +275,47 @@ struct FloatingView: View {
         }
         .animation(.spring(duration: 0.55, bounce: 0.2), value: style)
         .contextMenu {
+            if let w = store.writing, let event = w.event {
+                let count = w.cureCount
+                let item = w.cureItem ?? event.cure
+                Button(L10n.tr(count > 0 ? "\(item.title) 권하기 (×\(count))" : "\(event.cure.role.title) 아이템 없음")) {
+                    store.use(item)
+                }
+                .disabled(count == 0)
+                Divider()
+            }
             ForEach(FloatingStyle.allCases, id: \.self) { candidate in
                 Button(candidate.title + (candidate == style ? " ✓" : "")) {
                     styleRaw = candidate.rawValue
                 }
             }
+            Menu(L10n.tr("대표 작가")) {
+                Button(L10n.tr("쓰는 작가") + (featured.isEmpty ? " ✓" : "")) {
+                    featured = ""
+                }
+                Divider()
+                ForEach(Library.authors, id: \.self) { author in
+                    let label = Library.books.first { $0.authorShort == author }?.displayAuthorShort ?? author
+                    Button(label + (featured == author ? " ✓" : "")) {
+                        featured = author
+                    }
+                }
+            }
+            Menu(L10n.tr("투명도")) {
+                ForEach([1.0, 0.85, 0.7, 0.5], id: \.self) { level in
+                    let pct = "\(Int((level * 100).rounded()))%"
+                    let selected = abs(opacity - level) < 0.03
+                    Button(pct + (selected ? " ✓" : "")) {
+                        opacity = level
+                        store.updateFloatingAppearance()
+                    }
+                }
+            }
             Divider()
             Button("숨기기") { store.setFloatingVisible(false) }
         }
+        .environment(\.locale, store.languageLocale)
+        .id(store.language)
     }
 }
 
@@ -235,6 +332,7 @@ struct FloatingMorph: View, Animatable {
     var mood: Mood = .focused
     var moodLine: String? = nil
     var handoff: (from: String, at: Date)? = nil
+    var isHovered: Bool = false
 
     nonisolated var animatableData: CGFloat {
         get { morph }
@@ -266,6 +364,11 @@ struct FloatingMorph: View, Animatable {
         let rect = Self.visibleRect(morph: m)
         let p = FloatingWindowController.padding
         let other = featured.flatMap { $0 == progress.book?.authorShort ? nil : $0 }
+        let portraitSize = FloatingMini.portraitSize + (FloatingPill.portraitSize - FloatingMini.portraitSize) * m
+        let portraitRadius = portraitSize / 2
+        let switchCenter = CGPoint(x: FloatingView.portraitCenter.x - portraitRadius * 0.72,
+                                   y: FloatingView.portraitCenter.y - portraitRadius * 0.72)
+        let tint = DayPart.tint(at: date)
         return ZStack(alignment: .topLeading) {
             // 유리 알약: 초상화 원 크기(68)에서 오른쪽으로 자란다. 글은 어느 정도 자란 뒤에 나타난다.
             FloatingPill(progress: progress, featured: featured, showsPortrait: false,
@@ -276,8 +379,7 @@ struct FloatingMorph: View, Animatable {
                 .allowsHitTesting(m > 0.5)
                 .zIndex(0)
             if let book = progress.book {
-                let size = FloatingMini.portraitSize + (FloatingPill.portraitSize - FloatingMini.portraitSize) * m
-                LivePortrait(author: other ?? book.authorShort, size: size,
+                LivePortrait(author: other ?? book.authorShort, size: portraitSize,
                              fraction: progress.fraction, event: other == nil ? progress.event : nil,
                              mood: other == nil ? mood : .focused,
                              transition: other == nil ? handoff : nil, tremble: other == nil && progress.caffeinated,
@@ -290,7 +392,7 @@ struct FloatingMorph: View, Animatable {
                 if let guest = progress.guestAuthor {
                     PortraitFrame(author: guest, scale: 1.25)
                         .overlay(RoundedRectangle(cornerRadius: 20 * 0.22, style: .continuous).stroke(.white.opacity(0.7), lineWidth: 1.5))
-                        .position(x: FloatingView.portraitCenter.x + size * 0.36, y: FloatingView.portraitCenter.y + size * 0.36)
+                        .position(x: FloatingView.portraitCenter.x + portraitSize * 0.36, y: FloatingView.portraitCenter.y + portraitSize * 0.36)
                         .allowsHitTesting(false)
                         .zIndex(3)
                 }
@@ -301,6 +403,21 @@ struct FloatingMorph: View, Animatable {
                 .scaleEffect(1 - 0.12 * m)
                 .allowsHitTesting(m < 0.5)
                 .zIndex(2)
+            // 마우스를 올렸을 때 초상화 왼쪽 위에 나타나는 모양 전환(알약 ↔ 미니) 배지 버튼.
+            ZStack {
+                Image(systemName: m > 0.5 ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
+                    .font(.system(size: 8.5, weight: .bold))
+                    .foregroundStyle(.primary.opacity(0.85))
+            }
+            .frame(width: 20, height: 20)
+            .modifier(PillBackground(glass: false, shape: Circle(), tint: tint))
+            .help(L10n.tr(m > 0.5 ? "미니 모드로 전환 (더블클릭)" : "알약 모드로 전환 (더블클릭)"))
+            .position(switchCenter)
+            .opacity(isHovered ? 1 : 0)
+            .scaleEffect(isHovered ? 1 : 0.75)
+            .animation(.easeOut(duration: 0.16), value: isHovered)
+            .allowsHitTesting(false)
+            .zIndex(4)
         }
         .frame(width: FloatingView.size.width, height: FloatingView.size.height, alignment: .topLeading)
         // 창 크기(보이는 부분 + 패딩)에 맞춰 캔버스를 밀어 둔다.
@@ -329,6 +446,6 @@ struct LoadingBadge: View {
             .frame(width: side, height: side)
         }
         .modifier(PillBackground(shape: Circle()))
-        .help("기록을 읽는 중입니다")
+        .help(L10n.tr("기록을 읽는 중입니다"))
     }
 }

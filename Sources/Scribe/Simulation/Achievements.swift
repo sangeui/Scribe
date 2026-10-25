@@ -11,11 +11,11 @@ enum BadgeTier: Int, Comparable, Sendable {
     static func < (a: Self, b: Self) -> Bool { a.rawValue < b.rawValue }
 
     var name: String {
-        switch self {
+        L10n.tr({ switch self {
         case .bronze: "동"
         case .silver: "은"
         case .gold: "금"
-        }
+        } }())
     }
 
     var color: Color {
@@ -40,7 +40,7 @@ enum BadgeCategory: String, CaseIterable, Sendable {
     case writing, books, sales, bookstore, events, disasters, tokens, secret
 
     var title: String {
-        switch self {
+        L10n.tr({ switch self {
         case .writing: "집필"
         case .books: "탈고"
         case .sales: "판매"
@@ -49,7 +49,7 @@ enum BadgeCategory: String, CaseIterable, Sendable {
         case .disasters: "자연재해"
         case .tokens: "토큰"
         case .secret: "비밀"
-        }
+        } }())
     }
 }
 
@@ -259,7 +259,7 @@ enum Perk: Sendable, Equatable {
 
     @MainActor
     var text: String {
-        switch self {
+        L10n.tr({ switch self {
         case .characters(let r): "100만 토큰당 글자 \(Int((r * 100).rounded()))% 더"
         case .itemTokens(let m): "아이템에 드는 토큰 \(Int(((1 - m) * 100).rounded()))% 줄어듦"
         case .eventChance(let m): "돌발 상황 확률 \(Int(((1 - m) * 100).rounded()))% 줄어듦"
@@ -269,13 +269,13 @@ enum Perk: Sendable, Equatable {
         case .refusal(let d): "아이템 거절 확률 \(Int((d * 100).rounded()))%p 줄어듦"
         case .refusalWait(let m): "거절당한 뒤 기다리는 시간 \(Int(((1 - m) * 100).rounded()))% 줄어듦"
         case .disasterLoss(let m): "자연재해로 잃는 원고 \(Int(((1 - m) * 100).rounded()))% 줄어듦"
-        }
+        } }())
     }
 
     /// 진열대 칸에 들어가는 짧은 설명.
     @MainActor
     var shortText: String {
-        switch self {
+        L10n.tr({ switch self {
         case .characters(let r): "집필 속도 \(Int((r * 100).rounded()))% 증가"
         case .itemTokens(let m): "아이템 토큰 \(Int(((1 - m) * 100).rounded()))% 절감"
         case .eventChance(let m): "돌발 상황 \(Int(((1 - m) * 100).rounded()))% 감소"
@@ -285,7 +285,7 @@ enum Perk: Sendable, Equatable {
         case .refusal(let d): "거절 확률 \(Int((d * 100).rounded()))%p 감소"
         case .refusalWait(let m): "거절 대기 \(Int(((1 - m) * 100).rounded()))% 단축"
         case .disasterLoss(let m): "재해 손실 \(Int(((1 - m) * 100).rounded()))% 감소"
-        }
+        } }())
     }
 }
 
@@ -341,9 +341,9 @@ struct Perks: Sendable, Equatable {
 
 struct Achievement: Identifiable, Sendable {
     let id: String
-    let title: String
+    let rawTitle: String
     /// 달성 조건.
-    let detail: String
+    let rawDetail: String
     let tier: BadgeTier
     let category: BadgeCategory
     let icon: [String]
@@ -360,7 +360,41 @@ struct Achievement: Identifiable, Sendable {
     /// 매일 초기화된다. 날마다 다시 이룰 수 있고, 보상은 그때마다 1개, 효과는 그날만이다.
     var daily = false
     /// 달성하면 해금되는 후원자 칭호(사용자에게 부여되는 호칭).
-    var patronTitle: String? = nil
+    var rawPatronTitle: String? = nil
+
+    var title: String { L10n.tr(rawTitle) }
+    var detail: String { L10n.tr(rawDetail) }
+    var patronTitle: String? { rawPatronTitle.map { L10n.tr($0) } }
+
+    init(
+        id: String,
+        title: String,
+        detail: String,
+        tier: BadgeTier,
+        category: BadgeCategory,
+        icon: [String],
+        measure: @escaping @Sendable (AchievementFacts) -> (Double, Double),
+        countable: Bool = true,
+        chain: String? = nil,
+        portrait: String? = nil,
+        perk: Perk? = nil,
+        daily: Bool = false,
+        patronTitle: String? = nil
+    ) {
+        self.id = id
+        self.rawTitle = title
+        self.rawDetail = detail
+        self.tier = tier
+        self.category = category
+        self.icon = icon
+        self.measure = measure
+        self.countable = countable
+        self.chain = chain
+        self.portrait = portrait
+        self.perk = perk
+        self.daily = daily
+        self.rawPatronTitle = patronTitle
+    }
 
     var isSecret: Bool { category == .secret }
     /// 이루면 받는 아이템 수. 동 1, 은 2, 금 3. 매일 성과는 늘 1.
@@ -637,7 +671,8 @@ enum Achievements {
     @MainActor
     private static func authorBadges() -> [Achievement] {
         Library.authors.map { author in
-            let name = Library.books.first { $0.authorShort == author }?.displayAuthorShort ?? author
+            let koFull = Library.books.first { $0.authorShort == author }?.authorKo ?? author
+            let name = koFull.split(separator: " ").last.map(String.init) ?? koFull
             return Achievement(id: "author_\(author)", title: "\(name) 전집", detail: "\(name)의 작품을 한 회차 안에 모두 탈고하세요",
                                tier: .gold, category: .books, icon: PixelIcon.star,
                                measure: { flag($0.completedAuthors.contains(author)) }, countable: false, portrait: author,
@@ -659,22 +694,22 @@ enum Achievements {
 
     /// 미해금 비밀 성과에 마우스를 올렸을 때 보여 주는 은유적 단서.
     static func secretClue(for id: String) -> String {
-        switch id {
-        case "owl": return "모두가 잠든 깊은 새벽녘, 작업실에 뜻밖의 소란이 찾아올 때가 있습니다."
-        case "busy_day": return "유난히 바람 잘 날 없는 하루가 있습니다."
-        case "hoard": return "찬장에 따뜻한 차와 커피를 아껴 두고 내어주지 않으면..."
-        case "lucky": return "문호의 책상 위에 우연한 행운이 거듭 내려앉을 때."
-        case "caught": return "창을 갑자기 열어젖히면 딴청 피우던 작가와 눈이 마주치곤 합니다."
-        case "veteran": return "수많은 소동과 변덕을 겪고 나면 어떤 일에도 놀라지 않게 됩니다."
-        case "missed_3": return "출판사 편집자의 재촉 편지가 여러 번 빈손으로 돌아갈 때."
-        case "caffeine": return "하루 동안 찻잔이 쉴 새 없이 작업실을 오갈 때."
-        case "gambler": return "찾아온 손님 작가와의 내기에서 연거푸 웃는 날이 있습니다."
-        case "busted": return "찾아온 손님 작가와의 내기에서 연거푸 빈주머니가 될 때도 있습니다."
-        case "panned": return "평론가의 펜끝이 유난히 매섭고 박한 날이 있습니다."
-        case "quarrels_5": return "작업실을 찾은 두 문호의 언성이 거듭 높아질 때."
-        case "poked": return "바탕화면 상시 창의 작가를 자꾸만 건드려 보면..."
-        default: return "집필실을 지켜보다 보면 우연히 마주치게 됩니다."
-        }
+        L10n.tr({ switch id {
+        case "owl": "모두가 잠든 깊은 새벽녘, 작업실에 뜻밖의 소란이 찾아올 때가 있습니다."
+        case "busy_day": "유난히 바람 잘 날 없는 하루가 있습니다."
+        case "hoard": "찬장에 따뜻한 차와 커피를 아껴 두고 내어주지 않으면..."
+        case "lucky": "문호의 책상 위에 우연한 행운이 거듭 내려앉을 때."
+        case "caught": "창을 갑자기 열어젖히면 딴청 피우던 작가와 눈이 마주치곤 합니다."
+        case "veteran": "수많은 소동과 변덕을 겪고 나면 어떤 일에도 놀라지 않게 됩니다."
+        case "missed_3": "출판사 편집자의 재촉 편지가 여러 번 빈손으로 돌아갈 때."
+        case "caffeine": "하루 동안 찻잔이 쉴 새 없이 작업실을 오갈 때."
+        case "gambler": "찾아온 손님 작가와의 내기에서 연거푸 웃는 날이 있습니다."
+        case "busted": "찾아온 손님 작가와의 내기에서 연거푸 빈주머니가 될 때도 있습니다."
+        case "panned": "평론가의 펜끝이 유난히 매섭고 박한 날이 있습니다."
+        case "quarrels_5": "작업실을 찾은 두 문호의 언성이 거듭 높아질 때."
+        case "poked": "바탕화면 상시 창의 작가를 자꾸만 건드려 보면..."
+        default: "집필실을 지켜보다 보면 우연히 마주치게 됩니다."
+        } }())
     }
 
     /// 매일 초기화되는 성과.
@@ -969,7 +1004,7 @@ struct BadgeContent: View {
                                     }
                                 }
                             }
-                            Button(showsAllBadges ? "최근 10개만" : "모두 보기 \(unlocked.count)개") { showsAllBadges.toggle() }
+                            Button(L10n.tr(showsAllBadges ? "최근 10개만" : "모두 보기 \(unlocked.count)개")) { showsAllBadges.toggle() }
                                 .buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
                                 .padding(.top, 8)
                         }
@@ -1041,7 +1076,7 @@ struct BadgeContent: View {
                         .font(.caption2.monospacedDigit())
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Text(equipped.isEmpty ? "받은 뱃지를 눌러 최대 3개까지 장식하세요" : "진열한 뱃지는 분야별 효과를 발휘합니다")
+                    Text(L10n.tr(equipped.isEmpty ? "받은 뱃지를 눌러 최대 3개까지 장식하세요" : "진열한 뱃지는 분야별 효과를 발휘합니다"))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -1076,7 +1111,7 @@ struct BadgeContent: View {
                 Symbol(name: "seal.fill", size: 13, color: activePatron?.tier.color ?? BadgeTier.gold.color)
                 VStack(alignment: .leading, spacing: 1) {
                     Text("나의 후원 칭호").font(.caption2).foregroundStyle(.secondary)
-                    Text(activePatron?.patronTitle ?? "첫 성과를 달성하면 칭호가 열립니다")
+                    Text(activePatron?.patronTitle ?? L10n.tr("첫 성과를 달성하면 칭호가 열립니다"))
                         .font(.callout.weight(.semibold))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
@@ -1085,7 +1120,7 @@ struct BadgeContent: View {
                 if patronOptions.count > 1 {
                     Button { showsPatronPicker.toggle() } label: {
                         HStack(spacing: 4) {
-                            Text(showsPatronPicker ? "접기" : "칭호 변경 \(patronOptions.count)")
+                            Text(L10n.tr(showsPatronPicker ? "접기" : "칭호 변경 \(patronOptions.count)"))
                                 .font(.caption2.weight(.medium))
                             Symbol(name: "chevron.down", size: 8)
                                 .rotationEffect(.degrees(showsPatronPicker ? 180 : 0))
@@ -1254,7 +1289,7 @@ struct BadgeContent: View {
 
     private func section(_ title: String, @ViewBuilder body: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            Text(L10n.tr(title)).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             body()
         }
     }
@@ -1265,10 +1300,10 @@ struct BadgeContent: View {
         let fraction = p.target > 0 ? min(1, p.current / p.target) : 0
         let today = earnedToday(a)
         let count = progress.dailyCounts[a.id]
-        let subtitle = count.map { $0.streak > 1 ? "\($0.streak)일째" : "\($0.total)번" } ?? "\(Self.short(p.current))"
+        let subtitle = count.map { $0.streak > 1 ? L10n.tr("\($0.streak)일째") : L10n.tr("\($0.total)번") } ?? "\(Self.short(p.current))"
         var hintLines: [String] = [
             a.detail,
-            "오늘 \(Self.short(p.current)) / \(Self.short(p.target))" + (count.map { " · 지금까지 \($0.total)번" } ?? "")
+            L10n.tr("오늘 \(Self.short(p.current)) / \(Self.short(p.target))") + (count.map { " · " + L10n.tr("지금까지 \($0.total)번") } ?? "")
         ]
         if let perk = a.perk {
             hintLines.append("효과(그날만): \(perk.text)")

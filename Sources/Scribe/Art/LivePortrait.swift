@@ -124,7 +124,7 @@ struct FloatingPill: View {
         if let book = progress.book {
             let other = featured.flatMap { $0 == book.authorShort ? nil : $0 }
             let otherDisplay = other.map { code in Library.books.first { $0.authorShort == code }?.displayAuthorShort ?? code }
-            let authorLabel = otherDisplay.map { "\(book.displayAuthorShort) · 초상 \($0)" } ?? book.displayAuthorShort
+            let authorLabel = otherDisplay.map { L10n.tr("\(book.displayAuthorShort) · 초상 \($0)") } ?? book.displayAuthorShort
             let event = progress.event
             let ink = PillInk.resolve(scheme: scheme, tint: tintDate.map { DayPart.tint(at: $0) } ?? dayPart?.tint, weather: progress.weather.tint)
             HStack(spacing: 10) {
@@ -200,7 +200,11 @@ struct FloatingPill: View {
             .environment(\.colorScheme, ink.dark ? .dark : .light)
             // 때가 바뀌면 유리를 새로 만든다. 색조만 바꾸면 유리가 전 색을 그대로 들고 있었다.
             .id(tintDate.map { "\(DayPart.tintKey(at: $0))" } ?? dayPart?.rawValue ?? "")
-            .help("\(book.displayTitle) · \(book.displayAuthor)\n전체 \(Format.integer(book.characters))자 중 \(Format.integer(progress.charactersInBook))자 집필 · 오늘 \(Format.integer(Int(progress.todayCharacters)))자\n\(progress.weather.line) · \(Celestial.snapshot(at: tintDate ?? Date()).summaryLine)")
+            .help(
+                "\(book.displayTitle) · \(book.displayAuthor)\n"
+                + L10n.tr("전체 \(Format.integer(book.characters))자 중 \(Format.integer(progress.charactersInBook))자 집필 · 오늘 \(Format.integer(Int(progress.todayCharacters)))자")
+                + "\n\(progress.weather.line) · \(Celestial.snapshot(at: tintDate ?? Date()).summaryLine)"
+            )
         }
     }
 
@@ -216,30 +220,30 @@ struct FloatingPill: View {
     private func pillSummaryText(_ book: Book) -> String {
         let today = Int(progress.todayCharacters)
         if progress.charactersInBook == 0 {
-            return "백지 위에서 첫 문장을 고르고 있습니다"
+            return L10n.tr("백지 위에서 첫 문장을 고르고 있습니다")
         }
         if let guest = progress.guestAuthor {
             let guestName = Library.books.first { $0.authorShort == guest }?.displayAuthorShort ?? guest
             if today > 0 {
-                return Format.resolve("\(guestName)(와|과) 함께 오늘 \(Format.integer(today))자를 썼습니다")
+                return L10n.tr(Format.resolve("\(guestName)(와|과) 함께 오늘 \(Format.integer(today))자를 썼습니다"))
             }
-            return Format.resolve("\(guestName)(와|과) 나란히 앉아 원고를 이어 갑니다")
+            return L10n.tr(Format.resolve("\(guestName)(와|과) 나란히 앉아 원고를 이어 갑니다"))
         }
         if progress.luck?.id == Lucks.inspiration.id {
             if today > 0 {
-                return "영감이 떠올라 오늘 \(Format.integer(today))자를 썼습니다"
+                return L10n.tr("영감이 떠올라 오늘 \(Format.integer(today))자를 썼습니다")
             }
-            return "영감이 떠올라 붓끝이 두 배로 달립니다"
+            return L10n.tr("영감이 떠올라 붓끝이 두 배로 달립니다")
         }
         if today > 0 {
-            return "오늘 \(Format.integer(today))자를 써 내려갔습니다"
+            return L10n.tr("오늘 \(Format.integer(today))자를 써 내려갔습니다")
         }
-        return "지금까지 \(Format.integer(progress.charactersInBook))자를 써 내려갔습니다"
+        return L10n.tr("지금까지 \(Format.integer(progress.charactersInBook))자를 써 내려갔습니다")
     }
 
     private func useButton(_ cure: ItemKind, count: Int) -> some View {
         Button { onUse(cure) } label: {
-            Text(count > 0 ? "\(cure.shortTitle) ×\(count)" : "\(cure.shortTitle) 없음")
+            Text(count > 0 ? "\(cure.shortTitle) ×\(count)" : L10n.tr("\(cure.shortTitle) 없음"))
                 .font(.system(size: 9, weight: .semibold))
                 .padding(.horizontal, 7).padding(.vertical, 2)
                 .foregroundStyle(count > 0 ? Color(nsColor: .windowBackgroundColor) : .secondary)
@@ -287,7 +291,7 @@ struct PillBackground<S: Shape>: ViewModifier {
     }
 }
 
-/// 상시 창 모양. 설정에서 고른다.
+/// 상시 창 모양. 설정이나 상시 창의 호버 전환 버튼·더블클릭·우클릭 메뉴에서 고른다.
 enum FloatingStyle: String, CaseIterable {
     case pill, mini
 
@@ -297,18 +301,23 @@ enum FloatingStyle: String, CaseIterable {
         FloatingStyle(rawValue: UserDefaults.standard.string(forKey: key) ?? "") ?? .pill
     }
 
+    static func toggle() {
+        let next: FloatingStyle = (current == .pill) ? .mini : .pill
+        UserDefaults.standard.set(next.rawValue, forKey: key)
+    }
+
     var title: String {
-        switch self {
+        L10n.tr({ switch self {
         case .pill: "알약"
         case .mini: "미니"
-        }
+        } }())
     }
 
     var detail: String {
-        switch self {
+        L10n.tr({ switch self {
         case .pill: "초상화, 제목과 작가, 오늘의 집필 진도 한 줄"
         case .mini: "바탕 없이 초상화와 진행 고리만. 깃펜이 움직이면 쓰는 중"
-        }
+        } }())
     }
 
     var size: CGSize {
@@ -380,14 +389,6 @@ struct FloatingMini: View {
                     .position(x: Self.size.width / 2 + r * 0.72, y: Self.size.height / 2 - r * 0.72)
             }
             .help(helpText(book, event: event))
-            .contextMenu {
-                if let event {
-                    let count = progress.cureCount
-                    let item = progress.cureItem ?? event.cure
-                    Button(count > 0 ? "\(item.title) 권하기 (×\(count))" : "\(event.cure.role.title) 아이템 없음") { onUse(item) }
-                        .disabled(count == 0)
-                }
-            }
         }
     }
 
@@ -422,8 +423,8 @@ struct FloatingMini: View {
 
     private func helpText(_ book: Book, event: AuthorEvent?) -> String {
         var lines = ["\(book.displayTitle) · \(book.displayAuthor)",
-                     "전체 \(Format.integer(book.characters))자 중 \(Format.integer(progress.charactersInBook))자 집필 · 오늘 \(Format.integer(Int(progress.todayCharacters)))자"]
-        if let event { lines.append("멈춤: \(event.text)") }
+                     L10n.tr("전체 \(Format.integer(book.characters))자 중 \(Format.integer(progress.charactersInBook))자 집필 · 오늘 \(Format.integer(Int(progress.todayCharacters)))자")]
+        if let event { lines.append(L10n.tr("멈춤: \(event.text)")) }
         return lines.joined(separator: "\n")
     }
 }

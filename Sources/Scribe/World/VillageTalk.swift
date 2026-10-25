@@ -6,18 +6,35 @@ import Foundation
 /// 대화 상자 한 번. 이름, 쪽(한 쪽에 한두 줄), 마지막 쪽의 선택지.
 struct Dialogue: Equatable {
     struct Option: Equatable {
-        let label: String
+        let rawLabel: String
         let action: Action
+        var label: String { L10n.tr(rawLabel) }
+
+        init(label: String, action: Action) {
+            self.rawLabel = label
+            self.action = action
+        }
     }
     enum Action: Equatable { case close, recommend, invite }
 
-    let name: String
-    let pages: [String]
+    let rawName: String
+    let rawPages: [String]
     var options: [Option] = []
     var page = 0
     var selected = 0
 
-    var isLast: Bool { page >= pages.count - 1 }
+    var name: String { L10n.tr(rawName) }
+    var pages: [String] { rawPages.map(L10n.tr) }
+
+    init(name: String, pages: [String], options: [Option] = [], page: Int = 0, selected: Int = 0) {
+        self.rawName = name
+        self.rawPages = pages
+        self.options = options
+        self.page = page
+        self.selected = selected
+    }
+
+    var isLast: Bool { page >= rawPages.count - 1 }
 }
 
 /// 손님 유형. 걷는 버릇은 `wait`(다음 행동까지 밀리초)와 `walkChance`.
@@ -106,14 +123,14 @@ enum VillageTalk {
         case .friendly: lines.append("자네 책은 믿고 들여놓지. 매대 네 칸 쓰시게")
         case .regular: lines.append("우리 서점 간판 작가 아닌가. 뭐든 말만 하게")
         }
-        if let window { lines.append("진열창엔 \(window.displayTitle)(을|를) 걸어 두었습니다. 지나는 사람마다 봅니다") }
-        if let gone = soldOut.first { lines.append("\(gone.displayTitle)(은|는) 다 나갔습니다. 재판이 오면 바로 내놓지요") }
+        if let window { lines.append(L10n.tr("진열창엔 \(window.displayTitle)(을|를) 걸어 두었습니다. 지나는 사람마다 봅니다")) }
+        if let gone = soldOut.first { lines.append(L10n.tr("\(gone.displayTitle)(은|는) 다 나갔습니다. 재판이 오면 바로 내놓지요")) }
         if let title = progress.patronTitle {
-            lines.append("어서 오십시오, \(title) 어른. 작가님들 뒷바라지하시느라 늘 애쓰십니다")
+            lines.append(L10n.tr("어서 오십시오, \(title) 어른. 작가님들 뒷바라지하시느라 늘 애쓰십니다"))
         }
-        lines.append("오늘 \(Format.integer(progress.dailySales.last?.copies ?? 0))부 나갔습니다. 이번 주 \(Format.integer(progress.weekSales))부")
+        lines.append(L10n.tr("오늘 \(Format.integer(progress.dailySales.last?.copies ?? 0))부 나갔습니다. 이번 주 \(Format.integer(progress.weekSales))부"))
         if let latest = progress.shopLog.first { lines.append(latest.text) }
-        let line = lines[turn % lines.count]
+        let line = L10n.tr(lines[turn % lines.count])
         return Dialogue(name: "서점 주인", pages: split(line.resolvedParticles))
     }
 
@@ -122,28 +139,28 @@ enum VillageTalk {
         var pages: [String] = []
         if let order = progress.order, let book = Library.books.first(where: { $0.file == order.book }) {
             let days = max(0, Int(ceil(order.expiresAt.timeIntervalSince(now) / 86_400)))
-            pages.append("독자 편지: \(book.displayTitle)(을|를) 기다린답니다. \(days)일 안에 시작해야 합니다".resolvedParticles)
+            pages.append(L10n.tr("독자 편지: \(book.displayTitle)(을|를) 기다린답니다. \(days)일 안에 시작해야 합니다").resolvedParticles)
         }
         if let waiting = progress.awaitingPublisher, let book = Library.books.first(where: { $0.file == waiting.book }) {
-            pages.append("출판사들이 \(book.displayTitle) 원고를 두고 답을 기다립니다. 팝오버에서 고를 수 있습니다")
+            pages.append(L10n.tr("출판사들이 \(book.displayTitle) 원고를 두고 답을 기다립니다. 팝오버에서 고를 수 있습니다"))
         }
         if let statement = progress.statementCard {
-            pages.append("서점 정산서: 지난주 \(Format.integer(statement.sold))부. \"\(statement.keeperLine)\"")
+            pages.append(L10n.tr("서점 정산서: 지난주 \(Format.integer(statement.sold))부. \"\(statement.keeperLine)\""))
         }
         if let deadline = progress.deadline, deadline.met != true, deadline.failed != true {
-            pages.append("이번 주 마감: \(deadline.title). \(Format.integer(progress.deadlineProgress)) / \(Format.integer(deadline.target))")
+            pages.append(L10n.tr("이번 주 마감: \(deadline.title). \(Format.integer(progress.deadlineProgress)) / \(Format.integer(deadline.target))"))
         }
-        if pages.isEmpty { pages = ["우체통이 비어 있습니다"] }
+        if pages.isEmpty { pages = [L10n.tr("우체통이 비어 있습니다")] }
         return Dialogue(name: "우체통", pages: pages)
     }
 
     /// 팻말. 오늘·이번 주 판매와 품절.
     static func signpost(progress: WritingProgress, now: Date) -> Dialogue {
-        var pages = ["오늘 \(Format.integer(progress.dailySales.last?.copies ?? 0))부 · 이번 주 \(Format.integer(progress.weekSales))부 · 모두 \(Format.integer(progress.totalSales))부"]
+        var pages = [L10n.tr("오늘 \(Format.integer(progress.dailySales.last?.copies ?? 0))부 · 이번 주 \(Format.integer(progress.weekSales))부 · 모두 \(Format.integer(progress.totalSales))부")]
         for book in progress.books(in: .storage) {
             if let reprint = progress.reprint(for: book) {
                 let hours = max(1, Int((reprint.due.timeIntervalSince(now) / 3600).rounded(.up)))
-                pages.append("\(book.displayTitle) 품절. 재판 \(Format.integer(reprint.copies))부가 \(hours)시간 뒤에 들어옵니다")
+                pages.append(L10n.tr("\(book.displayTitle) 품절. 재판 \(Format.integer(reprint.copies))부가 \(hours)시간 뒤에 들어옵니다"))
             }
         }
         return Dialogue(name: "팻말", pages: pages)
@@ -152,24 +169,24 @@ enum VillageTalk {
     /// 창고 상자. 아이템.
     static func crates(progress: WritingProgress) -> Dialogue {
         let held = ItemKind.allCases.filter { progress.count($0) > 0 }
-        guard !held.isEmpty else { return Dialogue(name: "상자", pages: ["상자가 비어 있습니다. 토큰 \(Format.tokens(Balance.tokensPerItem))개마다 하나씩 들어옵니다"]) }
+        guard !held.isEmpty else { return Dialogue(name: "상자", pages: [L10n.tr("상자가 비어 있습니다. 토큰 \(Format.tokens(Balance.tokensPerItem))개마다 하나씩 들어옵니다")]) }
         let list = held.map { "\($0.shortTitle) \(progress.count($0))" }.joined(separator: " · ")
-        return Dialogue(name: "상자", pages: [list, "다음 아이템까지 \(Format.tokens(progress.tokensToNextItem))개. 창고 문으로 들어가면 쓸 수 있습니다"])
+        return Dialogue(name: "상자", pages: [list, L10n.tr("다음 아이템까지 \(Format.tokens(progress.tokensToNextItem))개. 창고 문으로 들어가면 쓸 수 있습니다")])
     }
 
     /// 작업실 앞 장작더미. 5시간 한도가 남은 몫과 새로 채워지는 때.
     static func woodpile(_ fuel: LimitRow, now: Date) -> Dialogue {
         let left = Int(min(100, max(0, 100 - fuel.percent)).rounded())
         let logs = VillageMap.logs(fuel)
-        let look = switch logs {
+        let look = L10n.tr({ switch logs {
         case 0: "장작이 다 떨어졌습니다. 난로가 식었습니다"
         case 1...2: "장작이 몇 개 안 남았습니다. 아껴 때야겠습니다"
         case 3...4: "장작이 절반쯤 남았습니다"
         default: "장작이 넉넉하게 쌓여 있습니다"
-        }
-        var pages = [look, "5시간 한도가 \(left)% 남았습니다"]
+        } }())
+        var pages = [look, L10n.tr("5시간 한도가 \(left)% 남았습니다")]
         if let reset = fuel.resetsAt, reset > now {
-            pages[1] += ". \(reset.formatted(date: .omitted, time: .shortened))에 새 장작이 들어옵니다"
+            pages[1] += L10n.tr(". \(reset.formatted(date: .omitted, time: .shortened))에 새 장작이 들어옵니다")
         }
         return Dialogue(name: "장작더미", pages: pages)
     }
@@ -182,25 +199,25 @@ enum VillageTalk {
         let review = progress.review(of: top)
         let gossip = Gossip.lines(progress: progress, now: now)
         let ordered = progress.order.flatMap { o in Library.books.first { $0.file == o.book } }
-        let weatherCustomers: String = switch progress.weather {
+        let weatherCustomers: String = L10n.tr({ switch progress.weather {
         case .rain, .storm: "줄어"
         case .snow: "안 와"
         case .heat: "낮엔 안 와"
         case .fog: "길을 잃어"
         default: "많아"
-        }
-        var text = line
+        } }())
+        var text = L10n.tr(line)
         let pairs: [(String, String)] = [
             ("{T}", top.displayTitle), ("{A}", top.displayAuthorShort),
-            ("{S}", review.map { "별 \($0.stars)개" } ?? "서평 전"),
+            ("{S}", review.map { L10n.tr("별 \($0.stars)개") } ?? L10n.tr("서평 전")),
             ("{N}", Format.integer(progress.dailySales.last?.copies ?? 0)),
             ("{Wn}", weatherCustomers), ("{W}", progress.weather.title),
-            ("{E}", progress.shopLog.first.map { $0.text + "." } ?? "요즘 조용하죠."),
-            ("{O}", ordered.map { "\($0.displayTitle) 나온다면서요?" } ?? "아직 소문이 없네요"),
-            ("{R}", gossip.first ?? "별 소문은 없습니다"),
-            ("{C}", review?.critic ?? "비평가"),
-            ("{F}", progress.books(in: .window).first?.displayTitle ?? "아무것도"),
-            ("{P}", progress.ads.keys.first.flatMap { f in Library.books.first { $0.file == f }?.displayTitle } ?? "광고도 없고"),
+            ("{E}", progress.shopLog.first.map { $0.text + "." } ?? L10n.tr("요즘 조용하죠.")),
+            ("{O}", ordered.map { L10n.tr("\($0.displayTitle) 나온다면서요?") } ?? L10n.tr("아직 소문이 없네요")),
+            ("{R}", gossip.first ?? L10n.tr("별 소문은 없습니다")),
+            ("{C}", review?.critic ?? L10n.tr("비평가")),
+            ("{F}", progress.books(in: .window).first?.displayTitle ?? L10n.tr("아무것도")),
+            ("{P}", progress.ads.keys.first.flatMap { f in Library.books.first { $0.file == f }?.displayTitle } ?? L10n.tr("광고도 없고")),
             ("{L}", progress.trustLevel.title),
         ]
         for (key, value) in pairs { text = text.replacingOccurrences(of: key, with: value) }

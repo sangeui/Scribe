@@ -10,16 +10,28 @@ struct ActiveBoost: Codable, Sendable, Equatable, Identifiable {
     let value: Double
     let endsAt: Date
     /// 어디서 왔는지(사건 이름이나 비평). 화면에 보여 준다.
-    let source: String
-    var id: String { "\(source)-\(endsAt.timeIntervalSince1970)" }
+    let rawSource: String
+    var source: String { L10n.tr(rawSource) }
+    var id: String { "\(rawSource)-\(endsAt.timeIntervalSince1970)" }
+
+    init(kind: Kind, value: Double, endsAt: Date, source: String) {
+        self.kind = kind
+        self.value = value
+        self.endsAt = endsAt
+        self.rawSource = source
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case kind, value, endsAt, rawSource = "source"
+    }
 
     var text: String {
-        switch kind {
+        L10n.tr({ switch kind {
         case .sales: "판매 \(Self.percent(value))"
         case .characters: "글자 \(Self.percent(value))"
         case .eventChance: "돌발 상황 \(Self.percent(value))"
         case .refusal: "거절 \(value >= 0 ? "+" : "")\(Int((value * 100).rounded()))%p"
-        }
+        } }())
     }
 
     private static func percent(_ multiplier: Double) -> String {
@@ -51,7 +63,7 @@ struct Boosts: Sendable, Equatable {
 
 /// 선택지 하나. 고르면 효과가 붙고 결과 문장 가운데 하나가 나온다.
 struct DilemmaOption: Sendable, Equatable {
-    let label: String
+    let rawLabel: String
     /// 결과 문장. 여럿이면 무작위.
     let outcomes: [String]
     /// 붙는 보정(종류, 값, 시간).
@@ -61,18 +73,44 @@ struct DilemmaOption: Sendable, Equatable {
     /// 바로 더하거나 빼는 글자(비율, 지금 책 기준).
     var characterRatio = 0.0
 
-    static func == (a: DilemmaOption, b: DilemmaOption) -> Bool { a.label == b.label }
+    var label: String { L10n.tr(rawLabel) }
+
+    init(
+        label: String,
+        outcomes: [String],
+        boosts: [(ActiveBoost.Kind, Double, TimeInterval)] = [],
+        items: Int = 0,
+        characterRatio: Double = 0.0
+    ) {
+        self.rawLabel = label
+        self.outcomes = outcomes
+        self.boosts = boosts
+        self.items = items
+        self.characterRatio = characterRatio
+    }
+
+    static func == (a: DilemmaOption, b: DilemmaOption) -> Bool { a.rawLabel == b.rawLabel }
 }
 
 /// 선택지가 있는 사건.
 struct Dilemma: Sendable, Equatable {
     let id: String
-    let title: String
+    let rawTitle: String
     /// 상황 설명. 여럿이면 무작위.
     let texts: [String]
     let options: [DilemmaOption]
     /// 답이 없으면 이 시간 뒤 작가가 알아서 고른다.
     var minutes = 120
+
+    var title: String { L10n.tr(rawTitle) }
+
+    init(id: String, title: String, texts: [String], options: [DilemmaOption], minutes: Int = 120) {
+        self.id = id
+        self.rawTitle = title
+        self.texts = texts
+        self.options = options
+        self.minutes = minutes
+    }
 
     static func == (a: Dilemma, b: Dilemma) -> Bool { a.id == b.id }
 }
@@ -80,21 +118,50 @@ struct Dilemma: Sendable, Equatable {
 /// 진행 중인 사건. 답하거나 시간이 지나면 사라진다.
 struct ActiveDilemma: Codable, Sendable, Equatable {
     let id: String
-    let text: String
+    let rawText: String
     let startedAt: Date
     let expiresAt: Date
     var notified: Bool?
+
+    var text: String { L10n.tr(rawText) }
+
+    init(id: String, text: String, startedAt: Date, expiresAt: Date, notified: Bool? = nil) {
+        self.id = id
+        self.rawText = text
+        self.startedAt = startedAt
+        self.expiresAt = expiresAt
+        self.notified = notified
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, rawText = "text", startedAt, expiresAt, notified
+    }
 }
 
 /// 답한 기록.
 struct DilemmaRecord: Codable, Sendable, Equatable, Identifiable {
     let dilemma: String
-    let option: String
-    let outcome: String
+    let rawOption: String
+    let rawOutcome: String
     let date: Date
     /// 시간이 지나 작가가 알아서 고른 것.
     var auto: Bool?
     var id: String { "\(dilemma)-\(date.timeIntervalSince1970)" }
+
+    var option: String { L10n.tr(rawOption) }
+    var outcome: String { L10n.tr(rawOutcome) }
+
+    init(dilemma: String, option: String, outcome: String, date: Date, auto: Bool? = nil) {
+        self.dilemma = dilemma
+        self.rawOption = option
+        self.rawOutcome = outcome
+        self.date = date
+        self.auto = auto
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case dilemma, rawOption = "option", rawOutcome = "outcome", date, auto
+    }
 }
 
 enum Dilemmas {

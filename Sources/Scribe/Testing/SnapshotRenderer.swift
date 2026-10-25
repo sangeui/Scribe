@@ -370,12 +370,13 @@ extension Dump {
         write(content, to: path)
     }
 
-    /// `Scribe --settings out.png`: 설정 네 탭을 나란히 그린다.
+    /// `Scribe --settings out.png`: 설정 다섯 탭을 나란히 그린다.
     static func renderSettings(to path: String) {
         let (entries, files, filesByProvider) = ClaudeLogParser.scanAllWithProviders(since: .distantPast)
         let store = UsageStore(persist: false)
         store.show(UsageAggregator.snapshot(entries: entries, scannedFiles: files, filesByProvider: filesByProvider, source: store.agentSource))
         let content = HStack(alignment: .top, spacing: 12) {
+            GeneralSettings(store: store).frame(width: 480, height: 620).hintHost()
             FloatingSettings(store: store).frame(width: 480, height: 620).hintHost()
             WritingSettings(store: store).frame(width: 480, height: 620).hintHost()
             NotificationSettings(store: store).frame(width: 480, height: 620).hintHost()
