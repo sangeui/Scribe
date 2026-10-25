@@ -108,6 +108,9 @@ enum VillageTalk {
         }
         if let window { lines.append("진열창엔 \(window.displayTitle)(을|를) 걸어 두었습니다. 지나는 사람마다 봅니다") }
         if let gone = soldOut.first { lines.append("\(gone.displayTitle)(은|는) 다 나갔습니다. 재판이 오면 바로 내놓지요") }
+        if let title = progress.patronTitle {
+            lines.append("어서 오십시오, \(title) 어른. 작가님들 뒷바라지하시느라 늘 애쓰십니다")
+        }
         lines.append("오늘 \(Format.integer(progress.dailySales.last?.copies ?? 0))부 나갔습니다. 이번 주 \(Format.integer(progress.weekSales))부")
         if let latest = progress.shopLog.first { lines.append(latest.text) }
         let line = lines[turn % lines.count]

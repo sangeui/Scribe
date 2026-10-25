@@ -1497,8 +1497,44 @@ final class WritingStore {
         state.badgesInitialized = true
     }
 
-    /// 받은 금 뱃지의 효과. 매일 성과는 오늘 이룬 것만.
-    private var perks: Perks { Perks(badges: state.badges) }
+    /// 받은 금 뱃지와 진열대 뱃지(최대 3칸)의 효과. 매일 성과는 오늘 이룬 것만.
+    private var perks: Perks { Perks(badges: state.badges, equipped: state.equippedBadges) }
+
+    /// 훈장 진열대(최대 3칸)에 받은 뱃지를 꽂거나 뺀다. 이미 3칸이 다 차 있으면 가장 먼저 꽂았던 것을 빼고 넣는다.
+    @discardableResult
+    func toggleBadge(_ id: String, now: Date = Date()) -> WritingProgress {
+        if let index = state.equippedBadges.firstIndex(of: id) {
+            state.equippedBadges.remove(at: index)
+            save(now: now)
+            return WritingProgress(state: state, now: now)
+        }
+        let current = WritingProgress(state: state, now: now)
+        guard let a = Achievements.byID(id), !a.daily else { return current }
+        guard state.badges[id] != nil || a.isMet(current.facts) else { return current }
+        state.equippedBadges.removeAll { $0 == id }
+        while state.equippedBadges.count >= Perks.maxEquipped {
+            state.equippedBadges.removeFirst()
+        }
+        state.equippedBadges.append(id)
+        save(now: now)
+        return WritingProgress(state: state, now: now)
+    }
+
+    /// 해금된 후원자 칭호를 고른다. `nil` 을 넘기면 가장 높은 등급의 해금 칭호를 자동으로 쓴다.
+    @discardableResult
+    func selectPatronTitle(_ id: String?, now: Date = Date()) -> WritingProgress {
+        guard let id else {
+            state.patronTitle = nil
+            save(now: now)
+            return WritingProgress(state: state, now: now)
+        }
+        let current = WritingProgress(state: state, now: now)
+        guard let a = Achievements.byID(id), !a.daily, a.patronTitle != nil,
+              state.badges[id] != nil || a.isMet(current.facts) else { return current }
+        state.patronTitle = id
+        save(now: now)
+        return WritingProgress(state: state, now: now)
+    }
 
     /// 가득 차지 않은 종류 가운데 하나를 비중대로 준다. 모두 가득이면 아무것도 주지 않는다.
     @discardableResult

@@ -187,6 +187,31 @@ extension Dump {
         perkStore.giveForTesting(.coffee)
         w = perkStore.use(.coffee, now: now)
         check(w.event == nil && w.count(.coffee) == 0, "금 효과: 거절 확률 20%, 난수 0.22 는 통함")
+        // 훈장 진열대(최대 3칸)와 후원자 칭호: 동·은·금 뱃지를 진열하면 slotPerk가 더해지고, 해금된 칭호를 고를 수 있다.
+        check(Achievements.all.filter { !$0.daily }.allSatisfy { ($0.patronTitle ?? "").count >= 2 },
+              "후원자 칭호: 모든 일반 성과(\(Achievements.all.filter { !$0.daily }.count)개)에 후원자 칭호가 부여됨")
+        w = perkStore.toggleBadge("first_line", now: now)
+        w = perkStore.toggleBadge("chars_10k", now: now)
+        w = perkStore.toggleBadge("chars_1m", now: now)
+        check(w.equippedBadges == ["first_line", "chars_10k", "chars_1m"] && abs(w.perks.characterBonus - 0.14) < 0.0001,
+              "훈장 진열대: 3칸 장식 시 기본 5% + 진열(2% + 2% + 5%) = 글자 보너스 \(Int((w.perks.characterBonus * 100).rounded()))%")
+        w = perkStore.toggleBadge("books_10", now: now)
+        check(w.equippedBadges == ["chars_10k", "chars_1m", "books_10"] && w.equippedBadges.count == Perks.maxEquipped,
+              "훈장 진열대: 4번째를 장식하면 가장 먼저 꽂은 것이 빠지고 3칸 유지 (\(w.equippedBadges))")
+        w = perkStore.toggleBadge("books_10", now: now)
+        check(w.equippedBadges == ["chars_10k", "chars_1m"], "훈장 진열대: 이미 꽂힌 뱃지를 다시 누르면 해제")
+        w = perkStore.toggleBadge("chars_5m", now: now)
+        check(w.equippedBadges == ["chars_10k", "chars_1m"], "훈장 진열대: 아직 못 받은 뱃지는 장식되지 않음")
+        check(w.patronTitle == Achievements.byID("chars_1m")?.patronTitle,
+              "후원자 칭호: 기본값은 해금된 가장 높은 등급 칭호 \"\(w.patronTitle ?? "-")\"")
+        w = perkStore.selectPatronTitle("first_line", now: now)
+        check(w.patronTitle == "첫 원고의 마중물" && w.selectedPatronID == "first_line",
+              "후원자 칭호: 직접 선택한 칭호 \"\(w.patronTitle ?? "-")\" 적용")
+        w = perkStore.selectPatronTitle("chars_5m", now: now)
+        check(w.patronTitle == "첫 원고의 마중물", "후원자 칭호: 미달성 칭호는 선택 불가")
+        let reloadedPerk = WritingStore(url: perkURL).progress
+        check(reloadedPerk.equippedBadges == ["chars_10k", "chars_1m"] && reloadedPerk.patronTitle == "첫 원고의 마중물",
+              "훈장 진열대·후원자 칭호: 파일 저장 및 재로드 일치")
         let quietState = WritingStore(url: dir.appendingPathComponent("badges-old.json"))
         quietState.eventChance = 0
         quietState.disasterChance = 0
@@ -795,7 +820,7 @@ extension Dump {
         shopStore.badgeRewards = false
         shopStore.eventChance = 0; shopStore.disasterChance = 0; shopStore.luckChance = 0; shopStore.dilemmaChance = 0
         shopStore.random = { 0.5 }
-        let open = Calendar.current.date(bySettingHour: 10, minute: 0, second: 0, of: now)!
+        let open = WritingStore.weekStart(of: now).addingTimeInterval(86_400 + 10 * 3600)
         _ = shopStore.apply(days: days(1), now: open)
         w = shopStore.apply(days: days(1 + firstBook.characters * 1_000 + 1_000), now: open)
         check(w.finished.count == 1 && w.stock(of: firstBook) == Balance.sampleRun && w.slot(of: firstBook) == .window && w.trustLevel == .usual,

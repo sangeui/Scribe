@@ -201,6 +201,10 @@ struct WritingState: Codable, Sendable {
     var badges: [String: BadgeRecord] = [:]
     /// 성과를 한 번이라도 셌는지. 처음 셀 때 이미 이룬 것은 알리지 않는다.
     var badgesInitialized = false
+    /// 훈장 진열대(최대 3칸)에 장식한 뱃지(`Achievement.id`).
+    var equippedBadges: [String] = []
+    /// 사용자가 직접 고른 후원자 칭호의 성과 ID(`Achievement.id`). nil 이면 해금된 가장 높은 등급 칭호를 자동으로 쓴다.
+    var patronTitle: String?
     /// 가장 최근의 돌아옴·치료·거절 한 줄.
     var note: EventNote?
     /// 회차마다 쓰는 순서(책 번호). 비어 있으면 서재 순서.
@@ -261,7 +265,7 @@ struct WritingState: Codable, Sendable {
     init() {}
 
     private enum CodingKeys: String, CodingKey {
-        case days, items, tokensTowardItem, tokensTowardEventRoll, event, eventLog, badges, badgesInitialized, note
+        case days, items, tokensTowardItem, tokensTowardEventRoll, event, eventLog, badges, badgesInitialized, equippedBadges, patronTitle, note
         case orders, finishNotes, weekly, luck, counters, sales, salesByDay, salesNews, boosts, dilemma, dilemmaLog, reviews
         case inspiration, inspirationNotified, deadline, studio, bet
         case featuredBook, featuredAt, ads, order, orderBonus, shopBoosts, shopLog, sheets, shop
@@ -287,6 +291,8 @@ struct WritingState: Codable, Sendable {
             badges = [:]
             badgesInitialized = false
         }
+        equippedBadges = Array(((try? c.decodeIfPresent([String].self, forKey: .equippedBadges)) ?? []).prefix(Perks.maxEquipped))
+        patronTitle = try? c.decodeIfPresent(String.self, forKey: .patronTitle)
         note = try? c.decodeIfPresent(EventNote.self, forKey: .note)
         orders = (try? c.decodeIfPresent([[Int]].self, forKey: .orders)) ?? []
         finishNotes = ((try? c.decodeIfPresent([Lossy<FinishNote>].self, forKey: .finishNotes)) ?? []).compactMap(\.value)
@@ -385,7 +391,14 @@ struct WritingProgress {
     let badges: [String: Date]
     /// 성과 보상으로 받은 아이템 이름("커피 1, 종 2").
     let badgeRewards: [String: String]
-    /// 받은 금 뱃지의 효과.
+    /// 훈장 진열대(최대 3칸)에 장식한 뱃지(`Achievement.id`).
+    let equippedBadges: [String]
+    /// 사용자가 직접 고른 후원자 칭호 ID(`Achievement.id`).
+    let selectedPatronID: String?
+    /// 현재 적용 중인 후원자 칭호의 성과와 칭호 문자열.
+    let patronAchievement: Achievement?
+    var patronTitle: String? { patronAchievement?.patronTitle }
+    /// 받은 금 뱃지와 진열대 뱃지의 효과 합계.
     let perks: Perks
     /// 매일 성과를 이룬 날수와 연속 일수.
     let dailyCounts: [String: (total: Int, streak: Int)]
@@ -610,7 +623,28 @@ struct WritingProgress {
         statPerks = currentPerks
         tokensToNextStat = max(0, Balance.statTokens - currentSheet.tokensTowardStat)
         tired = currentSheet.stamina < currentPerks.staminaMax * Balance.staminaTiredBelow
-        tokensToNextItem = max(0, Int(Double(Balance.tokensPerItem) * Perks(badges: state.badges, now: now).itemTokens * currentPerks.itemTokens) - state.tokensTowardItem)
+        let computedFacts = AchievementFacts(state: state, finished: finished, now: now)
+        facts = computedFacts
+        var seenEquipped: Set<String> = []
+        let validEquipped = Array(state.equippedBadges.filter { id in
+            guard seenEquipped.insert(id).inserted, let a = Achievements.byID(id) else { return false }
+            if a.daily {
+                return (state.badges[id].map { calendar.isDate($0.date, inSameDayAs: now) } ?? false) || a.isMet(computedFacts)
+            }
+            return state.badges[id] != nil || a.isMet(computedFacts)
+        }.prefix(Perks.maxEquipped))
+        equippedBadges = validEquipped
+        selectedPatronID = state.patronTitle
+        let earnedBadge: (Achievement) -> Bool = { a in
+            !a.daily && (state.badges[a.id] != nil || a.isMet(computedFacts))
+        }
+        if let id = state.patronTitle, let picked = Achievements.byID(id), picked.patronTitle != nil, earnedBadge(picked) {
+            patronAchievement = picked
+        } else {
+            patronAchievement = Achievements.unlockedPatronAchievements(earned: earnedBadge).first
+        }
+        let activePerks = Perks(badges: state.badges, equipped: validEquipped, now: now)
+        tokensToNextItem = max(0, Int(Double(Balance.tokensPerItem) * activePerks.itemTokens * currentPerks.itemTokens) - state.tokensTowardItem)
         recentEvents = state.eventLog.reversed()
         badges = state.badges.mapValues(\.date)
         badgeRewards = state.badges.compactMapValues { record in
@@ -619,7 +653,7 @@ struct WritingProgress {
             for raw in reward { if let kind = ItemKind(rawValue: raw) { counts[kind, default: 0] += 1 } }
             return ItemKind.allCases.compactMap { kind in counts[kind].map { n in "\(kind.shortTitle) \(n)" } }.joined(separator: ", ")
         }
-        perks = Perks(badges: state.badges, now: now)
+        perks = activePerks
         dailyCounts = state.badges.compactMapValues { record in record.count.map { (total: $0, streak: record.streak ?? 1) } }
         note = state.note
         luck = state.luck.flatMap { $0.endsAt > now ? $0 : nil }
@@ -700,6 +734,5 @@ struct WritingProgress {
             if (0..<5).contains(Calendar.current.component(.hour, from: now)) { return .tired }
             return .neutral
         }()
-        facts = AchievementFacts(state: state, finished: finished, now: now)
     }
 }

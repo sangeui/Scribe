@@ -230,6 +230,10 @@ enum SalonTalk {
         }
         pool.append(Chatter.line(author: author, progress: progress, mood: mood, now: now, pokes: 1,
                                  rolls: (Double((turn * 3) % 10) / 10, Double((turn * 7) % 10) / 10)))
+        if let title = progress.patronTitle {
+            pool.append("오, \(title)께서 직접 살롱까지 걸음하셨구려. 늘 원고지와 차를 대 주시니 고맙소")
+            pool.append("우리끼리도 방금 \(title) 이야기를 하던 참이었소. 자리가 비었으니 앉으시오")
+        }
         pool.append(contentsOf: [
             "여기 커피는 늘 식어 있소. 그래도 오지",
             "벽난로 자리는 내가 먼저 앉았소",

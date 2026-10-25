@@ -317,6 +317,9 @@ struct WritingView: View {
             }
             progressBar(book)
             manuscriptStrip(book, event: event)
+            if progress.patronTitle != nil || !progress.equippedBadges.isEmpty {
+                patronStrip
+            }
         }
         .padding(10)
         // 작가 색이 머리에 옅게 깔린다. 작가가 바뀌면 색도 천천히 바뀐다.
@@ -380,6 +383,42 @@ struct WritingView: View {
                     in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Color.primary.opacity(scheme == .dark ? 0.08 : 0.06), lineWidth: 1))
         .opacity(event == nil ? 1 : 0.55)
+    }
+
+    /// 후원자 칭호와 훈장 진열대(최대 3칸)에 장식한 미니 뱃지를 한 줄로 보여 준다. 누르면 성과 화면을 연다.
+    private var patronStrip: some View {
+        let equipped = progress.equippedBadges.compactMap { Achievements.byID($0) }
+        let patron = progress.patronAchievement
+        return Button(action: onBadges) {
+            HStack(spacing: 6) {
+                Symbol(name: "seal.fill", size: 10, color: patron?.tier.color ?? BadgeTier.gold.color)
+                Text("후원자 · \(patron?.patronTitle ?? "익명의 후원인")")
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                Spacer(minLength: 4)
+                if equipped.isEmpty {
+                    Text("훈장 진열대")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.tertiary)
+                } else {
+                    HStack(spacing: 4) {
+                        ForEach(equipped) { a in
+                            BadgeMedal(achievement: a, unlocked: true, size: 16)
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 4).padding(.vertical, 1)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .hint("후원자 칭호 · \(patron?.patronTitle ?? "익명의 후원인")",
+              (patron.map { ["\"\($0.patronTitle ?? "")\" (\($0.title) 달성)"] } ?? [])
+              + (equipped.isEmpty
+                 ? ["성과 화면에서 받은 뱃지를 최대 3개까지 훈장 진열대에 장식해 추가 효과를 얻을 수 있습니다."]
+                 : equipped.map { "진열: \($0.title) (\($0.slotPerk.shortText))" }),
+              symbol: "seal")
     }
 
     /// 가방·성과·서재로 가는 버튼 셋. 숫자는 하나씩만(아이템 수, 받은 뱃지, 이번 회차 탈고).

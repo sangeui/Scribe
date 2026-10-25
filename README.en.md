@@ -153,10 +153,10 @@ Inspect today's token total, API cost equivalent, cache hit rate, Inspiration Ga
 <td width="48%" align="center"><img src="assets/screenshot-usage.png" width="340" alt="Token usage dashboard — today's tokens, cache efficiency, hourly & daily charts"></td>
 </tr>
 <tr>
-<td width="48%" align="center"><img src="assets/screenshot-badges.png" width="340" alt="Achievements panel — badges and secret achievements"></td>
+<td width="48%" align="center"><img src="assets/screenshot-badges.png" width="340" alt="Achievements panel — Patron titles, badge showcase, and secret achievements"></td>
 <td width="52%" valign="middle">
-<h3>Achievements & Author Stats</h3>
-Earn Bronze, Silver, and Gold daily medals, milestone badges across categories, and <b>hidden secret achievements</b>. Every badge awards stat points across <b>Penmanship · Grit · Charm · Sense · Luck</b>.
+<h3>Patron Titles &amp; Badge Showcase</h3>
+Earn Bronze, Silver, and Gold daily medals, milestone badges across categories, and <b>hidden secret achievements</b>. Unlocking achievements grants <b>Patron Titles</b> that authors and shopkeepers address you by in the Salon and Village, and lets you equip badges into the <b>Badge Showcase</b> to customize active bonuses across writing speed, item costs, event duration, and refusal chances.
 </td>
 </tr>
 <tr>

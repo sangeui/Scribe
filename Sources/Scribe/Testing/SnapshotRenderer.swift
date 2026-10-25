@@ -444,6 +444,7 @@ extension Dump {
             EventRecord(event: "away", book: book0.file, startedAt: now.addingTimeInterval(-50 * 60),
                         endedAt: now.addingTimeInterval(-12 * 60), endedBy: "bell", pausedTokens: 1_200_000),
         ]
+        state.equippedBadges = ["chars_100k", "first_book", "five_stars"]
 
         let progress = WritingProgress(state: state)
 

@@ -600,6 +600,16 @@ final class UsageStore {
         notifyIfNeeded()
     }
 
+    /// 훈장 진열대(최대 3칸)에 뱃지를 장식하거나 내린다.
+    func toggleBadge(_ id: String) {
+        writing = writingStore.toggleBadge(id)
+    }
+
+    /// 후원자 칭호를 바꾼다.
+    func selectPatronTitle(_ id: String?) {
+        writing = writingStore.selectPatronTitle(id)
+    }
+
     /// 데스크톱 상시 표시 창.
     var isFloatingVisible: Bool {
         get { floatingVisible }

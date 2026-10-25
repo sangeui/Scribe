@@ -153,10 +153,10 @@ Cask가 설치 시 macOS Gatekeeper 격리 속성(`com.apple.quarantine`)을 자
 <td width="48%" align="center"><img src="assets/screenshot-usage.png" width="340" alt="토큰 사용량 대시보드 — 오늘 토큰, 캐시 효율, 시간대별·일별 차트"></td>
 </tr>
 <tr>
-<td width="48%" align="center"><img src="assets/screenshot-badges.png" width="340" alt="성과 패널 — 업적 배지와 비밀 성과"></td>
+<td width="48%" align="center"><img src="assets/screenshot-badges.png" width="340" alt="성과 패널 — 후원자 칭호, 훈장 진열대, 업적 배지"></td>
 <td width="52%" valign="middle">
-<h3>성과 배지와 작가 능력치</h3>
-일일 토큰 목표(동·은·금 메달), 탈고, 누적 판매 부수, 서점 운영, 돌발 상황 대처, 자연재해 극복, 그리고 조건이 숨겨진 <b>비밀 성과</b>까지 다양한 업적 배지가 준비되어 있습니다. 성과를 달성할 때마다 <b>필력 · 끈기 · 매력 · 감각 · 운</b> 능력치가 올라갑니다.
+<h3>후원자 칭호와 훈장 진열대</h3>
+일일 토큰 목표(동·은·금 메달), 집필·탈고·판매·서점·돌발 상황·자연재해·비밀 성과까지 다양한 업적 배지가 준비되어 있습니다. 성과를 달성하면 문호들을 후원하는 사용자를 기리는 <b>후원자 칭호</b>가 해금되어 살롱과 마을에서 그 칭호로 불리며, 받은 뱃지를 <b>훈장 진열대</b>에 장식해 집필 속도·아이템 토큰·돌발 상황 단축·거절 확률 감소 등 분야별 진열 효과를 직접 조합할 수 있습니다.
 </td>
 </tr>
 <tr>
