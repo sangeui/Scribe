@@ -111,7 +111,7 @@ brew install --cask sangeui/tap/scribe
 </table>
 
 <div align="center">
-<img src="assets/hours.png" width="720" alt="시간대별 상시 창 색조 변화"><br>
+<img src="assets/hours.png" width="560" alt="시간대별 상시 창 색조 변화"><br>
 <sub><b>시간과 계절의 빛</b> — 계절별 일출·일몰 시각, 실시간 태양·달 궤적과 위상, 날씨에 따라 변하는 상시 창</sub>
 </div>
 

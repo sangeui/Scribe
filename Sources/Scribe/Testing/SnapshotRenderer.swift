@@ -311,28 +311,31 @@ extension Dump {
         write(content, to: path)
     }
 
-    /// `Scribe --hours out.png`: 상시 창 알약을 시각별로 한 줄씩. 바탕 색조가 하루 동안 어떻게 바뀌는지 본다.
+    /// `Scribe --hours out.png`: 상시 창 알약을 주요 시간대별 2열 3행 격자로 그려 하루 동안 바탕 색조와 해·달 궤적이 어떻게 바뀌는지 한눈에 보여 준다.
     static func renderHours(to path: String) {
         var state = WritingState()
         let today = Calendar.current.startOfDay(for: Date())
         state.days[DayKey.string(from: today)] = WritingRecord(tokens: 1, characters: 12_380)
         let progress = WritingProgress(state: state)
-        let hours: [Double] = [0, 3, 5, 5.5, 6.5, 7.5, 8.5, 10, 12, 14, 16, 17, 17.5, 18.5, 19.5, 21, 22.5]
-        let month = Calendar.current.component(.month, from: Date())
+        let pairs: [(Double, Double)] = [(5.5, 8.0), (12.5, 17.5), (19.5, 23.0)]
         let content = VStack(alignment: .leading, spacing: 10) {
-            ForEach(hours, id: \.self) { hour in
-                let date = today.addingTimeInterval(hour * 3600)
-                HStack(spacing: 12) {
-                    Text(String(format: "%02d:%02d", Int(hour), Int((hour - floor(hour)) * 60)))
-                        .font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary).frame(width: 44, alignment: .trailing)
-                    FloatingPill(progress: progress, animated: false, dayPart: DayPart.current(date), tintDate: date)
-                    FloatingMini(progress: progress, animated: false, dayPart: DayPart.current(date), tintDate: date)
+            ForEach(Array(pairs.enumerated()), id: \.offset) { _, pair in
+                HStack(spacing: 18) {
+                    ForEach([pair.0, pair.1], id: \.self) { hour in
+                        let date = today.addingTimeInterval(hour * 3600)
+                        HStack(spacing: 8) {
+                            Text(String(format: "%02d:%02d", Int(hour), Int((hour - floor(hour)) * 60)))
+                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 38, alignment: .trailing)
+                            FloatingPill(progress: progress, animated: false, dayPart: DayPart.current(date), tintDate: date)
+                        }
+                    }
                 }
             }
-            Text("\(month)월 기준. 해 뜨는 때와 지는 때는 달마다 한 시간쯤 움직입니다.").font(.caption2).foregroundStyle(.secondary)
         }
-        .padding(24)
-        .background(LinearGradient(colors: [Color(red: 0.78, green: 0.84, blue: 0.93), Color(red: 0.93, green: 0.86, blue: 0.82)], startPoint: .topLeading, endPoint: .bottomTrailing))
+        .padding(20)
+        .background(LinearGradient(colors: [Color(red: 0.78, green: 0.84, blue: 0.93), Color(red: 0.93, green: 0.86, blue: 0.82)], startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         write(content, to: path)
     }
 

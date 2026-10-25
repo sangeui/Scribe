@@ -111,7 +111,7 @@ brew install --cask sangeui/tap/scribe
 </table>
 
 <div align="center">
-<img src="assets/hours.png" width="720" alt="Hourly tint progression of the floating window"><br>
+<img src="assets/hours.png" width="560" alt="Hourly tint progression of the floating window"><br>
 <sub><b>Tinted by Sunrise & Sunset</b> — Shifts smoothly through dawn, midday, dusk, and night palettes with live sun/moon trajectories and weather</sub>
 </div>
 
