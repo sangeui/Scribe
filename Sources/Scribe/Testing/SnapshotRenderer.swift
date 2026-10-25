@@ -409,6 +409,7 @@ extension Dump {
         state.studio = ["lamp", "shelf", "cat"]
         state.deadline = Deadline(weekStart: WritingStore.weekStart(of: now), kind: .characters, target: 50_000)
         state.inspiration = Int(Double(Balance.inspirationGaugeTokens) * 0.68)
+        state.boosts = [ActiveBoost(kind: .sales, value: 1.5, endsAt: now.addingTimeInterval(5 * 3600), source: "신문 소개")]
 
         var sheet = AuthorSheet()
         sheet.stats = ["pen": 3, "grit": 1, "charm": 2, "luck": 1]
@@ -475,7 +476,12 @@ extension Dump {
             days: days,
             todayByModel: models,
             todayByHour: hours,
+            twoWeekByHour: hours.map { $0 * 9 },
             recentFiveHourTokens: 16_300_000,
+            todayTurns: 92,
+            todayPeakTurnTokens: 640_000,
+            todayCacheSavedCost: 24.80,
+            twoWeekCacheSavedCost: 268.40,
             todayByProvider: [.antigravity: 28_400_000, .claude: 14_200_000],
             todayCostByProvider: [.antigravity: 18.46, .claude: 9.80],
             filesByProvider: [.antigravity: 18, .claude: 12],
