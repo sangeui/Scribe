@@ -225,6 +225,7 @@ extension Dump {
         let enCostMid = Format.cost(12.34)
         let enCostBig = Format.cost(120.4)
         let enTabs = SettingsTab.allCases.map(\.title)
+        let enStock840 = L10n.tr("재고 840부")
         L10n.overrideLanguage = nil
         ExchangeRate.overrideRate = nil
         let koTabs = SettingsTab.allCases.map(\.title)
@@ -236,7 +237,17 @@ extension Dump {
               && enCostZero == "$0.00"
               && enCostSmall == "$0.45"
               && enCostMid == "$12.34"
-              && enCostBig == "$120",
+              && enCostBig == "$120"
+              && enStock840 == "Stock 840"
+              && ShopSlot.window.sales == Balance.windowSales
+              && ShopSlot.counter.sales == 1.0
+              && ShopSlot.shelf.sales == Balance.shelfSales
+              && PixelBookStack.layers(for: 0) == 0
+              && PixelBookStack.layers(for: 15) == 1
+              && PixelBookStack.layers(for: 100) == 2
+              && PixelBookStack.layers(for: 250) == 3
+              && PixelBookStack.layers(for: 600) == 4
+              && PixelBookStack.layers(for: 1_200) == 5,
               "화폐 단위 국제화: 한국어(\(koCostZero), \(koCost450), \(koCost14k), \(koCost142k), \(koCost140m)) vs 영어(\(enCostZero), \(enCostSmall), \(enCostMid), \(enCostBig))")
 
         let frankfurterJSON = Data(#"{"amount":1.0,"base":"USD","date":"2026-10-23","rates":{"KRW":1388.45}}"#.utf8)

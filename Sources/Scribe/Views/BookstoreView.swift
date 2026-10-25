@@ -31,12 +31,12 @@ struct BookstoreContent: View {
 
     enum Drawer { case reviews, news, gossip, statements }
 
-    @State private var picked: Int?
+    @State var picked: Int?
     @State private var drawer: Drawer?
     @State private var lastDrawer: Drawer = .reviews
     @State var showsAllReviews = false
     @State private var statementExpanded = false
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.colorScheme) var scheme
 
     /// 살아 있는 것 하나. 칩 한 줄로 보이고, 누른 것만 아래에 펼친다.
     enum LiveItem: Hashable {
@@ -95,12 +95,12 @@ struct BookstoreContent: View {
         }
     }
 
-    private var ranked: [Int] {
+    var ranked: [Int] {
         let done = Set(progress.finished.map(\.bookIndex))
         return done.sorted { progress.sales(of: Library.books[$0]) > progress.sales(of: Library.books[$1]) }
     }
 
-    private var shownBook: Book? {
+    var shownBook: Book? {
         let shown = picked.flatMap { ranked.contains($0) ? $0 : nil } ?? ranked.first
         return shown.map { Library.books[$0] }
     }
@@ -338,66 +338,6 @@ struct BookstoreContent: View {
         }
         .padding(12)
         .background((good ? ChartPalette.good : ChartPalette.warning).opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-    }
-
-    // MARK: 매대(원고 자리)
-
-    /// 자리별로 작은 칩에 담는다. 진열창, 매대, 서가, 창고(품절). 누르면 아래 꼬리표가 그 책으로 바뀐다.
-    private var stand: some View {
-        Group {
-            if ranked.isEmpty {
-                Text("탈고한 책이 여기 놓입니다. 첫 책을 끝내면 서점이 문을 엽니다.")
-                    .font(.caption).foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 4)
-            } else {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(ShopSlot.allCases, id: \.self) { slot in
-                        let books = progress.books(in: slot)
-                        if !books.isEmpty || slot == .counter || (slot == .window && progress.trustLevel.hasWindow) {
-                            HStack(alignment: .top, spacing: 8) {
-                                slotLabel(slot, count: books.count)
-                                FlowLayout(spacing: 6) {
-                                    Group {
-                                        ForEach(books, id: \.file) { book in chip(book) }
-                                        if books.isEmpty {
-                                            Text(slot == .window ? L10n.tr("비어 있음") : L10n.tr("빈 칸")).font(.caption2).foregroundStyle(.tertiary).padding(.vertical, 5)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private func slotLabel(_ slot: ShopSlot, count: Int) -> some View {
-        let slots = progress.trustLevel.counterSlots
-        let text = slot == .counter ? L10n.tr("매대 \(count)/\(slots)") : slot.title
-        let hint: [String] = switch slot {
-        case .window: ["진열창에 걸린 책은 \(Int((Balance.windowSales - 1) * 100))% 더 팔립니다. 신뢰가 '안면' 이상이어야 쓸 수 있고 하루에 한 번 바꿉니다."]
-        case .counter: ["매대 책은 제값에 팔립니다. 칸 수는 주인의 신뢰에 달렸습니다(\(slots)칸). 비면 주인이 잘 팔릴 책으로 채우고, 아침마다 다시 정리합니다."]
-        case .shelf: ["서가 책은 \(Int(Balance.shelfSales * 100))%만 팔립니다. 직접 내린 책은 이레 동안 주인이 다시 올리지 않습니다."]
-        case .storage: ["재고가 떨어진 책. 재판이 들어오면 다시 자리를 잡습니다."]
-        }
-        return HStack(spacing: 3) {
-            Symbol(name: slot.symbol, size: 9)
-            Text(text).font(.caption2).foregroundStyle(.secondary)
-        }
-        .frame(width: 58, alignment: .leading)
-        .padding(.vertical, 5)
-        .hint(slot.title, hint, symbol: slot.symbol)
-    }
-
-    private func chip(_ book: Book) -> some View {
-        let index = Library.books.firstIndex { $0.file == book.file } ?? 0
-        let slot = progress.slot(of: book)
-        return BookChip(book: book, tier: progress.salesTier(of: book), selected: shownBook?.file == book.file,
-                        featured: progress.featuredBook == book.file, advertised: progress.adEnds(for: book) != nil,
-                        sales: progress.sales(of: book), soldOut: slot == .storage, pinned: progress.isPinned(book))
-            .onTapGesture { picked = index }
     }
 
     // MARK: 한 줄 둘
