@@ -1009,62 +1009,7 @@ struct BadgeContent: View {
         let activePatron = progress.patronAchievement ?? patronOptions.first
         let equipped = progress.equippedBadges.compactMap { Achievements.byID($0) }
         return VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 8) {
-                    Symbol(name: "seal.fill", size: 13, color: activePatron?.tier.color ?? BadgeTier.gold.color)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("후원자 칭호").font(.caption2).foregroundStyle(.secondary)
-                        Text(activePatron?.patronTitle ?? "첫 성과를 달성하면 칭호가 열립니다")
-                            .font(.callout.weight(.semibold))
-                            .foregroundStyle(.primary)
-                            .lineLimit(1)
-                    }
-                    Spacer(minLength: 6)
-                    if patronOptions.count > 1 {
-                        Button { showsPatronPicker.toggle() } label: {
-                            HStack(spacing: 4) {
-                                Text(showsPatronPicker ? "접기" : "칭호 변경 \(patronOptions.count)")
-                                    .font(.caption2.weight(.medium))
-                                Symbol(name: "chevron.down", size: 8)
-                                    .rotationEffect(.degrees(showsPatronPicker ? 180 : 0))
-                            }
-                            .padding(.horizontal, 8).padding(.vertical, 4)
-                            .background(Color.secondary.opacity(0.12), in: Capsule())
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .hint("후원자 칭호",
-                      activePatron.map { ["\"\($0.patronTitle ?? "")\" (\($0.title) 달성 보상)", "집필 화면과 문학 살롱, 마을에서 작가와 주민들이 후원자님을 이 칭호로 기억합니다."] }
-                      ?? ["성과를 달성하면 문호들을 후원하는 사용자 전용 칭호가 해금됩니다."],
-                      symbol: "seal")
-                if patronOptions.count > 1 {
-                    Collapsible(progress: showsPatronPicker ? 1 : 0, topSpacing: 10) {
-                        FlowLayout(spacing: 6) {
-                            ForEach(patronOptions) { a in
-                                if let title = a.patronTitle {
-                                    let isSelected = activePatron?.id == a.id
-                                    Button {
-                                        onSelectPatron(a.id)
-                                    } label: {
-                                        HStack(spacing: 5) {
-                                            Circle().fill(a.tier.color).frame(width: 6, height: 6)
-                                            Text(title)
-                                                .font(.caption2.weight(isSelected ? .semibold : .regular))
-                                        }
-                                        .padding(.horizontal, 9).padding(.vertical, 5)
-                                        .foregroundStyle(isSelected ? .primary : .secondary)
-                                        .background(isSelected ? a.tier.color.opacity(0.22) : Color.secondary.opacity(0.09), in: Capsule())
-                                        .overlay(Capsule().strokeBorder(isSelected ? a.tier.color.opacity(0.6) : .clear, lineWidth: 1))
-                                    }
-                                    .buttonStyle(.plain)
-                                    .hint("\(title) · \(a.tier.name)", ["달성 성과: \(a.title) (\(a.detail))", "누르면 이 후원자 칭호를 패용합니다."], symbol: "seal")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            patronHeaderSection(activePatron: activePatron, patronOptions: patronOptions)
             Divider().opacity(0.45)
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .firstTextBaseline) {
@@ -1091,6 +1036,74 @@ struct BadgeContent: View {
         .padding(12)
         .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(BadgeTier.gold.color.opacity(0.22), lineWidth: 1))
+    }
+
+    private func patronHeaderSection(activePatron: Achievement?, patronOptions: [Achievement]) -> some View {
+        let hintLines: [String] = {
+            if let active = activePatron {
+                return [
+                    "\"\(active.patronTitle ?? "")\" (\(active.title) 달성 보상)",
+                    "집필 화면과 문학 살롱, 마을에서 작가와 주민들이 후원자님을 이 칭호로 기억합니다."
+                ]
+            }
+            return ["성과를 달성하면 문호들을 후원하는 사용자 전용 칭호가 해금됩니다."]
+        }()
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 8) {
+                Symbol(name: "seal.fill", size: 13, color: activePatron?.tier.color ?? BadgeTier.gold.color)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("후원자 칭호").font(.caption2).foregroundStyle(.secondary)
+                    Text(activePatron?.patronTitle ?? "첫 성과를 달성하면 칭호가 열립니다")
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 6)
+                if patronOptions.count > 1 {
+                    Button { showsPatronPicker.toggle() } label: {
+                        HStack(spacing: 4) {
+                            Text(showsPatronPicker ? "접기" : "칭호 변경 \(patronOptions.count)")
+                                .font(.caption2.weight(.medium))
+                            Symbol(name: "chevron.down", size: 8)
+                                .rotationEffect(.degrees(showsPatronPicker ? 180 : 0))
+                        }
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(Color.secondary.opacity(0.12), in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .hint("후원자 칭호", hintLines, symbol: "seal")
+            if patronOptions.count > 1 {
+                Collapsible(progress: showsPatronPicker ? 1 : 0, topSpacing: 10) {
+                    FlowLayout(spacing: 6) {
+                        ForEach(patronOptions) { a in
+                            if let title = a.patronTitle {
+                                patronOptionChip(a, title: title, isSelected: activePatron?.id == a.id)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func patronOptionChip(_ a: Achievement, title: String, isSelected: Bool) -> some View {
+        Button {
+            onSelectPatron(a.id)
+        } label: {
+            HStack(spacing: 5) {
+                Circle().fill(a.tier.color).frame(width: 6, height: 6)
+                Text(title)
+                    .font(.caption2.weight(isSelected ? .semibold : .regular))
+            }
+            .padding(.horizontal, 9).padding(.vertical, 5)
+            .foregroundStyle(isSelected ? .primary : .secondary)
+            .background(isSelected ? a.tier.color.opacity(0.22) : Color.secondary.opacity(0.09), in: Capsule())
+            .overlay(Capsule().strokeBorder(isSelected ? a.tier.color.opacity(0.6) : .clear, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .hint("\(title) · \(a.tier.name)", ["달성 성과: \(a.title) (\(a.detail))", "누르면 이 후원자 칭호를 패용합니다."], symbol: "seal")
     }
 
     private func showcaseSlot(_ a: Achievement) -> some View {
@@ -1141,17 +1154,28 @@ struct BadgeContent: View {
 
     private func badgeCell(_ a: Achievement) -> some View {
         let isEquipped = progress.equippedBadges.contains(a.id)
+        let hintTitle = isEquipped ? "\(a.title) · \(a.tier.name) (진열 중)" : "\(a.title) · \(a.tier.name)"
+        var hintLines: [String] = [
+            a.detail,
+            "\(date(a).formatted(.dateTime.year().month(.defaultDigits).day())) 달성",
+            "진열 효과: \(a.slotPerk.text)"
+        ]
+        if let perk = a.perk {
+            hintLines.append("상시 효과: \(perk.text)")
+        }
+        if let patron = a.patronTitle {
+            hintLines.append("후원자 칭호: \"\(patron)\"")
+        }
+        if let reward = progress.badgeRewards[a.id] {
+            hintLines.append("받음: \(reward)")
+        }
+        hintLines.append(isEquipped ? "누르면 훈장 진열대에서 내립니다." : "누르면 훈장 진열대에 장식합니다.")
         return Button { onToggleBadge(a.id) } label: {
             VStack(spacing: 4) {
                 BadgeMedal(achievement: a, unlocked: true, size: 44)
                     .overlay(alignment: .topTrailing) {
                         if isEquipped {
-                            Circle()
-                                .fill(BadgeTier.gold.color)
-                                .frame(width: 14, height: 14)
-                                .overlay(Symbol(name: "checkmark", size: 7, color: .white))
-                                .overlay(Circle().strokeBorder(Color(nsColor: .windowBackgroundColor), lineWidth: 1.5))
-                                .offset(x: 2, y: -2)
+                            equippedBadgeMark
                         }
                     }
                 Text(a.title)
@@ -1164,13 +1188,16 @@ struct BadgeContent: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .hint("\(a.title) · \(a.tier.name)" + (isEquipped ? " (진열 중)" : ""),
-              [a.detail, "\(date(a).formatted(.dateTime.year().month(.defaultDigits).day())) 달성", "진열 효과: \(a.slotPerk.text)"]
-              + (a.perk.map { ["상시 효과: \($0.text)"] } ?? [])
-              + (a.patronTitle.map { ["후원자 칭호: \"\($0)\""] } ?? [])
-              + (progress.badgeRewards[a.id].map { ["받음: \($0)"] } ?? [])
-              + [isEquipped ? "누르면 훈장 진열대에서 내립니다." : "누르면 훈장 진열대에 장식합니다."],
-              symbol: "rosette")
+        .hint(hintTitle, hintLines, symbol: "rosette")
+    }
+
+    private var equippedBadgeMark: some View {
+        Circle()
+            .fill(BadgeTier.gold.color)
+            .frame(width: 14, height: 14)
+            .overlay(Symbol(name: "checkmark", size: 7, color: .white))
+            .overlay(Circle().strokeBorder(Color(nsColor: .windowBackgroundColor), lineWidth: 1.5))
+            .offset(x: 2, y: -2)
     }
 
     /// 제목, 받은 수, 등급별 수, 전체 진행 띠.
@@ -1215,6 +1242,14 @@ struct BadgeContent: View {
         let fraction = p.target > 0 ? min(1, p.current / p.target) : 0
         let today = earnedToday(a)
         let count = progress.dailyCounts[a.id]
+        let subtitle = count.map { $0.streak > 1 ? "\($0.streak)일째" : "\($0.total)번" } ?? "\(Self.short(p.current))"
+        var hintLines: [String] = [
+            a.detail,
+            "오늘 \(Self.short(p.current)) / \(Self.short(p.target))" + (count.map { " · 지금까지 \($0.total)번" } ?? "")
+        ]
+        if let perk = a.perk {
+            hintLines.append("효과(그날만): \(perk.text)")
+        }
         return VStack(spacing: 5) {
             ZStack {
                 Circle().stroke(Color.secondary.opacity(0.12), lineWidth: 3)
@@ -1225,17 +1260,30 @@ struct BadgeContent: View {
             }
             .frame(width: 48, height: 48)
             Text(a.title).font(.caption2.weight(.medium)).lineLimit(1).minimumScaleFactor(0.7)
-            Text(count.map { $0.streak > 1 ? "\($0.streak)일째" : "\($0.total)번" } ?? "\(Self.short(p.current))")
+            Text(subtitle)
                 .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
         }
-        .hint(a.title, [a.detail, "오늘 \(Self.short(p.current)) / \(Self.short(p.target))" + (count.map { " · 지금까지 \($0.total)번" } ?? "")]
-              + (a.perk.map { ["효과(그날만): \($0.text)"] } ?? []), symbol: "sun.max")
+        .hint(a.title, hintLines, symbol: "sun.max")
     }
 
     /// 다음 목표 한 줄: 메달, 등급 점, 이름, 조건, 오른쪽에 진행. 효과는 마우스를 올리면.
     private func goalRow(_ a: Achievement) -> some View {
         let p = a.progress(progress.facts)
         let fraction = p.target > 0 ? min(1, p.current / p.target) : 0
+        var hintLines: [String] = [a.detail]
+        if a.countable {
+            hintLines.append("\(Self.short(p.current)) / \(Self.short(p.target))")
+        }
+        hintLines.append("진열 효과: \(a.slotPerk.text)")
+        if let perk = a.perk {
+            hintLines.append("상시 효과: \(perk.text)")
+        }
+        if let patron = a.patronTitle {
+            hintLines.append("칭호 보상: \"\(patron)\"")
+        }
+        if a.chain != nil {
+            hintLines.append("이루면 다음 단계가 나옵니다.")
+        }
         return HStack(spacing: 10) {
             BadgeMedal(achievement: a, unlocked: false, size: 28)
             VStack(alignment: .leading, spacing: 2) {
@@ -1262,11 +1310,7 @@ struct BadgeContent: View {
             }
         }
         .padding(.vertical, 8)
-        .hint("\(a.title) · \(a.tier.name)", [a.detail] + (a.countable ? ["\(Self.short(p.current)) / \(Self.short(p.target))"] : [])
-              + ["진열 효과: \(a.slotPerk.text)"]
-              + (a.perk.map { ["상시 효과: \($0.text)"] } ?? [])
-              + (a.patronTitle.map { ["칭호 보상: \"\($0)\""] } ?? [])
-              + (a.chain != nil ? ["이루면 다음 단계가 나옵니다."] : []), symbol: "flag")
+        .hint("\(a.title) · \(a.tier.name)", hintLines, symbol: "flag")
     }
 
     private static func short(_ value: Double) -> String {

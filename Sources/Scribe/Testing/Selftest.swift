@@ -395,9 +395,12 @@ extension Dump {
         check((w.reviews.first?.affected == true) == sameAuthor && (sameAuthor ? w.boostSummary.characters == 1.15 && w.note?.kind == .review : w.boosts.isEmpty),
               "비평: \(sameAuthor ? "같은 작가라 글자 +15%" : "다른 작가라 영향 없음")")
         check(w.facts.fiveStars == 1 && w.badges["five_stars"] != nil, "성과: 별 다섯")
-        let texts = Set((0..<40).map { i in
-            Critics.text(for: 3, days: 5, events: 1, lost: 0, title: "책", author: "작가", voice: .dry,
-                         rolls: [Double(i % 7) / 7, Double(i % 4) / 4, Double(i % 3) / 3])
+        let texts = Set((0..<40).map { (i: Int) -> String in
+            let r0 = Double(i % 7) / 7.0
+            let r1 = Double(i % 4) / 4.0
+            let r2 = Double(i % 3) / 3.0
+            return Critics.text(for: 3, days: 5, events: 1, lost: 0, title: "책", author: "작가", voice: .dry,
+                                rolls: [r0, r1, r2])
         })
         check(texts.count >= 20, "비평: 같은 조건에서도 문장이 \(texts.count)가지")
         check(Format.resolve("캐럴(과|와) 포(이|가) 햄릿(을|를) 디킨스(으로|로) 3(이|가)") == "캐럴과 포가 햄릿을 디킨스로 3이"
