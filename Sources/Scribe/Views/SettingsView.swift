@@ -489,8 +489,8 @@ struct NotificationSettings: View {
 
     private var color: Color {
         switch store.notificationStatus {
-        case .allowed: .green
-        case .denied: .orange
+        case .allowed: ChartPalette.good
+        case .denied: ChartPalette.warning
         case .notAsked, .unavailable: .secondary
         }
     }
@@ -573,14 +573,15 @@ struct RecordSettings: View {
                 Text("최신")
                     .font(.caption2.weight(.semibold))
                     .padding(.horizontal, 6).padding(.vertical, 2)
-                    .foregroundStyle(Color(red: 0.2, green: 0.55, blue: 0.3))
-                    .background(Color(red: 0.2, green: 0.55, blue: 0.3).opacity(0.14), in: Capsule())
+                    .foregroundStyle(ChartPalette.good)
+                    .background(ChartPalette.good.opacity(0.14), in: Capsule())
             case .available(let release):
                 Text("새 버전 v\(release.version)")
                     .font(.caption2.weight(.semibold))
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .foregroundStyle(BadgeTier.gold.color)
                     .background(BadgeTier.gold.color.opacity(0.16), in: Capsule())
+                    .hint("새 버전 v\(release.version)", release.summaryLines.isEmpty ? ["설치 및 재시작을 누르면 바로 업데이트됩니다."] : release.summaryLines, symbol: "sparkles")
             default:
                 EmptyView()
             }

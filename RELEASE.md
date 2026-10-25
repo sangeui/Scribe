@@ -66,13 +66,16 @@
 
 ## 3. 한 줄 배포 (`scripts/release.sh`)
 
-```bash
-# 자동 증분 배포 (베타 단계: patch 또는 minor 만 사용)
-./scripts/release.sh patch    # 예: 0.1.0 → 0.1.1
-./scripts/release.sh minor    # 예: 0.1.0 → 0.2.0
+> [!IMPORTANT]
+> **한국어 릴리스 노트 작성 의무**: GitHub Release 본문은 GitHub Releases 페이지뿐 아니라 인앱 자동 업데이터([`AppUpdater`](Sources/Scribe/App/Updater.swift))의 업데이트 안내 툴팁에서도 사용자에게 직접 노출된다. 따라서 배포 시에는 직전 버전 대비 변경 사항을 사용자 관점의 한국어 마크다운 파일(`/tmp/scribe-notes.md` 등)로 작성하여 `SCRIBE_NOTES_FILE`로 전달한다.
 
-# 또는 명시적 버전 지정 (0.x.y 범위)
-./scripts/release.sh 0.1.1
+```bash
+# 1) 직전 버전 대비 변경 내역 확인
+./scripts/release.sh --diff
+
+# 2) 한국어 요약 릴리스 노트와 함께 자동 증분 배포 (베타 단계: patch 또는 minor 만 사용)
+SCRIBE_NOTES_FILE=/tmp/scribe-notes.md ./scripts/release.sh patch    # 예: 0.5.0 → 0.5.1
+SCRIBE_NOTES_FILE=/tmp/scribe-notes.md ./scripts/release.sh minor    # 예: 0.5.0 → 0.6.0
 
 # 배포 없이 버전 동기화 및 문서 일관성만 검사할 때
 ./scripts/release.sh --check-only

@@ -18,6 +18,36 @@ final class AppUpdater {
         let downloadURL: URL
         let pageURL: URL
         let notes: String
+
+        /// 마크다운 릴리스 노트 본문에서 헤더·코드블록·Changelog 링크를 제외한 핵심 요약 줄(최대 4줄).
+        var summaryLines: [String] {
+            var inCodeBlock = false
+            var result: [String] = []
+            for raw in notes.components(separatedBy: .newlines) {
+                let trimmed = raw.trimmingCharacters(in: .whitespaces)
+                if trimmed.hasPrefix("```") {
+                    inCodeBlock.toggle()
+                    continue
+                }
+                if inCodeBlock || trimmed.isEmpty || trimmed.hasPrefix("#") || trimmed.hasPrefix("---") {
+                    continue
+                }
+                if trimmed.localizedCaseInsensitiveContains("full changelog") || trimmed.hasPrefix("brew ") {
+                    continue
+                }
+                var cleaned = trimmed
+                for prefix in ["- ", "* ", "• "] where cleaned.hasPrefix(prefix) {
+                    cleaned.removeFirst(prefix.count)
+                    break
+                }
+                cleaned = cleaned.replacingOccurrences(of: "**", with: "").replacingOccurrences(of: "`", with: "")
+                if !cleaned.isEmpty {
+                    result.append(cleaned)
+                    if result.count >= 4 { break }
+                }
+            }
+            return result
+        }
     }
 
     enum State: Equatable {

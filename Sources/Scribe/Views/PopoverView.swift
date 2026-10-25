@@ -138,7 +138,9 @@ struct PopoverView: View {
 
     /// 한 줄 요약만 두고, 누르면 옆에 사용량 화면(`UsageDashboard`)을 연다.
     private var usageSection: some View {
-        UsageSummaryRow(store: store) { SidePanel.shared.toggle(.usage, store: store) }
+        UsageSummaryRow(store: store, onBadges: { SidePanel.shared.toggle(.badges, store: store) }) {
+            SidePanel.shared.toggle(.usage, store: store)
+        }
     }
 
     /// 화면 높이에서 메뉴바와 여백을 뺀 만큼.
@@ -157,9 +159,10 @@ struct PopoverView: View {
                 let badge = store.agentSource == .antigravity ? "Antigravity" : (store.plan ?? (store.agentSource == .all ? "통합" : nil))
                 if let badge {
                     Text(badge)
-                        .font(.caption2.weight(.semibold))
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(.secondary)
                         .padding(.horizontal, 7).padding(.vertical, 2)
-                        .background(.green.opacity(0.18), in: Capsule())
+                        .background(Color.secondary.opacity(0.09), in: Capsule())
                 }
             }
             if let snapshot = store.snapshot, snapshot.scannedFiles == 0 {
@@ -207,6 +210,9 @@ struct PopoverView: View {
             }
             .buttonStyle(.plain)
             if let release = store.updater.availableRelease {
+                let summary = release.summaryLines
+                let hintLines = (summary.isEmpty ? ["기록과 서재는 그대로 이어집니다."] : summary)
+                    + ["누르면 새 버전을 내려받아 서명을 검증한 뒤 자동으로 다시 엽니다."]
                 Button {
                     Task { await store.updater.install(release) }
                 } label: {
@@ -216,11 +222,10 @@ struct PopoverView: View {
                     }
                     .padding(.horizontal, 8).padding(.vertical, 3)
                     .foregroundStyle(.white)
-                    .background(Color(red: 0.2, green: 0.55, blue: 0.3), in: Capsule())
+                    .background(ChartPalette.good, in: Capsule())
                 }
                 .buttonStyle(.plain)
-                .hint("새 버전 v\(release.version)", ["누르면 새 버전을 내려받아 서명을 검증한 뒤 자동으로 다시 엽니다.",
-                                                  release.notes.isEmpty ? "기록과 서재는 그대로 이어집니다." : String(release.notes.prefix(120))], symbol: "arrow.down.circle")
+                .hint("새 버전 v\(release.version)", hintLines, symbol: "arrow.down.circle")
             } else if case .installing(let status) = store.updater.state {
                 Text(status).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
             }

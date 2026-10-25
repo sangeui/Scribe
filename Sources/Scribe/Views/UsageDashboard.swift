@@ -16,20 +16,21 @@ enum ChartPalette {
         })
     }
 
-    /// 범주 1~4번: 파랑, 주황, 청록, 노랑.
+    /// 범주 1~4번: 만년필 블루블랙(슬레이트), 테라코타(시나몬), 세이지(고서 초록), 앤티크 황동(오커).
     static let series = [
-        dynamic(0x2a78d6, 0x3987e5),
-        dynamic(0xeb6834, 0xd95926),
-        dynamic(0x1baf7a, 0x199e70),
-        dynamic(0xeda100, 0xc98500),
+        dynamic(0x4a6278, 0x6c879e),
+        dynamic(0x9e5b45, 0xb8745d),
+        dynamic(0x4e6b58, 0x6b8c76),
+        dynamic(0x9a7838, 0xb89452),
     ]
     /// "기타"는 범주 색이 아닌 회색.
-    static let other = dynamic(0xa8a7a2, 0x6b6a66)
+    static let other = dynamic(0x9c9992, 0x6b6965)
     static let magnitude = series[0]
 
-    static let good = Color(red: 0x0c / 255, green: 0xa3 / 255, blue: 0x0c / 255)
-    static let warning = Color(red: 0xfa / 255, green: 0xb2 / 255, blue: 0x19 / 255)
-    static let critical = Color(red: 0xd0 / 255, green: 0x3b / 255, blue: 0x3b / 255)
+    static let good = dynamic(0x4e6b58, 0x6b8c76)
+    static let warning = dynamic(0xa67332, 0xc28d48)
+    static let critical = dynamic(0x9e423d, 0xba5a54)
+    static let rose = dynamic(0x8c4f4f, 0xa86868)
 
     /// 한도 %에 따른 상태 색과 이름. 색만으로 뜻을 전하지 않게 이름을 같이 쓴다.
     static func limitStatus(_ percent: Double) -> (Color, String) {
@@ -302,9 +303,9 @@ private struct LimitGauges: View {
                 // 로그인 만료는 흔한 일이라 경고색을 쓰지 않는다. 한 줄과 다시 읽기 버튼만.
                 HStack(spacing: 8) {
                     Symbol(name: needsLogin ? "person.crop.circle.badge.exclamationmark" : "exclamationmark.triangle", size: 12,
-                           color: needsLogin ? .secondary : .orange)
+                           color: needsLogin ? .secondary : ChartPalette.warning)
                     Text(needsLogin ? "로그인이 만료됐습니다. Claude Code 를 한 번 쓰면 이어집니다." : message)
-                        .font(.caption).foregroundStyle(needsLogin ? Color.secondary : Color.orange).lineLimit(2)
+                        .font(.caption).foregroundStyle(needsLogin ? Color.secondary : ChartPalette.warning).lineLimit(2)
                     Spacer(minLength: 0)
                     Button(action: onRefresh) {
                         Text("다시 읽기").font(.caption.weight(.medium))
@@ -575,43 +576,96 @@ private struct StackedBar: View {
 
 // MARK: - 팝오버 요약 줄
 
-/// 팝오버에 남기는 사용량 한 줄. 선택된 에이전트에 따른 오늘 토큰과 요약을 보여 주고, 누르면 옆에 자세한 사용량 화면이 열린다.
+/// 팝오버 하단의 사용자(후원자) 구역. 사용자의 후원 칭호·3칸 훈장 진열대와 오늘 토큰 사용량을 함께 보여 준다.
 struct UsageSummaryRow: View {
     @Bindable var store: UsageStore
+    var onBadges: () -> Void = {}
     let onOpen: () -> Void
 
     var body: some View {
-        Button(action: onOpen) {
-            HStack(spacing: 10) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(store.agentSource.summaryTitle).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                    if let today = store.snapshot?.today {
-                        Text("오늘 \(Format.tokens(today.tokens)) · \(Format.cost(today.cost))")
-                            .font(.callout.weight(.medium).monospacedDigit())
-                    }
-                }
-                Spacer()
-                if store.agentSource == .antigravity {
-                    if let snapshot = store.snapshot, snapshot.today.tokens > 0 {
-                        miniCacheGauge(snapshot.todayCacheHitPercent)
-                    }
-                } else {
-                    ForEach(store.limits.prefix(3)) { row in
-                        miniGauge(row)
-                    }
-                    if store.limitsMessage != nil {
-                        Symbol(name: store.needsLogin ? "person.crop.circle.badge.exclamationmark" : "exclamationmark.triangle", size: 12,
-                               color: store.needsLogin ? .secondary : .orange)
-                            .hint(store.needsLogin ? "로그인이 만료됐습니다" : "한도를 못 읽었습니다",
-                                  store.needsLogin ? ["Claude Code 를 한 번 쓰면 이어집니다. 다음 갱신 때 저절로 다시 읽습니다."] : [store.limitsMessage ?? ""],
-                                  symbol: store.needsLogin ? "person.crop.circle.badge.exclamationmark" : "exclamationmark.triangle")
-                    }
-                }
-                Text("›").font(.callout).foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 8) {
+            if let writing = store.writing, writing.patronTitle != nil || !writing.equippedBadges.isEmpty {
+                patronIdentityBar(writing)
             }
-            .contentShape(Rectangle())
+            Button(action: onOpen) {
+                HStack(spacing: 10) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(store.agentSource.summaryTitle).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                        if let today = store.snapshot?.today {
+                            Text("오늘 \(Format.tokens(today.tokens)) · \(Format.cost(today.cost))")
+                                .font(.callout.weight(.medium).monospacedDigit())
+                        }
+                    }
+                    Spacer()
+                    if store.agentSource == .antigravity {
+                        if let snapshot = store.snapshot, snapshot.today.tokens > 0 {
+                            miniCacheGauge(snapshot.todayCacheHitPercent)
+                        }
+                    } else {
+                        ForEach(store.limits.prefix(3)) { row in
+                            miniGauge(row)
+                        }
+                        if store.limitsMessage != nil {
+                            Symbol(name: store.needsLogin ? "person.crop.circle.badge.exclamationmark" : "exclamationmark.triangle", size: 12,
+                                   color: store.needsLogin ? .secondary : ChartPalette.warning)
+                                .hint(store.needsLogin ? "로그인이 만료됐습니다" : "한도를 못 읽었습니다",
+                                      store.needsLogin ? ["Claude Code 를 한 번 쓰면 이어집니다. 다음 갱신 때 저절로 다시 읽습니다."] : [store.limitsMessage ?? ""],
+                                      symbol: store.needsLogin ? "person.crop.circle.badge.exclamationmark" : "exclamationmark.triangle")
+                        }
+                    }
+                    Text("›").font(.callout).foregroundStyle(.secondary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func patronIdentityBar(_ writing: WritingProgress) -> some View {
+        let equipped = writing.equippedBadges.compactMap { Achievements.byID($0) }
+        let patron = writing.patronAchievement
+        let titleText = patron?.patronTitle ?? "익명의 후원인"
+        var hintLines: [String] = []
+        if let patron {
+            hintLines.append("\"\(patron.patronTitle ?? "")\" (\(patron.title) 달성 보상)")
+        }
+        if equipped.isEmpty {
+            hintLines.append("성과 화면에서 받은 뱃지를 최대 3개까지 훈장 진열대에 장식해 추가 효과를 얻을 수 있습니다.")
+        } else {
+            for badge in equipped {
+                hintLines.append("진열: \(badge.title) (\(badge.slotPerk.shortText))")
+            }
+        }
+        hintLines.append("누르면 나의 후원자 칭호와 훈장 진열대를 변경합니다.")
+        return Button(action: onBadges) {
+            HStack(spacing: 7) {
+                Symbol(name: "seal.fill", size: 10, color: patron?.tier.color ?? BadgeTier.gold.color)
+                Text("나의 후원 칭호")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Text(titleText)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                Spacer(minLength: 4)
+                HStack(spacing: 4) {
+                    ForEach(0..<Perks.maxEquipped, id: \.self) { index in
+                        if index < equipped.count {
+                            BadgeMedal(achievement: equipped[index], unlocked: true, size: 15)
+                        } else {
+                            Circle()
+                                .strokeBorder(Color.secondary.opacity(0.22), style: StrokeStyle(lineWidth: 1, dash: [2, 2]))
+                                .frame(width: 13, height: 13)
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 10).padding(.vertical, 6)
+            .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
         .buttonStyle(.plain)
+        .hint("나의 후원 칭호 · \(titleText)", hintLines, symbol: "seal")
     }
 
     private func miniCacheGauge(_ percent: Double) -> some View {
@@ -619,7 +673,7 @@ struct UsageSummaryRow: View {
         return ZStack {
             Circle().stroke(Color.secondary.opacity(0.15), lineWidth: 3)
             Circle().trim(from: 0, to: CGFloat(clamped / 100))
-                .stroke(ChartPalette.series[2], style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                .stroke(ChartPalette.series[0], style: StrokeStyle(lineWidth: 3, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             Text("\(Int(percent.rounded()))").font(.system(size: 9, weight: .semibold).monospacedDigit())
         }

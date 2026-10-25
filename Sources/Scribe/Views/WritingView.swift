@@ -157,7 +157,7 @@ struct WritingView: View {
                     DilemmaBanner(active: active, kind: kind, tint: book.spineColor, onChoose: onChoose)
                 }
                 if let note = progress.recentNote(within: 180), let icon = note.icon {
-                    NoteLine(icon: icon, color: note.kind == .refused ? .orange : note.kind == .luck ? BadgeTier.gold.color : book.spineColor,
+                    NoteLine(icon: icon, color: note.kind == .refused ? ChartPalette.warning : note.kind == .luck ? BadgeTier.gold.color : book.spineColor,
                              text: note.text, at: note.date)
                 }
             }
@@ -229,14 +229,14 @@ struct WritingView: View {
     /// 아래쪽 상태 한 줄. 영감·체력·능력치·보정을 요약하고, 누르면 펼치거나 접는다. 손댈 일이 있는 항목(영감 찼음, 지침)은 색이 붙는다.
     private func statusLine(_ book: Book, expanded: Bool) -> some View {
         let gold = BadgeTier.gold.color
-        let heart: Color = progress.sheet.stamina <= progress.statPerks.staminaMax * 0.1 ? .red : progress.tired ? .orange : .secondary
+        let heart: Color = progress.sheet.stamina <= progress.statPerks.staminaMax * 0.1 ? ChartPalette.critical : progress.tired ? ChartPalette.warning : .secondary
         let boosts = progress.boosts.count
         return Button { statusExpanded.toggle() } label: {
             HStack(spacing: 10) {
                 statusItem("sparkles", progress.inspirationReady ? "영감 찼음" : "영감 \(Format.percent(progress.inspirationFraction * 100))", progress.inspirationReady ? gold : .secondary)
                 statusItem(progress.tired ? "heart.slash" : "heart", "체력 \(Int(progress.sheet.stamina.rounded()))", heart)
                 statusItem("person", "능력치 \(progress.sheet.total)", .secondary)
-                if boosts > 0 { statusItem("arrow.up.right", "보정 \(boosts)", Color(red: 0.2, green: 0.55, blue: 0.3)) }
+                if boosts > 0 { statusItem("arrow.up.right", "보정 \(boosts)", .secondary) }
                 Spacer(minLength: 0)
                 Symbol(name: "chevron.down", size: 9)
                     .rotationEffect(.degrees(expanded ? 180 : 0))
@@ -285,8 +285,8 @@ struct WritingView: View {
                               symbol: progress.weather.symbol)
                         if progress.cupsToday > 0 {
                             HStack(spacing: 3) {
-                                Symbol(name: "cup.and.saucer", size: 11, color: progress.caffeinated ? .orange : .secondary)
-                                Text("\(progress.cupsToday)잔").font(.system(size: 11)).foregroundStyle(progress.caffeinated ? Color.orange : Color.secondary)
+                                Symbol(name: "cup.and.saucer", size: 11, color: progress.caffeinated ? ChartPalette.warning : .secondary)
+                                Text("\(progress.cupsToday)잔").font(.system(size: 11)).foregroundStyle(progress.caffeinated ? ChartPalette.warning : Color.secondary)
                             }
                             .fixedSize()
                             .hint(progress.caffeinated ? "카페인 · 손이 떨립니다" : "오늘 커피·홍차 \(progress.cupsToday)잔",
@@ -298,13 +298,14 @@ struct WritingView: View {
                     }
                 }
                 Spacer(minLength: 6)
-                // 작은 고리 둘: 체력(붉은색), 영감(금색). 접어 두어도 한눈에.
+                // 작은 고리 둘: 평소에는 책등 색에 맞춰 차분하게 두고, 지쳤거나 영감이 찼을 때만 색이 켜진다.
                 VStack(spacing: 6) {
                     MiniRing(fraction: progress.sheet.stamina / max(1, progress.statPerks.staminaMax),
-                             color: progress.tired ? .orange : Color(red: 0.85, green: 0.35, blue: 0.4), symbol: "heart.fill")
+                             color: progress.tired ? ChartPalette.warning : book.spineColor.opacity(0.68), symbol: "heart.fill")
                         .hint("체력 \(Int(progress.sheet.stamina.rounded())) (최대 \(Int(progress.statPerks.staminaMax)))",
                               [progress.tired ? "지쳤습니다. 글자가 \(Int((1 - Balance.staminaTiredMultiplier) * 100))% 덜 늘고 0이 되면 탈진합니다." : "쓰면 줄고 쉬면 돌아옵니다."], symbol: "heart")
-                    MiniRing(fraction: progress.inspirationFraction, color: BadgeTier.gold.color, symbol: "sparkles")
+                    MiniRing(fraction: progress.inspirationFraction,
+                             color: progress.inspirationReady ? BadgeTier.gold.color : book.spineColor.opacity(0.55), symbol: "sparkles")
                         .hint("영감 \(Format.percent(progress.inspirationFraction * 100))",
                               [progress.inspirationReady ? "찼습니다. 아래 \"영감 켜기\"를 누르세요." : "읽기 토큰이 쌓이면 찹니다. 차면 한 시간 동안 글자가 두 배."], symbol: "sparkles")
                 }
@@ -317,9 +318,6 @@ struct WritingView: View {
             }
             progressBar(book)
             manuscriptStrip(book, event: event)
-            if progress.patronTitle != nil || !progress.equippedBadges.isEmpty {
-                patronStrip
-            }
         }
         .padding(10)
         // 작가 색이 머리에 옅게 깔린다. 작가가 바뀌면 색도 천천히 바뀐다.
@@ -383,42 +381,6 @@ struct WritingView: View {
                     in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Color.primary.opacity(scheme == .dark ? 0.08 : 0.06), lineWidth: 1))
         .opacity(event == nil ? 1 : 0.55)
-    }
-
-    /// 후원자 칭호와 훈장 진열대(최대 3칸)에 장식한 미니 뱃지를 한 줄로 보여 준다. 누르면 성과 화면을 연다.
-    private var patronStrip: some View {
-        let equipped = progress.equippedBadges.compactMap { Achievements.byID($0) }
-        let patron = progress.patronAchievement
-        return Button(action: onBadges) {
-            HStack(spacing: 6) {
-                Symbol(name: "seal.fill", size: 10, color: patron?.tier.color ?? BadgeTier.gold.color)
-                Text("후원자 · \(patron?.patronTitle ?? "익명의 후원인")")
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                Spacer(minLength: 4)
-                if equipped.isEmpty {
-                    Text("훈장 진열대")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.tertiary)
-                } else {
-                    HStack(spacing: 4) {
-                        ForEach(equipped) { a in
-                            BadgeMedal(achievement: a, unlocked: true, size: 16)
-                        }
-                    }
-                }
-            }
-            .padding(.horizontal, 4).padding(.vertical, 1)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .hint("후원자 칭호 · \(patron?.patronTitle ?? "익명의 후원인")",
-              (patron.map { ["\"\($0.patronTitle ?? "")\" (\($0.title) 달성)"] } ?? [])
-              + (equipped.isEmpty
-                 ? ["성과 화면에서 받은 뱃지를 최대 3개까지 훈장 진열대에 장식해 추가 효과를 얻을 수 있습니다."]
-                 : equipped.map { "진열: \($0.title) (\($0.slotPerk.shortText))" }),
-              symbol: "seal")
     }
 
     /// 가방·성과·서재로 가는 버튼 셋. 숫자는 하나씩만(아이템 수, 받은 뱃지, 이번 회차 탈고).
@@ -541,7 +503,7 @@ struct DeadlineRow: View {
         let sunday = Calendar.current.date(byAdding: .day, value: 6, to: deadline.weekStart) ?? deadline.weekStart
         let daysLeft = max(0, (Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: .now), to: sunday).day ?? 0))
         let met = deadline.met == true
-        let color: Color = met ? Color(red: 0.2, green: 0.55, blue: 0.3) : .secondary
+        let color: Color = met ? ChartPalette.good : .secondary
         HStack(spacing: 6) {
             Symbol(name: met ? "checkmark.circle" : "calendar", size: 11, color: color)
             VStack(alignment: .leading, spacing: 3) {
@@ -958,12 +920,12 @@ struct DisasterNote: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            PixelIconView(rows: disaster.icon, color: .orange, scale: 1.5)
+            PixelIconView(rows: disaster.icon, color: ChartPalette.warning, scale: 1.5)
             Text(shield.map { disaster.shieldedText($0) } ?? disaster.text(lost: lost)).font(.caption)
             Spacer(minLength: 0)
             Text(at, format: .relative(presentation: .named)).font(.caption2).foregroundStyle(.secondary)
         }
         .padding(.horizontal, 10).padding(.vertical, 7)
-        .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(ChartPalette.warning.opacity(0.1), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }

@@ -160,7 +160,7 @@ struct StaminaRow: View {
 
     var body: some View {
         let fraction = Swift.max(0, Swift.min(1, stamina / Swift.max(1, max)))
-        let color: Color = fraction <= 0.1 ? .red : tired ? .orange : Color(red: 0.85, green: 0.35, blue: 0.4)
+        let color: Color = fraction <= 0.1 ? ChartPalette.critical : tired ? ChartPalette.warning : ChartPalette.rose
         HStack(spacing: 5) {
             Symbol(name: tired ? "heart.slash" : "heart.fill", size: 11, color: color.opacity(0.9))
             ZStack(alignment: .leading) {

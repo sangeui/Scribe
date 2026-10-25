@@ -25,7 +25,7 @@ struct BagContent: View {
         if let progress {
             OptionalScroll(enabled: scrollable) {
                 VStack(alignment: .leading, spacing: 14) {
-                    Text("가방 · 아이템 \(ItemKind.allCases.reduce(0) { $0 + progress.count($1) })개")
+                    Text("창고 · 아이템 \(ItemKind.allCases.reduce(0) { $0 + progress.count($1) })개")
                         .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                     if let event = progress.event, let active = progress.activeEvent, let book = progress.book {
                         EventBanner(event: event, active: active, cause: progress.cause, item: progress.cureItem,
@@ -77,35 +77,38 @@ struct BagContent: View {
         let items = Dictionary(uniqueKeysWithValues: ItemKind.allCases.map { ($0.rawValue, progress.count($0)) })
         let affordable = Studio.canAfford(furniture, items: items)
         return HStack(alignment: .top, spacing: 8) {
-            Symbol(name: furniture.symbol, size: 14, color: owned ? Color(red: 0.2, green: 0.55, blue: 0.3) : .secondary)
-            VStack(alignment: .leading, spacing: 3) {
-                Text(furniture.title).font(.caption.weight(.semibold))
-                Text(furniture.effect).font(.caption2).foregroundStyle(.secondary).lineLimit(2).fixedSize(horizontal: false, vertical: true)
-                if owned {
-                    Text("있음").font(.caption2.weight(.semibold)).foregroundStyle(Color(red: 0.2, green: 0.55, blue: 0.3))
-                } else {
-                    HStack(spacing: 4) {
-                        costChips(furniture, progress)
-                        Spacer(minLength: 0)
+            Symbol(name: furniture.symbol, size: 14, color: owned ? ChartPalette.good : .secondary)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .center, spacing: 4) {
+                    Text(furniture.title).font(.caption.weight(.semibold)).lineLimit(1)
+                    Spacer(minLength: 2)
+                    if owned {
+                        Text("있음").font(.caption2.weight(.semibold)).foregroundStyle(ChartPalette.good)
+                    } else {
                         buyButton(furniture, affordable: affordable)
                     }
+                }
+                Text(furniture.effect).font(.caption2).foregroundStyle(.secondary).lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                if !owned {
+                    costChips(furniture, progress)
                 }
             }
         }
         .padding(8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(owned ? Color(red: 0.2, green: 0.55, blue: 0.3).opacity(0.08) : Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(owned ? ChartPalette.good.opacity(0.08) : Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     /// 값 표시. 가진 수/필요한 수, 모자라면 주황.
     private func costChips(_ furniture: Furniture, _ progress: WritingProgress) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 6) {
             ForEach(Array(furniture.cost.enumerated()), id: \.offset) { _, cost in
                 let have = progress.count(cost.0)
                 let enough = have >= cost.1
                 Text("\(cost.0.shortTitle) \(have)/\(cost.1)")
                     .font(.system(size: 9, weight: .medium).monospacedDigit())
-                    .foregroundStyle(enough ? Color.secondary : Color.orange)
+                    .foregroundStyle(enough ? Color.secondary : ChartPalette.warning)
+                    .fixedSize()
             }
         }
     }
@@ -183,7 +186,7 @@ struct BagContent: View {
         var detail = [Self.when(record.startedAt), "자연재해 · 집필은 계속"]
         if let book { detail.insert(book.displayAuthorShort, at: 0) }
         return HStack(alignment: .top, spacing: 10) {
-            PixelIconView(rows: disaster?.icon ?? PixelIcon.warning, color: .orange, scale: 1.6)
+            PixelIconView(rows: disaster?.icon ?? PixelIcon.warning, color: ChartPalette.warning, scale: 1.6)
                 .frame(width: 16, height: 16).padding(.top, 2)
             VStack(alignment: .leading, spacing: 2) {
                 Text(shield.map { "\(disaster?.cause ?? "재해가 났지만") \($0.title) 덕에 원고는 무사했습니다" }
@@ -249,7 +252,7 @@ struct BagContent: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(Color.secondary.opacity(0.15))
-                    Capsule().fill(Color.accentColor).frame(width: max(4, geo.size.width * CGFloat(min(max(fraction, 0), 1))))
+                    Capsule().fill(ChartPalette.series[0]).frame(width: max(4, geo.size.width * CGFloat(min(max(fraction, 0), 1))))
                 }
             }
             .frame(height: 4)
@@ -268,7 +271,7 @@ struct BagContent: View {
                 .foregroundStyle(count > 0 ? .primary : .secondary)
             Text("×\(count)").font(.callout.monospacedDigit()).foregroundStyle(count > 0 ? .primary : .tertiary)
             if count >= Balance.itemCap {
-                Text("가득").font(.caption2.weight(.semibold)).foregroundStyle(.orange)
+                Text("가득").font(.caption2.weight(.semibold)).foregroundStyle(ChartPalette.warning)
             }
             Spacer()
             if count >= Balance.exchangeCost, RenderMode.offscreen {
@@ -291,7 +294,7 @@ struct BagContent: View {
             }
         }
         .padding(.horizontal, 10).padding(.vertical, 7)
-        .background(usable ? Color.accentColor.opacity(0.1) : Color.secondary.opacity(0.06),
+        .background(usable ? ChartPalette.series[0].opacity(0.12) : Color.secondary.opacity(0.06),
                     in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .opacity(count > 0 ? 1 : 0.7)
     }

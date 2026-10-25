@@ -41,13 +41,13 @@
 3. **기존 버전 태그 재사용·덮어쓰기 절대 금지**:
    - 이미 배포된 `vX.Y.Z` 태그나 GitHub Release를 삭제 후 재생성하거나 `Scribe.zip`을 덮어쓰지 않는다 (Homebrew Cask의 `sha256` 무결성이 깨짐).
    - 배포 후 추가 수정이 필요하면 반드시 다음 버전(`patch` 등)으로 올려 배포한다.
-4. **배포 실행 방법**:
-   - 사용자가 배포(릴리스)를 요청한 경우에만 `main` 브랜치에서 변경분을 커밋한 뒤 아래 스크립트를 실행한다:
+4. **배포 실행 방법 (한국어 릴리스 노트 포함 필수)**:
+   - 사용자가 배포(릴리스)를 요청한 경우에만 `main` 브랜치에서 변경분을 커밋한 뒤, 직전 버전 대비 주요 변경 사항을 사용자 친화적인 한국어 마크다운 노트(`SCRIBE_NOTES_FILE`)로 작성하여 아래 스크립트를 실행한다:
      ```bash
      ./scripts/release.sh --diff  # 1) 직전 버전과 비교해 patch / minor 판정
-     ./scripts/release.sh minor   # 2) 판정한 구분(patch 또는 minor)으로 배포 실행
+     SCRIBE_NOTES_FILE=/tmp/scribe-notes.md ./scripts/release.sh minor  # 2) 한국어 릴리스 노트와 함께 배포 실행
      ```
-   - 이 스크립트가 `--selftest` 검증, 코드서명(`Scribe Local`) 확인, `VERSION` 범프, Universal(`arm64` + `x86_64`) 빌드, `Casks/scribe.rb`의 `version` + `sha256` 갱신, GitHub Release 생성, `sangeui/homebrew-tap` 원격 Cask 업데이트를 한 번에 처리한다.
+   - 이 스크립트가 `--selftest` 검증, 코드서명(`Scribe Local`) 확인, `VERSION` 범프, Universal(`arm64` + `x86_64`) 빌드, `Casks/scribe.rb`의 `version` + `sha256` 갱신, 한국어 노트가 포함된 GitHub Release 생성, `sangeui/homebrew-tap` 원격 Cask 업데이트를 한 번에 처리한다.
 
 ---
 

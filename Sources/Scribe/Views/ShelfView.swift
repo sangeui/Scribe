@@ -620,7 +620,7 @@ private struct AuthorRow: View {
     private func compactStatsBar(sheet: AuthorSheet, perks: StatPerks, shortAuthor: String) -> some View {
         let tired = sheet.stamina < perks.staminaMax * Balance.staminaTiredBelow
         let fraction = max(0, min(1, sheet.stamina / max(1, perks.staminaMax)))
-        let heartColor: Color = fraction <= 0.1 ? .red : tired ? .orange : Color(red: 0.85, green: 0.35, blue: 0.4)
+        let heartColor: Color = fraction <= 0.1 ? ChartPalette.critical : tired ? ChartPalette.warning : ChartPalette.rose
         let tokensToNext = max(0, Balance.statTokens - sheet.tokensTowardStat)
         return HStack(spacing: 4) {
             HStack(spacing: 3) {
@@ -712,7 +712,7 @@ private struct AuthorRow: View {
                     .opacity(unlocked ? 1 : 0.32)
                     .overlay(
                         RoundedRectangle(cornerRadius: 5.5, style: .continuous)
-                            .stroke(isChosen ? Color.accentColor : Color.primary.opacity(0.08), lineWidth: isChosen ? 1.8 : 0.8)
+                            .stroke(isChosen ? ChartPalette.series[0] : Color.primary.opacity(0.08), lineWidth: isChosen ? 1.8 : 0.8)
                     )
                 if !unlocked {
                     Symbol(name: "lock.fill", size: 6.5, color: .secondary)
@@ -765,7 +765,7 @@ struct Spine: View {
             RoundedRectangle(cornerRadius: 3, style: .continuous)
                 .stroke(fill >= 1 ? Color.black.opacity(0.12) : color.opacity(0.42), lineWidth: 1)
             if status.isCurrent {
-                Rectangle().fill(Color(red: 0.85, green: 0.25, blue: 0.25))
+                Rectangle().fill(ChartPalette.critical)
                     .frame(width: 3, height: 8)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                     .padding(.trailing, 3).offset(y: -2)

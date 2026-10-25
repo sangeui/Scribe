@@ -169,13 +169,39 @@ fi
 git push -q origin main
 
 echo "▶ 6/7 GitHub Release v$VERSION"
+NOTES_TMP=""
+cleanup_notes() {
+  [[ -n "$NOTES_TMP" && -f "$NOTES_TMP" ]] && rm -f "$NOTES_TMP" || true
+}
+trap cleanup_notes EXIT
+
 if [[ -n "${SCRIBE_NOTES_FILE:-}" && -f "${SCRIBE_NOTES_FILE}" ]]; then
-  gh release create "v$VERSION" build/Scribe.zip --repo "$REPO" \
-    --title "Scribe v$VERSION" --target main --notes-file "$SCRIBE_NOTES_FILE"
+  NOTES_SOURCE="$SCRIBE_NOTES_FILE"
 else
-  gh release create "v$VERSION" build/Scribe.zip --repo "$REPO" \
-    --title "Scribe v$VERSION" --target main --generate-notes
+  NOTES_TMP="$(mktemp /tmp/scribe-release-notes.XXXXXX.md)"
+  {
+    echo "## 주요 변경 사항"
+    if git rev-parse "v$PREV" >/dev/null 2>&1; then
+      git log "v$PREV..HEAD" --no-merges --pretty=format:"- %s" | grep -vE "^- release: v" || echo "- 안정성 및 UI 개선"
+    else
+      git log -n 5 --no-merges --pretty=format:"- %s" | grep -vE "^- release: v" || echo "- 안정성 및 UI 개선"
+    fi
+    echo ""
+    echo "### 설치 및 업데이트"
+    echo '```bash'
+    echo "brew install --cask sangeui/tap/scribe"
+    echo "# 기존 설치 업데이트: brew update && brew upgrade --cask sangeui/tap/scribe"
+    echo '```'
+    if git rev-parse "v$PREV" >/dev/null 2>&1; then
+      echo ""
+      echo "**Full Changelog**: https://github.com/$REPO/compare/v$PREV...v$VERSION"
+    fi
+  } > "$NOTES_TMP"
+  NOTES_SOURCE="$NOTES_TMP"
 fi
+
+gh release create "v$VERSION" build/Scribe.zip --repo "$REPO" \
+  --title "Scribe v$VERSION" --target main --notes-file "$NOTES_SOURCE"
 
 echo "▶ 7/7 Homebrew cask $VERSION ($TAP_REPO)"
 if [[ -f "$CASK_PATH" ]] && gh api "repos/$TAP_REPO" >/dev/null 2>&1; then

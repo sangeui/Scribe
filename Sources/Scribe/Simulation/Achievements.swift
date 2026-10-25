@@ -20,18 +20,18 @@ enum BadgeTier: Int, Comparable, Sendable {
 
     var color: Color {
         switch self {
-        case .bronze: Color(red: 0.72, green: 0.45, blue: 0.24)
-        case .silver: Color(red: 0.56, green: 0.6, blue: 0.67)
-        case .gold: Color(red: 0.85, green: 0.65, blue: 0.13)
+        case .bronze: Color(red: 0.62, green: 0.43, blue: 0.29)
+        case .silver: Color(red: 0.52, green: 0.55, blue: 0.60)
+        case .gold: Color(red: 0.72, green: 0.57, blue: 0.26)
         }
     }
 
     /// 메달 테두리의 밝은 쪽. 금속 느낌을 조금 낸다.
     var highlight: Color {
         switch self {
-        case .bronze: Color(red: 0.9, green: 0.66, blue: 0.42)
-        case .silver: Color(red: 0.82, green: 0.85, blue: 0.9)
-        case .gold: Color(red: 0.98, green: 0.85, blue: 0.4)
+        case .bronze: Color(red: 0.78, green: 0.59, blue: 0.43)
+        case .silver: Color(red: 0.75, green: 0.78, blue: 0.82)
+        case .gold: Color(red: 0.85, green: 0.73, blue: 0.44)
         }
     }
 }
@@ -657,6 +657,26 @@ enum Achievements {
     @MainActor
     static func byID(_ id: String) -> Achievement? { all.first { $0.id == id } }
 
+    /// 미해금 비밀 성과에 마우스를 올렸을 때 보여 주는 은유적 단서.
+    static func secretClue(for id: String) -> String {
+        switch id {
+        case "owl": return "모두가 잠든 깊은 새벽녘, 작업실에 뜻밖의 소란이 찾아올 때가 있습니다."
+        case "busy_day": return "유난히 바람 잘 날 없는 하루가 있습니다."
+        case "hoard": return "찬장에 따뜻한 차와 커피를 아껴 두고 내어주지 않으면..."
+        case "lucky": return "문호의 책상 위에 우연한 행운이 거듭 내려앉을 때."
+        case "caught": return "창을 갑자기 열어젖히면 딴청 피우던 작가와 눈이 마주치곤 합니다."
+        case "veteran": return "수많은 소동과 변덕을 겪고 나면 어떤 일에도 놀라지 않게 됩니다."
+        case "missed_3": return "출판사 편집자의 재촉 편지가 여러 번 빈손으로 돌아갈 때."
+        case "caffeine": return "하루 동안 찻잔이 쉴 새 없이 작업실을 오갈 때."
+        case "gambler": return "찾아온 손님 작가와의 내기에서 연거푸 웃는 날이 있습니다."
+        case "busted": return "찾아온 손님 작가와의 내기에서 연거푸 빈주머니가 될 때도 있습니다."
+        case "panned": return "평론가의 펜끝이 유난히 매섭고 박한 날이 있습니다."
+        case "quarrels_5": return "작업실을 찾은 두 문호의 언성이 거듭 높아질 때."
+        case "poked": return "바탕화면 상시 창의 작가를 자꾸만 건드려 보면..."
+        default: return "집필실을 지켜보다 보면 우연히 마주치게 됩니다."
+        }
+    }
+
     /// 매일 초기화되는 성과.
     @MainActor
     static var dailies: [Achievement] { all.filter(\.daily) }
@@ -988,9 +1008,12 @@ struct BadgeContent: View {
             }
             if !secrets.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("비밀 성과 \(secrets.count)개").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                    Text("비밀 성과 \(secrets.count)개 · 마우스를 올려 단서 확인").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                     FlowLayout(spacing: 6) {
-                        ForEach(secrets) { a in BadgeMedal(achievement: a, unlocked: false, size: 24) }
+                        ForEach(secrets) { a in
+                            BadgeMedal(achievement: a, unlocked: false, size: 24)
+                                .hint("비밀 성과 · \(a.tier.name)", [Achievements.secretClue(for: a.id), "달성하기 전까지 정확한 조건은 가려져 있습니다."], symbol: "questionmark.circle")
+                        }
                     }
                 }
             }
@@ -1052,7 +1075,7 @@ struct BadgeContent: View {
             HStack(spacing: 8) {
                 Symbol(name: "seal.fill", size: 13, color: activePatron?.tier.color ?? BadgeTier.gold.color)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("후원자 칭호").font(.caption2).foregroundStyle(.secondary)
+                    Text("나의 후원 칭호").font(.caption2).foregroundStyle(.secondary)
                     Text(activePatron?.patronTitle ?? "첫 성과를 달성하면 칭호가 열립니다")
                         .font(.callout.weight(.semibold))
                         .foregroundStyle(.primary)
@@ -1073,7 +1096,7 @@ struct BadgeContent: View {
                     .buttonStyle(.plain)
                 }
             }
-            .hint("후원자 칭호", hintLines, symbol: "seal")
+            .hint("나의 후원 칭호", hintLines, symbol: "seal")
             if patronOptions.count > 1 {
                 Collapsible(progress: showsPatronPicker ? 1 : 0, topSpacing: 10) {
                     FlowLayout(spacing: 6) {
@@ -1164,7 +1187,7 @@ struct BadgeContent: View {
             hintLines.append("상시 효과: \(perk.text)")
         }
         if let patron = a.patronTitle {
-            hintLines.append("후원자 칭호: \"\(patron)\"")
+            hintLines.append("나의 후원 칭호: \"\(patron)\"")
         }
         if let reward = progress.badgeRewards[a.id] {
             hintLines.append("받음: \(reward)")

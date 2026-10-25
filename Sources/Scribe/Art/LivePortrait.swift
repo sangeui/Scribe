@@ -123,6 +123,8 @@ struct FloatingPill: View {
     var body: some View {
         if let book = progress.book {
             let other = featured.flatMap { $0 == book.authorShort ? nil : $0 }
+            let otherDisplay = other.map { code in Library.books.first { $0.authorShort == code }?.displayAuthorShort ?? code }
+            let authorLabel = otherDisplay.map { "\(book.displayAuthorShort) · 초상 \($0)" } ?? book.displayAuthorShort
             let event = progress.event
             let ink = PillInk.resolve(scheme: scheme, tint: tintDate.map { DayPart.tint(at: $0) } ?? dayPart?.tint, weather: progress.weather.tint)
             HStack(spacing: 10) {
@@ -139,7 +141,7 @@ struct FloatingPill: View {
                     HStack(spacing: 5) {
                         Text(book.displayTitle).font(.system(size: 12, weight: .semibold)).foregroundStyle(ink.primary)
                             .layoutPriority(1)
-                        Text(book.displayAuthorShort).font(.system(size: 10)).foregroundStyle(ink.secondary).fixedSize()
+                        Text(authorLabel).font(.system(size: 10)).foregroundStyle(ink.secondary).fixedSize()
                         Spacer(minLength: 4)
                         if let event {
                             useButton(progress.cureItem ?? event.cure, count: progress.cureCount)

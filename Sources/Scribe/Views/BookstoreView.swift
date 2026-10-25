@@ -189,16 +189,16 @@ struct BookstoreContent: View {
         }
         for (book, reprint) in reprinting {
             let hours = max(1, Int((reprint.due.timeIntervalSince(now) / 3600).rounded(.up)))
-            items.append((.reprint(book.file), "printer", "\(book.displayTitle) 품절 · \(hours)시간", .orange, false))
+            items.append((.reprint(book.file), "printer", "\(book.displayTitle) 품절 · \(hours)시간", ChartPalette.warning, false))
         }
         for (book, ends) in activeAds {
-            items.append((.ad(book.file), "megaphone.fill", "\(book.displayTitle) 광고 · \(max(1, Int(ends.timeIntervalSince(now) / 3600)))시간", .orange, false))
+            items.append((.ad(book.file), "megaphone.fill", "\(book.displayTitle) 광고 · \(max(1, Int(ends.timeIntervalSince(now) / 3600)))시간", ChartPalette.warning, false))
         }
         for boost in progress.shopBoosts {
             let good = boost.value >= 1
             let delta = Int(((boost.value - 1) * 100).rounded())
             let event = ShopEvents.all.first { $0.title == boost.source }
-            items.append((.boost(boost.id), event?.symbol ?? "storefront", "\(boost.source) \(delta >= 0 ? "+" : "")\(delta)%", good ? Color(red: 0.2, green: 0.55, blue: 0.3) : .orange, false))
+            items.append((.boost(boost.id), event?.symbol ?? "storefront", "\(boost.source) \(delta >= 0 ? "+" : "")\(delta)%", good ? ChartPalette.good : ChartPalette.warning, false))
         }
         return items.map { (item: $0.0, symbol: $0.1, text: $0.2, color: $0.3, attention: $0.4) }
     }
@@ -298,7 +298,7 @@ struct BookstoreContent: View {
     private func reprintBanner(_ book: Book, reprint: ShopState.Reprint) -> some View {
         let hours = max(1, Int((reprint.due.timeIntervalSince(now) / 3600).rounded(.up)))
         return HStack(spacing: 10) {
-            Symbol(name: "printer", size: 16, color: .orange)
+            Symbol(name: "printer", size: 16, color: ChartPalette.warning)
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(book.displayTitle) 품절").font(.callout.weight(.semibold)).lineLimit(1)
                 Text("재판 \(Format.integer(reprint.copies))부가 \(hours)시간 뒤에 들어옵니다 · 그동안 손님을 돌려보냅니다").font(.caption).foregroundStyle(.secondary)
@@ -306,12 +306,12 @@ struct BookstoreContent: View {
             Spacer(minLength: 0)
         }
         .padding(12)
-        .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(ChartPalette.warning.opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     private func adBanner(_ book: Book, ends: Date) -> some View {
         HStack(spacing: 10) {
-            Symbol(name: "megaphone.fill", size: 16, color: .orange)
+            Symbol(name: "megaphone.fill", size: 16, color: ChartPalette.warning)
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(book.displayTitle) 광고 중").font(.callout.weight(.semibold)).lineLimit(1)
                 Text("\(Int(Balance.adBoost))배로 팔립니다 · \(max(1, Int(ends.timeIntervalSince(now) / 3600)))시간 남음").font(.caption).foregroundStyle(.secondary)
@@ -319,7 +319,7 @@ struct BookstoreContent: View {
             Spacer(minLength: 0)
         }
         .padding(12)
-        .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(ChartPalette.warning.opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     private func boostBanner(_ boost: ShopBoost) -> some View {
@@ -328,7 +328,7 @@ struct BookstoreContent: View {
         let good = boost.value >= 1
         let delta = Int(((boost.value - 1) * 100).rounded())
         return HStack(spacing: 10) {
-            Symbol(name: event?.symbol ?? "storefront", size: 16, color: good ? Color(red: 0.2, green: 0.55, blue: 0.3) : .orange)
+            Symbol(name: event?.symbol ?? "storefront", size: 16, color: good ? ChartPalette.good : ChartPalette.warning)
             VStack(alignment: .leading, spacing: 2) {
                 Text(boost.source).font(.callout.weight(.semibold))
                 Text("\(book?.displayTitle ?? "모든 책") 판매 \(delta >= 0 ? "+" : "")\(delta)% · \(max(1, Int(boost.endsAt.timeIntervalSince(now) / 3600)))시간 남음")
@@ -337,7 +337,7 @@ struct BookstoreContent: View {
             Spacer(minLength: 0)
         }
         .padding(12)
-        .background((good ? Color(red: 0.2, green: 0.55, blue: 0.3) : Color.orange).opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background((good ? ChartPalette.good : ChartPalette.warning).opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     // MARK: 매대(원고 자리)
@@ -431,7 +431,7 @@ struct BookstoreContent: View {
         let event = latest.flatMap { ShopEvents.byID($0.event) }
         return Button { drawer = drawer == .news ? nil : .news } label: {
             HStack(spacing: 6) {
-                Symbol(name: event?.symbol ?? "storefront", size: 11, color: (event?.good ?? true) ? .secondary : .orange)
+                Symbol(name: event?.symbol ?? "storefront", size: 11, color: (event?.good ?? true) ? .secondary : ChartPalette.warning)
                 Text(latest?.text ?? "아직 소식이 없습니다").font(.caption2).foregroundStyle(.secondary).lineLimit(1)
             }
             .padding(.horizontal, 8).padding(.vertical, 6)
@@ -504,14 +504,14 @@ struct BookstoreContent: View {
             ForEach(progress.shopLog.prefix(5)) { record in
                 let event = ShopEvents.byID(record.event)
                 HStack(alignment: .top, spacing: 10) {
-                    Symbol(name: event?.symbol ?? "storefront", size: 13, color: (event?.good ?? true) ? .secondary : .orange)
+                    Symbol(name: event?.symbol ?? "storefront", size: 13, color: (event?.good ?? true) ? .secondary : ChartPalette.warning)
                         .padding(.top, 1)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(record.text).font(.caption).fixedSize(horizontal: false, vertical: true)
                         HStack(spacing: 6) {
                             Text(record.date.formatted(.dateTime.month(.defaultDigits).day().hour().minute())).font(.caption2).foregroundStyle(.secondary)
                             if let effect = Self.effectText(event, copies: record.copies) {
-                                Text(effect).font(.caption2.weight(.medium)).foregroundStyle((event?.good ?? true) ? Color(red: 0.2, green: 0.55, blue: 0.3) : .orange)
+                                Text(effect).font(.caption2.weight(.medium)).foregroundStyle((event?.good ?? true) ? ChartPalette.good : ChartPalette.warning)
                             }
                         }
                     }
@@ -570,7 +570,7 @@ struct BookstoreContent: View {
                 let shop = progress.shopMultiplier(for: book)
                 if abs(shop - 1) > 0.001 {
                     Text("사건 \(Self.percent(shop))")
-                        .font(.caption2.weight(.medium)).foregroundStyle(shop >= 1 ? Color(red: 0.2, green: 0.55, blue: 0.3) : .orange)
+                        .font(.caption2.weight(.medium)).foregroundStyle(shop >= 1 ? ChartPalette.good : ChartPalette.warning)
                         .hint("서점 사건", progress.shopBoosts.filter { $0.book == nil || $0.book == book.file }.map { "\($0.source): \(Self.percent($0.value)), \(max(1, Int($0.endsAt.timeIntervalSince(now) / 3600)))시간 남음" }, symbol: "storefront")
                 }
             }
@@ -686,11 +686,11 @@ struct BookstoreContent: View {
         Group {
             if let adEnds {
                 HStack(spacing: 4) {
-                    Symbol(name: "megaphone.fill", size: 10, color: .orange)
-                    Text("광고 중 · \(max(1, Int(adEnds.timeIntervalSince(now) / 3600)))시간").font(.caption.weight(.semibold)).foregroundStyle(.orange)
+                    Symbol(name: "megaphone.fill", size: 10, color: ChartPalette.warning)
+                    Text("광고 중 · \(max(1, Int(adEnds.timeIntervalSince(now) / 3600)))시간").font(.caption.weight(.semibold)).foregroundStyle(ChartPalette.warning)
                 }
                 .padding(.horizontal, 9).padding(.vertical, 5)
-                .background(Color.orange.opacity(0.12), in: Capsule())
+                .background(ChartPalette.warning.opacity(0.12), in: Capsule())
             } else if RenderMode.offscreen {
                 ChipLabel(title: "광고 걸기", prominent: progress.canAdvertise)
             } else {
@@ -714,7 +714,7 @@ struct BookstoreContent: View {
               : ["이 책이 \(Int(Balance.adBoost))배로 팔리는 중입니다."], symbol: "megaphone")
     }
 
-    static func starColor(_ stars: Int) -> Color { stars >= 4 ? BadgeTier.gold.color : stars <= 2 ? .orange : .secondary }
+    static func starColor(_ stars: Int) -> Color { stars >= 4 ? BadgeTier.gold.color : stars <= 2 ? ChartPalette.warning : .secondary }
 
     private static func percent(_ multiplier: Double) -> String {
         let delta = Int(((multiplier - 1) * 100).rounded())
@@ -804,9 +804,9 @@ struct BookChip: View {
                 .overlay(alignment: .bottom) { if let band { Rectangle().fill(band).frame(height: 3) } }
             Text(book.displayTitle).font(.caption.weight(selected ? .semibold : .regular)).lineLimit(1)
                 .foregroundStyle(soldOut ? .secondary : .primary)
-            Text(soldOut ? "품절" : Format.short(sales)).font(.caption2.monospacedDigit()).foregroundStyle(soldOut ? .orange : .secondary)
+            Text(soldOut ? "품절" : Format.short(sales)).font(.caption2.monospacedDigit()).foregroundStyle(soldOut ? ChartPalette.warning : .secondary)
             if featured { Symbol(name: "star.fill", size: 8, color: BadgeTier.gold.color) }
-            if advertised { Symbol(name: "megaphone.fill", size: 8, color: .orange) }
+            if advertised { Symbol(name: "megaphone.fill", size: 8, color: ChartPalette.warning) }
             if pinned { Symbol(name: "pin.fill", size: 7, color: .secondary) }
         }
         .padding(.horizontal, 8).padding(.vertical, 5)
@@ -902,7 +902,7 @@ struct BoostChip: View {
         case .eventChance: boost.value <= 1
         case .refusal: boost.value <= 0
         }
-        let color: Color = good ? Color(red: 0.2, green: 0.55, blue: 0.3) : .orange
+        let color: Color = good ? ChartPalette.good : ChartPalette.warning
         let left = max(0, boost.endsAt.timeIntervalSince(now))
         let remain = left >= 3600 ? "\(Int(left / 3600))시간" : "\(max(1, Int(left / 60)))분"
         Text(boost.text + " · " + remain)

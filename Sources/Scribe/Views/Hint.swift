@@ -125,7 +125,7 @@ struct ChipLabel: View {
         Text(title).font(.caption.weight(.medium))
             .padding(.horizontal, 9).padding(.vertical, 4)
             .foregroundStyle(prominent ? Color.white : Color.primary)
-            .background(prominent ? Color.accentColor : Color.secondary.opacity(0.12), in: Capsule())
+            .background(prominent ? ChartPalette.series[0] : Color.secondary.opacity(0.12), in: Capsule())
     }
 }
 

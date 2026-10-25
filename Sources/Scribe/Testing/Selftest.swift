@@ -190,6 +190,10 @@ extension Dump {
         // 훈장 진열대(최대 3칸)와 후원자 칭호: 동·은·금 뱃지를 진열하면 slotPerk가 더해지고, 해금된 칭호를 고를 수 있다.
         check(Achievements.all.filter { !$0.daily }.allSatisfy { ($0.patronTitle ?? "").count >= 2 },
               "후원자 칭호: 모든 일반 성과(\(Achievements.all.filter { !$0.daily }.count)개)에 후원자 칭호가 부여됨")
+        let secretList = Achievements.all.filter(\.isSecret)
+        let defaultSecretClue = Achievements.secretClue(for: "_unknown_")
+        check(secretList.allSatisfy { Achievements.secretClue(for: $0.id) != defaultSecretClue },
+              "비밀 성과: 모든 비밀 성과(\(secretList.count)개)에 고유 단서가 부여됨")
         w = perkStore.toggleBadge("first_line", now: now)
         w = perkStore.toggleBadge("chars_10k", now: now)
         w = perkStore.toggleBadge("chars_1m", now: now)
@@ -948,12 +952,12 @@ extension Dump {
               && AppUpdater.compareVersions("0.1.2", "0.2.0") < 0,
               "업데이터: SemVer 비교 (v0.2.0 > 0.1.0, 0.1.0 == v0.1.0)")
         let releaseJSON = Data("""
-        {"tag_name":"v0.2.0","html_url":"https://github.com/sangeui/Scribe/releases/tag/v0.2.0","body":"해와 달 표시 추가","assets":[{"name":"Scribe.zip","browser_download_url":"https://github.com/sangeui/Scribe/releases/download/v0.2.0/Scribe.zip"}]}
+        {"tag_name":"v0.2.0","html_url":"https://github.com/sangeui/Scribe/releases/tag/v0.2.0","body":"## 주요 변경 사항\\n- **해와 달 표시**: 상시 창에 고도를 표시합니다.\\n- 서재 색상 정돈\\n\\n**Full Changelog**: https://github.com/sangeui/Scribe/compare/v0.1.0...v0.2.0","assets":[{"name":"Scribe.zip","browser_download_url":"https://github.com/sangeui/Scribe/releases/download/v0.2.0/Scribe.zip"}]}
         """.utf8)
         let parsedNew = AppUpdater.parseRelease(data: releaseJSON, currentVersion: "0.1.0")
         let parsedSame = AppUpdater.parseRelease(data: releaseJSON, currentVersion: "0.2.0")
-        check(parsedNew?.version == "0.2.0" && parsedSame == nil,
-              "업데이터: 최신 릴리스 감지 (\(parsedNew?.version ?? "-"), 같은 버전이면 무시)")
+        check(parsedNew?.version == "0.2.0" && parsedNew?.summaryLines.count == 2 && parsedSame == nil,
+              "업데이터: 최신 릴리스 감지 (\(parsedNew?.version ?? "-"), 요약 \(parsedNew?.summaryLines.count ?? 0)줄, 같은 버전이면 무시)")
 
         print(failures == 0 ? "PASS" : "FAILED \(failures)")
     }
