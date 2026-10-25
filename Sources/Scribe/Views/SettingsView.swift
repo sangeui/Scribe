@@ -159,7 +159,7 @@ struct GeneralSettings: View {
                     }
                 }
                 LabeledContent("환율 기준") {
-                    if store.language == .ko {
+                    if store.language.resolved == .ko {
                         HStack(spacing: 8) {
                             let rateInt = Format.integer(Int(store.exchangeRate.rounded()))
                             let dateDesc = store.isExchangeRateOfflineFallback

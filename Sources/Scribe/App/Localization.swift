@@ -16,6 +16,17 @@ enum AppLanguage: String, CaseIterable, Codable, Sendable, Identifiable {
         case .en: "English"
         }
     }
+
+    /// `.system` 인 경우 macOS 선호 언어·지역 설정에 따라 실제 적용될 언어(`.ko` 또는 `.en`)를 돌려준다.
+    var resolved: AppLanguage {
+        switch self {
+        case .ko: return .ko
+        case .en: return .en
+        case .system:
+            let preferred = Locale.preferredLanguages.first?.lowercased() ?? "ko"
+            return preferred.hasPrefix("en") ? .en : .ko
+        }
+    }
 }
 
 /// 런타임 국제화(한국어·영어) 엔진.
@@ -51,13 +62,7 @@ enum L10n {
     }
 
     static var resolvedLanguage: AppLanguage {
-        switch preference {
-        case .ko: return .ko
-        case .en: return .en
-        case .system:
-            let preferred = Locale.preferredLanguages.first?.lowercased() ?? "ko"
-            return preferred.hasPrefix("en") ? .en : .ko
-        }
+        preference.resolved
     }
 
     static var isEnglish: Bool { resolvedLanguage == .en }

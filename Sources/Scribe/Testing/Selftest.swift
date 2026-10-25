@@ -1074,9 +1074,12 @@ extension Dump {
               && needsRefresh
               && cachedFallbackRate == 1_392.5
               && toggledToMini && toggledBackToPill
+              && AppLanguage.ko.resolved == .ko
+              && AppLanguage.en.resolved == .en
+              && (AppLanguage.system.resolved == .ko || AppLanguage.system.resolved == .en)
               && koTabs == ["일반", "화면", "집필", "알림", "정보"]
               && enTabs == ["General", "Display", "Writing", "Notifications", "About"],
-              "환율 파서·오프라인 이전날 환율 폴백(1,392.5원)·상시 창 모드 토글(알약↔미니)·설정 5탭(\(koTabs.joined(separator: "·")) / \(enTabs.joined(separator: "·"))) 검증")
+              "환율 파서·오프라인 이전날 환율 폴백(1,392.5원)·시스템 언어 해석(\(AppLanguage.system.resolved.rawValue))·상시 창 모드 토글(알약↔미니)·설정 5탭 검증")
 
         print(failures == 0 ? "PASS" : "FAILED \(failures)")
     }
