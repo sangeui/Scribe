@@ -1,6 +1,6 @@
 cask "scribe" do
-  version "0.6.3"
-  sha256 "8c85c92458104a0088307f950f6d61e461bcf76ec0684f2e09568af16e87aeb3"
+  version "0.6.4"
+  sha256 "846040470bbffdb92f1ca9850a43bbdee08ddcba80c6dd425ba9307f35eec238"
 
   url "https://github.com/sangeui/Scribe/releases/download/v#{version}/Scribe.zip"
   name "Scribe"
