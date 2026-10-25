@@ -22,9 +22,12 @@ final class FloatingWindowController {
     private var panel: NSPanel?
     private var moveObserver: NSObjectProtocol?
     private var screenObserver: NSObjectProtocol?
-    /// 초상화 클릭을 잡는다. 드래그는 창 옮기기로 두고, 누른 자리에서 뗀 것만 클릭으로 본다.
+    /// 초상화 클릭·모드 전환·드래그를 잡는다.
     private var clickMonitor: Any?
     private var mouseDownAt: NSPoint?
+    private var mouseDownScreen: NSPoint?
+    private var dragStartCanvasTopLeft = NSPoint.zero
+    private var isDragging = false
     private let store: UsageStore
     /// 캔버스 왼쪽 위 모서리(화면 좌표, y 는 위로 큼).
     private var canvasTopLeft = NSPoint.zero
@@ -105,14 +108,15 @@ final class FloatingWindowController {
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = true
-        panel.isMovableByWindowBackground = true
+        panel.isMovableByWindowBackground = false
         panel.hidesOnDeactivate = false
         panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
 
         let hosting = FloatingHostingView(rootView: FloatingView(store: store))
         hosting.onHoverChange = { [weak self] hovered in
             MainActor.assumeIsolated {
-                self?.store.isFloatingHovered = hovered
+                guard let self, !self.isDragging else { return }
+                self.store.isFloatingHovered = hovered
             }
         }
         // 크기는 여기서 직접 맞춘다. 뷰 크기를 따라가게 두면 전환 중에 서로 끌어당긴다.
@@ -132,19 +136,45 @@ final class FloatingWindowController {
         }
         self.panel = panel
         apply(visible: visible)
-        // 초상화 클릭·모드 전환 버튼 클릭·더블클릭을 잡는다. `isMovableByWindowBackground` 를 살리려고 제스처 대신 이벤트를 본다.
-        clickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseUp]) { [weak self, weak panel] event in
+        // 드래그 이동·초상화 클릭·모드 전환 버튼 클릭·더블클릭을 화면 좌표 기준으로 직접 처리한다.
+        clickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp]) { [weak self, weak panel] event in
             let type = event.type
             let location = event.locationInWindow
             let clickCount = event.clickCount
             let samePanel = event.window === panel
             MainActor.assumeIsolated {
                 guard let self, let panel, samePanel else { return }
-                if type == .leftMouseDown {
+                switch type {
+                case .leftMouseDown:
                     self.mouseDownAt = location
-                } else if let down = self.mouseDownAt {
+                    self.mouseDownScreen = NSEvent.mouseLocation
+                    self.dragStartCanvasTopLeft = self.canvasTopLeft
+                    self.isDragging = false
+                case .leftMouseDragged:
+                    guard let downScreen = self.mouseDownScreen,
+                          let downInWindow = self.mouseDownAt,
+                          !self.isOnCureButton(downInWindow, in: panel) else { return }
+                    let nowScreen = NSEvent.mouseLocation
+                    let dx = nowScreen.x - downScreen.x
+                    let dy = nowScreen.y - downScreen.y
+                    if self.isDragging || hypot(dx, dy) >= 3 {
+                        self.isDragging = true
+                        self.applying = true
+                        self.canvasTopLeft = NSPoint(x: self.dragStartCanvasTopLeft.x + dx,
+                                                     y: self.dragStartCanvasTopLeft.y + dy)
+                        panel.setFrameOrigin(self.frame(for: self.visible).origin)
+                        self.applying = false
+                    }
+                case .leftMouseUp:
+                    guard self.mouseDownScreen != nil else { return }
+                    self.mouseDownScreen = nil
                     self.mouseDownAt = nil
-                    guard hypot(location.x - down.x, location.y - down.y) < 3 else { return }
+                    if self.isDragging {
+                        self.isDragging = false
+                        self.apply(visible: self.visible)
+                        UserDefaults.standard.set(NSStringFromPoint(self.canvasTopLeft), forKey: Self.originKey)
+                        return
+                    }
                     if self.isOnModeSwitchButton(location, in: panel) {
                         FloatingStyle.toggle()
                     } else if clickCount == 2, !self.isOnCureButton(location, in: panel) {
@@ -152,6 +182,8 @@ final class FloatingWindowController {
                     } else if clickCount == 1, self.isOnPortrait(location, in: panel) {
                         self.store.tapPortrait()
                     }
+                default:
+                    break
                 }
             }
             return event
@@ -163,12 +195,12 @@ final class FloatingWindowController {
             MainActor.assumeIsolated { if let self { self.apply(visible: self.visible) } }
         }
 
-        // 사용자가 끌어서 옮긴 것만 저장한다. 창 위치에서 캔버스 모서리를 거꾸로 구한다.
+        // 외부 요인으로 창이 옮겨졌을 때도 캔버스 모서리를 동기화한다.
         moveObserver = NotificationCenter.default.addObserver(
             forName: NSWindow.didMoveNotification, object: panel, queue: .main
         ) { [weak self, weak panel] _ in
             MainActor.assumeIsolated {
-                guard let self, let panel, panel.isVisible, !self.applying else { return }
+                guard let self, let panel, panel.isVisible, !self.applying, !self.isDragging else { return }
                 let p = Self.padding
                 self.canvasTopLeft = NSPoint(x: panel.frame.minX - (self.visible.minX - p),
                                              y: panel.frame.maxY + (self.visible.minY - p))
@@ -221,14 +253,17 @@ final class FloatingWindowController {
 /// 비활성 상태(`nonactivatingPanel`)에서도 마우스 진입·이탈과 첫 클릭을 즉시 전달하는 호스팅 뷰.
 private final class FloatingHostingView<Content: View>: NSHostingView<Content> {
     var onHoverChange: ((Bool) -> Void)?
+    private var hoverArea: NSTrackingArea?
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
-        for area in trackingAreas { removeTrackingArea(area) }
+        if let hoverArea { removeTrackingArea(hoverArea) }
         let options: NSTrackingArea.Options = [.mouseEnteredAndExited, .activeAlways, .inVisibleRect]
-        addTrackingArea(NSTrackingArea(rect: .zero, options: options, owner: self, userInfo: nil))
+        let area = NSTrackingArea(rect: .zero, options: options, owner: self, userInfo: nil)
+        addTrackingArea(area)
+        hoverArea = area
     }
 
     override func mouseEntered(with event: NSEvent) {
@@ -411,7 +446,6 @@ struct FloatingMorph: View, Animatable {
             }
             .frame(width: 20, height: 20)
             .modifier(PillBackground(glass: false, shape: Circle(), tint: tint))
-            .help(L10n.tr(m > 0.5 ? "미니 모드로 전환 (더블클릭)" : "알약 모드로 전환 (더블클릭)"))
             .position(switchCenter)
             .opacity(isHovered ? 1 : 0)
             .scaleEffect(isHovered ? 1 : 0.75)
