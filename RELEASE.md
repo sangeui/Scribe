@@ -96,13 +96,12 @@
 
 ## 4. Homebrew Tap 설치 안내
 
-사용자는 아래 명령으로 격리(`com.apple.quarantine`) 경고 없이 설치 및 업데이트할 수 있다:
+사용자는 아래 단일 명령으로 격리(`com.apple.quarantine`) 경고 없이 설치(설치 직후 자동 실행) 및 업데이트할 수 있다:
 
 ```bash
-# 최초 설치
-brew tap sangeui/scribe https://github.com/sangeui/Scribe
-brew install --cask sangeui/scribe/scribe
+# 최초 설치 (설치 후 자동 실행)
+brew install --cask sangeui/tap/scribe
 
 # 새 버전 업데이트
-brew update && brew upgrade --cask sangeui/scribe/scribe
+brew update && brew upgrade --cask sangeui/tap/scribe
 ```

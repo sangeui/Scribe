@@ -51,26 +51,18 @@
 ### Homebrew (권장)
 
 ```bash
-brew tap sangeui/scribe https://github.com/sangeui/Scribe
-brew install --cask sangeui/scribe/scribe
+brew install --cask sangeui/tap/scribe
 ```
 
-Cask가 설치 시 macOS Gatekeeper 격리 속성(`com.apple.quarantine`)을 자동으로 해제합니다. 설치 후 `/Applications/Scribe.app`을 바로 실행하세요.
+설치가 끝나면 격리 속성이 자동으로 해제되고 **Scribe**가 바로 실행됩니다.
 
-### 직접 다운로드 (`Scribe.zip`)
+### 직접 다운로드
 
-1. **[최신 Scribe.zip 바로 다운로드](https://github.com/sangeui/Scribe/releases/latest/download/Scribe.zip)** (또는 [GitHub Releases](https://github.com/sangeui/Scribe/releases/latest) 방문)
-2. 압축을 풀고 **`Scribe.app`**을 **`/Applications` (응용 프로그램)** 폴더로 옮깁니다.
-
-> [!TIP]
-> **첫 실행 시 *"확인되지 않은 개발자"* 경고가 뜰 때**
-> 유료 Apple 개발자 공증(Notarization) 없이 자체 서명 배포되므로 최초 실행 시 한 번만 격리 속성을 해제해 주세요:
-> ```bash
-> xattr -dr com.apple.quarantine /Applications/Scribe.app && open -a Scribe
-> ```
-> 또는 Finder에서 `/Applications/Scribe.app`을 <kbd>Control</kbd>+클릭(우클릭) → **열기(Open)**를 선택하면 됩니다. 이후 새 버전이 나오면 팝오버 하단의 **`v0.x.y 업데이트`** 버튼 하나로 앱 내에서 자동 업데이트됩니다.
-
-**시스템 요구사항:** macOS 14.0 (Sonoma) 이상 · Apple Silicon (`arm64`) 및 Intel (`x86_64`) Universal 바이너리 · 외부 런타임 불필요.
+1. **[최신 Scribe.zip 다운로드](https://github.com/sangeui/Scribe/releases/latest/download/Scribe.zip)** 후 압축을 풀어 **`Scribe.app`**을 **`/Applications`** 폴더로 옮깁니다.
+2. 최초 실행 시 한 번만 터미널에서 아래 명령어를 실행합니다:
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/Scribe.app && open -a Scribe
+   ```
 
 ---
 

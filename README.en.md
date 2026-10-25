@@ -51,26 +51,18 @@
 ### Homebrew (Recommended)
 
 ```bash
-brew tap sangeui/scribe https://github.com/sangeui/Scribe
-brew install --cask sangeui/scribe/scribe
+brew install --cask sangeui/tap/scribe
 ```
 
-The cask automatically clears the macOS Gatekeeper quarantine attribute on install. Launch `/Applications/Scribe.app` right away.
+Once installed, the quarantine attribute is cleared automatically and **Scribe** launches right away.
 
-### Direct Download (`Scribe.zip`)
+### Direct Download
 
-1. Download **[Scribe.zip from the latest release](https://github.com/sangeui/Scribe/releases/latest/download/Scribe.zip)** (or visit [GitHub Releases](https://github.com/sangeui/Scribe/releases/latest)).
-2. Unzip and move **`Scribe.app`** into **`/Applications`**.
-
-> [!TIP]
-> **If macOS shows an *"unidentified developer"* warning on first launch**
-> Because Scribe is self-signed without a paid Apple Developer ID notarization, clear the quarantine attribute once:
-> ```bash
-> xattr -dr com.apple.quarantine /Applications/Scribe.app && open -a Scribe
-> ```
-> Or <kbd>Control</kbd>-click `/Applications/Scribe.app` in Finder → **Open** → **Open**. Subsequent releases can be updated in one click via the in-app **`v0.x.y Update`** pill in the popover footer.
-
-**Requirements:** macOS 14.0 (Sonoma) or later · Universal binary (`arm64` & `x86_64`) · Zero external runtime dependencies.
+1. Download **[Scribe.zip from the latest release](https://github.com/sangeui/Scribe/releases/latest/download/Scribe.zip)**, unzip, and move **`Scribe.app`** into **`/Applications`**.
+2. On first launch, run once in Terminal:
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/Scribe.app && open -a Scribe
+   ```
 
 ---
 

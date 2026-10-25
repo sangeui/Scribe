@@ -9,10 +9,16 @@ cask "scribe" do
 
   app "Scribe.app"
 
+  uninstall quit: "local.scribe"
+
   postflight do
     system_command "/usr/bin/xattr",
                    args: ["-cr", "#{appdir}/Scribe.app"],
                    sudo: false
+    system_command "/usr/bin/open",
+                   args: ["-a", "#{appdir}/Scribe.app"],
+                   sudo: false,
+                   must_succeed: false
   end
 
   zap trash: [

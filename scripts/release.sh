@@ -178,17 +178,19 @@ else
 fi
 
 echo "▶ 7/7 Homebrew cask $VERSION ($TAP_REPO)"
-if gh api "repos/$TAP_REPO/contents/$CASK_PATH" >/dev/null 2>&1; then
-  TMP_CASK=$(mktemp)
-  gh api "repos/$TAP_REPO/contents/$CASK_PATH" --jq '.content' | base64 -d \
-    | perl -pe "s/version \"[0-9.]+\"/version \"$VERSION\"/; s/sha256 \"[0-9a-fA-F]+\"/sha256 \"$ZIP_SHA256\"/" > "$TMP_CASK"
-  SHA=$(gh api "repos/$TAP_REPO/contents/$CASK_PATH" --jq '.sha')
-  gh api -X PUT "repos/$TAP_REPO/contents/$CASK_PATH" \
-    -f message="cask: scribe $VERSION" \
-    -f content="$(base64 -i "$TMP_CASK")" -f sha="$SHA" --jq '.commit.html_url'
-  rm -f "$TMP_CASK"
+if [[ -f "$CASK_PATH" ]] && gh api "repos/$TAP_REPO" >/dev/null 2>&1; then
+  CASK_B64="$(base64 -i "$CASK_PATH")"
+  if EXISTING_SHA="$(gh api "repos/$TAP_REPO/contents/$CASK_PATH" --jq '.sha' 2>/dev/null)" && [[ -n "$EXISTING_SHA" ]]; then
+    gh api -X PUT "repos/$TAP_REPO/contents/$CASK_PATH" \
+      -f message="cask: scribe $VERSION" \
+      -f content="$CASK_B64" -f sha="$EXISTING_SHA" --jq '.commit.html_url'
+  else
+    gh api -X PUT "repos/$TAP_REPO/contents/$CASK_PATH" \
+      -f message="cask: scribe $VERSION" \
+      -f content="$CASK_B64" --jq '.commit.html_url'
+  fi
 else
-  echo "  (참고: $TAP_REPO 에 $CASK_PATH 가 아직 없어 원격 cask 자동 갱신은 건너뜁니다.)"
+  echo "  (참고: $TAP_REPO 저장소가 아직 없어 원격 cask 자동 갱신은 건너뜁니다.)"
 fi
 
 echo "✓ v$VERSION 배포 완료."
